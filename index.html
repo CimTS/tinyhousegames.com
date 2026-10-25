@@ -2,6 +2,16 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Tiny House Games</title>
-<style>body{font-family:system-ui,sans-serif;background:#141018;color:#f3ead8;display:grid;place-items:center;min-height:100vh;margin:0;text-align:center}a{color:#ffb86b}</style>
-</head><body><main><h1>Tiny House Games</h1><p>Small games, coming soon.</p>
-<p><a href="https://ko-fi.com/nathonlo">Support on Ko-fi</a></p></main></body></html>
+<style>
+html{background:linear-gradient(135deg,#0d1030,#1a0d2e 50%,#0b2a2a)}
+body{font-family:system-ui,sans-serif;color:#f3ead8;display:grid;place-items:center;min-height:100vh;margin:0;text-align:center}
+#aurora{position:fixed;inset:0;width:100%;height:100%;z-index:-2;display:block}
+.no-gl #aurora{display:none}
+body:before{content:"";position:fixed;inset:0;z-index:-1;background:rgba(10,8,16,.35)}
+main{background:rgba(20,16,24,.55);padding:1.5rem 2.5rem;border-radius:16px}
+a{color:#ffb86b}
+</style>
+</head><body><canvas id="aurora" aria-hidden="true"></canvas>
+<main><h1>Tiny House Games</h1><p>Small games, coming soon.</p>
+<p><a href="https://ko-fi.com/nathonlo">Support on Ko-fi</a></p></main>
+<script src="aurora.js" defer></script></body></html>

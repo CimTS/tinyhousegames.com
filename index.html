@@ -10,7 +10,9 @@ body{font-family:ui-rounded,'SF Pro Rounded','Nunito','Quicksand','Comic Neue',s
 .no-gl #aurora{display:none}
 a{color:#ffc47a}
 .wob{display:inline-block;transform:rotate(-1.5deg)}
-nav{display:flex;justify-content:center;gap:.4rem;padding:1rem;flex-wrap:wrap}
+nav{position:sticky;top:0;z-index:5;display:flex;justify-content:center;gap:.4rem;padding:.7rem 1rem;flex-wrap:wrap;background:rgba(20,12,24,.55)}
+@supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){nav{background:rgba(40,20,30,.3);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}}
+main>section{scroll-margin-top:4rem}
 nav a,.pill{color:#f6f0e4;text-decoration:none;padding:.4rem .95rem;border-radius:999px 999px 999px 999px/60% 80% 70% 90%;border:1.5px solid rgba(255,196,122,.45);background:rgba(255,170,90,.12);font-size:.9rem}
 nav a:hover,.pill:hover{background:rgba(255,170,90,.28);transform:rotate(-2deg)}
 nav a,.pill{display:inline-block;transition:transform .2s,background .2s}
@@ -47,6 +49,7 @@ h2{font-size:1.6rem;margin:0 0 1rem;color:#ffd9a8}
 <section id="home"><h1>Tiny House Games</h1><p class="tag">Small, cozy games, hand-made in a tiny house.</p>
 <a class="pill" href="https://ko-fi.com/nathonlo">☕ buy us a coffee on Ko-fi</a></section>
 </main>
+<script>addEventListener('hashchange',function(){scrollTo(0,0)});addEventListener('load',function(){scrollTo(0,0)})</script>
 <script src="aurora.js" defer></script>
 <script type="module" src="games.js"></script>
 </body></html>

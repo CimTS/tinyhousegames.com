@@ -15,7 +15,7 @@ export function renderGames(list, doc = globalThis.document) {
   root.textContent = '';
 
   const games = (Array.isArray(list) ? list : []).filter(
-    (game) => game && typeof game === 'object' && hasText(game.title) && safeUrl(game.url)
+    (game) => game && typeof game === 'object' && hasText(game.title) && (game.url === undefined || game.url === '' || safeUrl(game.url))
   );
 
   if (games.length === 0) {
@@ -40,6 +40,11 @@ export function renderGames(list, doc = globalThis.document) {
       img.loading = 'lazy';
       img.decoding = 'async';
       card.append(img);
+    } else {
+      const tile = doc.createElement('div');
+      tile.className = 'game-card__tile';
+      tile.textContent = 'coming soon ✨';
+      card.append(tile);
     }
 
     const title = doc.createElement('h3');
@@ -54,12 +59,15 @@ export function renderGames(list, doc = globalThis.document) {
       card.append(blurb);
     }
 
-    const link = doc.createElement('a');
-    link.className = 'game-card__link';
-    link.href = game.url;
-    link.textContent = 'Take a look';
-    if (/^(https?:)?\/\//i.test(game.url)) link.rel = 'noopener';
-    card.append(link);
+    const url = hasText(game.url) ? game.url.trim() : '';
+    if (url && url !== '#') {
+      const link = doc.createElement('a');
+      link.className = 'game-card__link';
+      link.href = url;
+      link.textContent = 'Play';
+      if (/^(https?:)?\/\//i.test(url)) link.rel = 'noopener';
+      card.append(link);
+    }
 
     fragment.append(card);
   }

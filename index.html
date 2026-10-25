@@ -8,6 +8,9 @@ html{background:linear-gradient(135deg,#0d1030,#1a0d2e 50%,#0b2a2a)}
 body{font-family:ui-rounded,'SF Pro Rounded','Nunito','Quicksand','Comic Neue',system-ui,sans-serif;color:#f6f0e4;margin:0;min-height:100vh;display:flex;flex-direction:column;text-shadow:0 1px 3px rgba(0,0,0,.6)}
 #aurora{position:fixed;inset:0;width:100%;height:100%;z-index:-1;display:block}
 .no-gl #aurora{display:none}
+.no-gl body::before{content:"";position:fixed;inset:-20%;z-index:-1;pointer-events:none;background:radial-gradient(40% 22% at 30% 40%,rgba(60,220,160,.35),transparent 70%),radial-gradient(35% 20% at 70% 55%,rgba(150,80,230,.35),transparent 70%),radial-gradient(45% 18% at 50% 72%,rgba(40,140,220,.3),transparent 70%);filter:blur(40px);animation:aur 24s ease-in-out infinite alternate}
+@keyframes aur{0%{transform:translate(-6%,2%) rotate(-4deg)}100%{transform:translate(6%,-4%) rotate(4deg)}}
+@media (prefers-reduced-motion:reduce){.no-gl body::before{animation:none}}
 a{color:#ffc47a}
 .wob{display:inline-block;transform:rotate(-1.5deg)}
 nav{position:sticky;top:0;z-index:5;display:flex;justify-content:center;gap:.4rem;padding:.7rem 1rem;flex-wrap:wrap;background:rgba(20,12,24,.55)}

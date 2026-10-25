@@ -2,16 +2,46 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Tiny House Games</title>
+<meta name="description" content="Small games, made in a tiny house.">
 <style>
 html{background:linear-gradient(135deg,#0d1030,#1a0d2e 50%,#0b2a2a)}
 body{font-family:system-ui,sans-serif;color:#f3ead8;display:grid;place-items:center;min-height:100vh;margin:0;text-align:center}
 #aurora{position:fixed;inset:0;width:100%;height:100%;z-index:-2;display:block}
 .no-gl #aurora{display:none}
 body:before{content:"";position:fixed;inset:0;z-index:-1;background:rgba(10,8,16,.35)}
-main{background:rgba(20,16,24,.55);padding:1.5rem 2.5rem;border-radius:16px}
+main{background:rgba(20,16,24,.55);padding:1.5rem 2.5rem;border-radius:16px;max-width:54rem;margin:1.5rem;box-sizing:border-box}
 a{color:#ffb86b}
+h1{margin:0 0 .35rem}
+section{margin-top:2rem}
+h2{font-size:.85rem;letter-spacing:.14em;text-transform:uppercase;opacity:.75;margin:0 0 .9rem}
+#games-list{display:flex;flex-wrap:wrap;justify-content:center;gap:1rem;text-align:left}
+.game-card{flex:1 1 13rem;max-width:20rem;display:flex;flex-direction:column;gap:.5rem;background:rgba(8,6,14,.62);border:1px solid rgba(255,184,107,.22);border-radius:14px;padding:1rem}
+.game-card__img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:10px;background:rgba(255,255,255,.06)}
+.game-card__title{margin:0;font-size:1.05rem}
+.game-card__blurb{margin:0;font-size:.9rem;line-height:1.45;opacity:.85}
+.game-card__link{margin-top:auto;font-size:.9rem}
+.about{text-align:left;line-height:1.55}
+.about h2{text-align:center}
+.games-empty{margin:0;opacity:.85}
+@media (max-width:430px){main{padding:1.25rem 1rem;margin:1rem;border-radius:12px}}
 </style>
 <link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" href="/favicon-32.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png"></head><body><canvas id="aurora" aria-hidden="true"></canvas>
-<main><h1>Tiny House Games</h1><p>Small games, coming soon.</p>
-<p><a href="https://ko-fi.com/nathonlo">Support on Ko-fi</a></p></main>
-<script src="aurora.js" defer></script></body></html>
+<main>
+<h1>Tiny House Games</h1>
+<p>Small games, coming soon.</p>
+<section aria-labelledby="games-heading">
+<h2 id="games-heading">Games</h2>
+<div id="games-list"><noscript><p class="games-empty">Coming soon.</p></noscript></div>
+</section>
+<section aria-labelledby="about-heading" class="about">
+<h2 id="about-heading">About</h2>
+<p><strong>Small games, made in a tiny house, with a lot of heart.</strong></p>
+<p>Tiny House Games is a tiny indie outfit making small, warm little games from an actual tiny house. The idea is simple: keep things small enough to stay curious, playful, and a little bit weird. No sprawling epics here, just compact experiences you can pick up, poke at, and enjoy in a spare moment.</p>
+<p>Small doesn't mean slight. A tiny game can still have charm, surprise, and a point of view. Think of it like a dollhouse: limited space, but every room matters.</p>
+<p>There's not much to show yet, but things are being tinkered with. When something's ready, you'll find it here. Thanks for stopping by this little corner of the internet. Mind the low ceiling.</p>
+</section>
+<p>Want to help keep the lights on in the tiny house? <a href="https://ko-fi.com/nathonlo">Support on Ko-fi</a></p>
+</main>
+<script src="aurora.js" defer></script>
+<script type="module" src="games.js"></script>
+</body></html>

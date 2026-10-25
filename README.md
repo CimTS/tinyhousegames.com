@@ -9,7 +9,7 @@ This repository holds only the published static site:
 - `index.html`: the landing page
 - `aurora.js`: a lightweight animated aurora background (WebGL, about 1.4 KB gzipped). It renders at half resolution, caps at 30 fps, pauses in hidden tabs, respects reduced-motion settings, and falls back to a CSS gradient.
 
-No trackers, no cookies, no third-party scripts.
+No trackers, no cookies, no third-party scripts. I don't want your data, I won't sell your data. Keep your filthy data out of my house.
 
 ## Support
 

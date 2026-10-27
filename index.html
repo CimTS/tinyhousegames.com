@@ -40,12 +40,21 @@ h2{font-size:1.6rem;margin:0 0 1rem;color:#ffd9a8}
 .games-empty{margin:0;opacity:.9}
 .glass{display:inline-block;max-width:34rem;padding:1rem 1.4rem;line-height:1.55}
 .glass p{margin:0}
+.app-card{max-width:30rem;margin:0 auto;padding:1rem 1.2rem;text-align:left;transform:rotate(-.6deg)}
+.app-shot{margin:0 0 .4rem;padding:.5rem .5rem 1.6rem;background:#fbf3e6;border-radius:6px 4px 7px 5px;box-shadow:0 6px 18px rgba(0,0,0,.35);transform:rotate(1.4deg);color:#5a3a2a;font-size:.85rem;text-align:center}
+.app-shot img{display:block;width:100%;height:auto;border-radius:3px}
+.app-shot figcaption{margin-top:.45rem}
+.app-card p{margin:.6rem 0;font-size:.95rem;line-height:1.5}
 </style>
 <link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" href="/favicon-32.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png"></head><body><canvas id="aurora" aria-hidden="true"></canvas>
-<nav aria-label="Main"><a href="#home">🏠 home</a><a href="#games">🎲 games</a><a href="#about">👋 about</a></nav>
+<nav aria-label="Main"><a href="#home">🏠 home</a><a href="#games">🎲 games</a><a href="#apps">🛠️ applications</a><a href="#about">👋 about</a></nav>
 <main>
 <section id="games" aria-labelledby="games-heading"><h2 id="games-heading"><span class="wob">What's cooking</span></h2>
 <div id="games-list"><noscript><p class="games-empty">Coming soon.</p></noscript></div></section>
+<section id="apps" aria-labelledby="apps-heading"><h2 id="apps-heading"><span class="wob">Look what I made</span></h2>
+<div class="glass app-card"><figure class="app-shot"><img src="worktimeleft.webp" width="760" height="569" alt="WorkTimeLeft settings window over a sunset desktop, panel showing 1h 52m left (81%)" loading="lazy"><figcaption>1h 52m left (81%), almost time for tea ☕</figcaption></figure>
+<p><b>WorkTimeLeft</b> is a little Cinnamon panel applet that tells you how much of your workday is left. Night shifts too. Small, honest, and it never nags.</p>
+<a class="pill" href="https://github.com/CimTS/worktimeleft">🧰 peek at the code on GitHub</a></div></section>
 <section id="about" aria-labelledby="about-heading"><h2 id="about-heading"><span class="wob">Hi there!</span></h2>
 <div class="glass"><p>Small, warm, slightly weird games, made in an actual tiny house.</p>
 <p>Not much to show yet, but things are being tinkered with. Mind the low ceiling.</p></div></section>

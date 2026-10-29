@@ -1,0 +1,25 @@
+/* wooden sign nav and pill buttons */
+nav{position:sticky;top:0;z-index:5;display:flex;justify-content:center;gap:.4rem;padding:.7rem 1rem;flex-wrap:wrap;background:rgba(20,12,24,.55)}
+@supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){nav{background:rgba(40,20,30,.3);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}}
+nav a,.pill{color:#f6f0e4;text-decoration:none;padding:.4rem .95rem;border-radius:999px 999px 999px 999px/60% 80% 70% 90%;border:1.5px solid rgba(255,196,122,.45);background:rgba(255,170,90,.12);font-size:.9rem}
+nav a:hover,.pill:hover{background:rgba(255,170,90,.28);transform:rotate(-2deg)}
+nav a,.pill{display:inline-block;transition:transform .2s,background .2s}
+.pill{font-size:1rem;padding:.55rem 1.2rem;background:rgba(255,170,90,.22)}
+.short{display:none}
+@media (max-width:600px){
+nav{flex-wrap:nowrap;gap:.35rem;padding:.45rem .5rem;background:linear-gradient(#6b4228,#4e2f1c);border-bottom:2px solid #2e1a0e;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+nav a{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:.1rem;padding:.35rem .2rem;font-size:.78rem;line-height:1.1;white-space:nowrap;border-radius:10px 8px 11px 7px;border:1.5px solid #3a2213;background:linear-gradient(#a8703f,#8a5a32);box-shadow:inset 0 1px 0 rgba(255,220,170,.35),0 2px 0 #2e1a0e}
+nav a:hover{transform:none;background:linear-gradient(#b67c49,#94613a)}
+nav a:active{transform:translateY(1px);box-shadow:inset 0 1px 0 rgba(255,220,170,.25)}
+nav .ico{font-size:1.15rem}
+.full{display:none}.short{display:inline}
+}
+/* hanging sign nav: wooden board on two ropes, all widths */
+nav{position:sticky;top:1.5rem;z-index:5;display:flex;flex-wrap:nowrap;justify-content:center;gap:.35rem;width:calc(100% - 1.2rem);max-width:520px;box-sizing:border-box;margin:1.6rem auto 0;padding:.4rem .45rem;border-radius:22px 18px 24px 17px;background:linear-gradient(#7a4b2d,#5a3520);border:2px solid #2e1a0e;box-shadow:inset 0 1px 0 rgba(255,210,150,.3),0 4px 10px rgba(0,0,0,.45);-webkit-backdrop-filter:none;backdrop-filter:none;transform:rotate(-.6deg);transform-origin:50% 0}
+nav::before,nav::after{content:"";position:absolute;bottom:calc(100% - 7px);width:4px;height:100vh;background:repeating-linear-gradient(160deg,#e0bb84 0 3px,#9c7543 3px 6px);border-radius:2px 2px 3px 3px;box-shadow:1px 0 0 rgba(46,26,14,.5);pointer-events:none;z-index:-1}
+nav::before{left:16%}nav::after{right:16%}
+nav a{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:.1rem;padding:.35rem .2rem;font-size:.8rem;line-height:1.1;white-space:nowrap;border-radius:14px 11px 15px 10px;border:1.5px solid #3a2213;background:linear-gradient(#a8703f,#8a5a32);box-shadow:inset 0 1px 0 rgba(255,220,170,.35),0 2px 0 #2e1a0e;transform:none}
+nav a:hover{transform:none;background:linear-gradient(#b67c49,#94613a)}
+nav a:active{transform:translateY(1px)}
+nav .ico{font-size:1.15rem}
+@media (max-width:600px){nav{border-bottom:2px solid #2e1a0e}}

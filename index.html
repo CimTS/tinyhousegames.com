@@ -3,69 +3,21 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Tiny House Games</title>
 <meta name="description" content="Small games, made in a tiny house.">
-<style>
-html{background:linear-gradient(135deg,#0d1030,#1a0d2e 50%,#0b2a2a)}
-body{font-family:ui-rounded,'SF Pro Rounded','Nunito','Quicksand','Comic Neue',system-ui,sans-serif;color:#f6f0e4;margin:0;min-height:100vh;display:flex;flex-direction:column;text-shadow:0 1px 3px rgba(0,0,0,.6)}
-#aurora{position:fixed;inset:0;width:100%;height:100%;z-index:-1;display:block}
-.no-gl #aurora{display:none}
-.no-gl body::before{content:"";position:fixed;inset:-20%;z-index:-1;pointer-events:none;background:radial-gradient(40% 22% at 30% 40%,rgba(60,220,160,.35),transparent 70%),radial-gradient(35% 20% at 70% 55%,rgba(150,80,230,.35),transparent 70%),radial-gradient(45% 18% at 50% 72%,rgba(40,140,220,.3),transparent 70%);filter:blur(40px);animation:aur 24s ease-in-out infinite alternate}
-@keyframes aur{0%{transform:translate(-6%,2%) rotate(-4deg)}100%{transform:translate(6%,-4%) rotate(4deg)}}
-@media (prefers-reduced-motion:reduce){.no-gl body::before{animation:none}}
-a{color:#ffc47a}
-.wob{display:inline-block;transform:rotate(-1.5deg)}
-nav{position:sticky;top:0;z-index:5;display:flex;justify-content:center;gap:.4rem;padding:.7rem 1rem;flex-wrap:wrap;background:rgba(20,12,24,.55)}
-@supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){nav{background:rgba(40,20,30,.3);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}}
-main>section{scroll-margin-top:4rem}
-nav a,.pill{color:#f6f0e4;text-decoration:none;padding:.4rem .95rem;border-radius:999px 999px 999px 999px/60% 80% 70% 90%;border:1.5px solid rgba(255,196,122,.45);background:rgba(255,170,90,.12);font-size:.9rem}
-nav a:hover,.pill:hover{background:rgba(255,170,90,.28);transform:rotate(-2deg)}
-nav a,.pill{display:inline-block;transition:transform .2s,background .2s}
-.pill{font-size:1rem;padding:.55rem 1.2rem;background:rgba(255,170,90,.22)}
-main{flex:1;display:grid;place-items:center;padding:1rem}
-main>section{display:none;width:100%;max-width:60rem;text-align:center}
-main>section:target,#home{display:block}
-section:target~#home{display:none}
-h1{font-size:clamp(2.4rem,7vw,4.5rem);margin:0;letter-spacing:.01em;color:#fff1dc;text-shadow:0 2px 0 rgba(120,60,20,.35),0 0 24px rgba(255,180,100,.35)}
-.tag{font-size:clamp(1rem,2.4vw,1.3rem);opacity:.9;margin:.4rem 0 1.6rem}
-h2{font-size:1.6rem;margin:0 0 1rem;color:#ffd9a8}
-.glass,.game-card{background:rgba(14,12,24,.55);border:1.5px solid rgba(255,196,122,.3);border-radius:22px 18px 24px 16px}
-@supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.glass,.game-card{background:rgba(60,30,20,.18);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}}
-#games-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,260px));justify-content:center;gap:1rem;text-align:left}
-.game-card:nth-child(odd){transform:rotate(-.8deg)}.game-card:nth-child(even){transform:rotate(.7deg)}
-.game-card{display:flex;flex-direction:column;gap:.45rem;padding:.8rem}
-.game-card__img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:14px 12px 16px 10px}
-.game-card__tile{aspect-ratio:16/9;display:grid;place-items:center;border-radius:14px 12px 16px 10px;border:2px dashed rgba(255,196,122,.45);background:rgba(255,170,90,.08);font-size:1rem;color:#ffd9a8}
-.game-card__title{margin:0;font-size:1rem}
-.game-card__blurb{margin:0;font-size:.88rem;line-height:1.45;opacity:.9}
-.game-card__link{margin-top:auto;font-size:.9rem}
-.games-empty{margin:0;opacity:.9}
-.glass{display:inline-block;max-width:34rem;padding:1rem 1.4rem;line-height:1.55}
-.glass p{margin:0}
-.app-card{max-width:30rem;margin:0 auto;padding:1rem 1.2rem;text-align:left;transform:rotate(-.6deg)}
-.app-shot{margin:0 0 .4rem;padding:.5rem .5rem 1.6rem;background:#fbf3e6;border-radius:6px 4px 7px 5px;box-shadow:0 6px 18px rgba(0,0,0,.35);transform:rotate(1.4deg);color:#5a3a2a;font-size:.85rem;text-align:center}
-.app-shot img{display:block;width:100%;height:auto;border-radius:3px}
-.app-shot figcaption{margin-top:.45rem}
-.app-card p{margin:.6rem 0;font-size:.95rem;line-height:1.5}
-.short{display:none}
-@media (max-width:600px){
-nav{flex-wrap:nowrap;gap:.35rem;padding:.45rem .5rem;background:linear-gradient(#6b4228,#4e2f1c);border-bottom:2px solid #2e1a0e;box-shadow:0 2px 8px rgba(0,0,0,.4)}
-nav a{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:.1rem;padding:.35rem .2rem;font-size:.78rem;line-height:1.1;white-space:nowrap;border-radius:10px 8px 11px 7px;border:1.5px solid #3a2213;background:linear-gradient(#a8703f,#8a5a32);box-shadow:inset 0 1px 0 rgba(255,220,170,.35),0 2px 0 #2e1a0e}
-nav a:hover{transform:none;background:linear-gradient(#b67c49,#94613a)}
-nav a:active{transform:translateY(1px);box-shadow:inset 0 1px 0 rgba(255,220,170,.25)}
-nav .ico{font-size:1.15rem}
-.full{display:none}.short{display:inline}
-}
-/* hanging sign nav: wooden board on two ropes, all widths */
-nav{position:sticky;top:1.5rem;z-index:5;display:flex;flex-wrap:nowrap;justify-content:center;gap:.35rem;width:calc(100% - 1.2rem);max-width:520px;box-sizing:border-box;margin:1.6rem auto 0;padding:.4rem .45rem;border-radius:22px 18px 24px 17px;background:linear-gradient(#7a4b2d,#5a3520);border:2px solid #2e1a0e;box-shadow:inset 0 1px 0 rgba(255,210,150,.3),0 4px 10px rgba(0,0,0,.45);-webkit-backdrop-filter:none;backdrop-filter:none;transform:rotate(-.6deg);transform-origin:50% 0}
-nav::before,nav::after{content:"";position:absolute;bottom:calc(100% - 7px);width:4px;height:100vh;background:repeating-linear-gradient(160deg,#e0bb84 0 3px,#9c7543 3px 6px);border-radius:2px 2px 3px 3px;box-shadow:1px 0 0 rgba(46,26,14,.5);pointer-events:none;z-index:-1}
-nav::before{left:16%}nav::after{right:16%}
-nav a{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:.1rem;padding:.35rem .2rem;font-size:.8rem;line-height:1.1;white-space:nowrap;border-radius:14px 11px 15px 10px;border:1.5px solid #3a2213;background:linear-gradient(#a8703f,#8a5a32);box-shadow:inset 0 1px 0 rgba(255,220,170,.35),0 2px 0 #2e1a0e;transform:none}
-nav a:hover{transform:none;background:linear-gradient(#b67c49,#94613a)}
-nav a:active{transform:translateY(1px)}
-nav .ico{font-size:1.15rem}
-@media (max-width:600px){nav{border-bottom:2px solid #2e1a0e}}
-</style>
-<link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" href="/favicon-32.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png"></head><body><canvas id="aurora" aria-hidden="true"></canvas>
-<nav aria-label="Main"><a href="#home"><span class="ico" aria-hidden="true">🏠</span> home</a><a href="#games"><span class="ico" aria-hidden="true">🎲</span> games</a><a href="#apps"><span class="ico" aria-hidden="true">🛠️</span> <span class="full">applications</span><span class="short">apps</span></a><a href="#about"><span class="ico" aria-hidden="true">👋</span> about</a></nav>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/aurora.css">
+<link rel="stylesheet" href="css/nav.css">
+<link rel="stylesheet" href="css/sections.css">
+
+<link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" href="/favicon-32.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
+</head>
+<body>
+<canvas id="aurora" aria-hidden="true"></canvas>
+<nav aria-label="Main">
+<a href="#home"><span class="ico" aria-hidden="true">🏠</span> home</a>
+<a href="#games"><span class="ico" aria-hidden="true">🎲</span> games</a>
+<a href="#apps"><span class="ico" aria-hidden="true">🛠️</span> <span class="full">applications</span><span class="short">apps</span></a>
+<a href="#about"><span class="ico" aria-hidden="true">👋</span> about</a>
+</nav>
 <main>
 <section id="games" aria-labelledby="games-heading"><h2 id="games-heading"><span class="wob">What's cooking</span></h2>
 <div id="games-list"><noscript><p class="games-empty">Coming soon.</p></noscript></div></section>
@@ -79,7 +31,7 @@ nav .ico{font-size:1.15rem}
 <section id="home"><h1>Tiny House Games</h1><p class="tag">Small, cozy games, hand-made in a tiny house.</p>
 <a class="pill" href="https://ko-fi.com/nathonlo">☕ buy us a coffee on Ko-fi</a></section>
 </main>
-<script>addEventListener('hashchange',function(){scrollTo(0,0)});addEventListener('load',function(){scrollTo(0,0)})</script>
-<script src="aurora.js" defer></script>
-<script type="module" src="games.js"></script>
+<script type="module" src="js/nav.js"></script>
+<script type="module" src="js/aurora.js"></script>
+<script type="module" src="js/games.js"></script>
 </body></html>

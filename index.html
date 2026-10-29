@@ -54,6 +54,15 @@ nav a:active{transform:translateY(1px);box-shadow:inset 0 1px 0 rgba(255,220,170
 nav .ico{font-size:1.15rem}
 .full{display:none}.short{display:inline}
 }
+/* hanging sign nav: wooden board on two ropes, all widths */
+nav{position:sticky;top:1.5rem;z-index:5;display:flex;flex-wrap:nowrap;justify-content:center;gap:.35rem;width:calc(100% - 1.2rem);max-width:520px;box-sizing:border-box;margin:1.6rem auto 0;padding:.4rem .45rem;border-radius:22px 18px 24px 17px;background:linear-gradient(#7a4b2d,#5a3520);border:2px solid #2e1a0e;box-shadow:inset 0 1px 0 rgba(255,210,150,.3),0 4px 10px rgba(0,0,0,.45);-webkit-backdrop-filter:none;backdrop-filter:none;transform:rotate(-.6deg);transform-origin:50% 0}
+nav::before,nav::after{content:"";position:absolute;bottom:calc(100% - 7px);width:4px;height:100vh;background:repeating-linear-gradient(160deg,#e0bb84 0 3px,#9c7543 3px 6px);border-radius:2px 2px 3px 3px;box-shadow:1px 0 0 rgba(46,26,14,.5);pointer-events:none;z-index:-1}
+nav::before{left:16%}nav::after{right:16%}
+nav a{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:.1rem;padding:.35rem .2rem;font-size:.8rem;line-height:1.1;white-space:nowrap;border-radius:14px 11px 15px 10px;border:1.5px solid #3a2213;background:linear-gradient(#a8703f,#8a5a32);box-shadow:inset 0 1px 0 rgba(255,220,170,.35),0 2px 0 #2e1a0e;transform:none}
+nav a:hover{transform:none;background:linear-gradient(#b67c49,#94613a)}
+nav a:active{transform:translateY(1px)}
+nav .ico{font-size:1.15rem}
+@media (max-width:600px){nav{border-bottom:2px solid #2e1a0e}}
 </style>
 <link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" href="/favicon-32.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png"></head><body><canvas id="aurora" aria-hidden="true"></canvas>
 <nav aria-label="Main"><a href="#home"><span class="ico" aria-hidden="true">🏠</span> home</a><a href="#games"><span class="ico" aria-hidden="true">🎲</span> games</a><a href="#apps"><span class="ico" aria-hidden="true">🛠️</span> <span class="full">applications</span><span class="short">apps</span></a><a href="#about"><span class="ico" aria-hidden="true">👋</span> about</a></nav>

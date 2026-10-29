@@ -45,9 +45,18 @@ h2{font-size:1.6rem;margin:0 0 1rem;color:#ffd9a8}
 .app-shot img{display:block;width:100%;height:auto;border-radius:3px}
 .app-shot figcaption{margin-top:.45rem}
 .app-card p{margin:.6rem 0;font-size:.95rem;line-height:1.5}
+.short{display:none}
+@media (max-width:600px){
+nav{flex-wrap:nowrap;gap:.35rem;padding:.45rem .5rem;background:linear-gradient(#6b4228,#4e2f1c);border-bottom:2px solid #2e1a0e;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+nav a{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:.1rem;padding:.35rem .2rem;font-size:.78rem;line-height:1.1;white-space:nowrap;border-radius:10px 8px 11px 7px;border:1.5px solid #3a2213;background:linear-gradient(#a8703f,#8a5a32);box-shadow:inset 0 1px 0 rgba(255,220,170,.35),0 2px 0 #2e1a0e}
+nav a:hover{transform:none;background:linear-gradient(#b67c49,#94613a)}
+nav a:active{transform:translateY(1px);box-shadow:inset 0 1px 0 rgba(255,220,170,.25)}
+nav .ico{font-size:1.15rem}
+.full{display:none}.short{display:inline}
+}
 </style>
 <link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" href="/favicon-32.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png"></head><body><canvas id="aurora" aria-hidden="true"></canvas>
-<nav aria-label="Main"><a href="#home">🏠 home</a><a href="#games">🎲 games</a><a href="#apps">🛠️ applications</a><a href="#about">👋 about</a></nav>
+<nav aria-label="Main"><a href="#home"><span class="ico" aria-hidden="true">🏠</span> home</a><a href="#games"><span class="ico" aria-hidden="true">🎲</span> games</a><a href="#apps"><span class="ico" aria-hidden="true">🛠️</span> <span class="full">applications</span><span class="short">apps</span></a><a href="#about"><span class="ico" aria-hidden="true">👋</span> about</a></nav>
 <main>
 <section id="games" aria-labelledby="games-heading"><h2 id="games-heading"><span class="wob">What's cooking</span></h2>
 <div id="games-list"><noscript><p class="games-empty">Coming soon.</p></noscript></div></section>

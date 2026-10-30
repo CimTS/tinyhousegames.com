@@ -1,8 +1,4 @@
 [
-  {
-    "title": "Something small",
-    "blurb": "A tiny game is being tinkered with in the tiny house. Check back soon.",
-    "image": "",
-    "url": "#"
-  }
+  {"title": "Geode Grove", "blurb": "Match glowing gems deep in the grove. Coming soon.", "image": "geode-grove.webp", "url": ""},
+  {"title": "Sparklewood", "blurb": "A gentle, sparkly little world to wander. Coming soon.", "image": "sparklewood.webp", "url": ""}
 ]

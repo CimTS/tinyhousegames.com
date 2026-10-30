@@ -1,6 +1,6 @@
 /* games, apps and about cards */
 .glass,.game-card{background:rgba(14,12,24,.55);border:1.5px solid rgba(255,196,122,.3);border-radius:22px 18px 24px 16px}
-#games-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,260px));justify-content:center;gap:1rem;text-align:left}
+#games-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,260px));justify-content:center;gap:1rem;text-align:center}
 .game-card:nth-child(odd){transform:rotate(-.8deg)}.game-card:nth-child(even){transform:rotate(.7deg)}
 .game-card{display:flex;flex-direction:column;gap:.45rem;padding:.8rem}
 .game-card__img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:14px 12px 16px 10px}

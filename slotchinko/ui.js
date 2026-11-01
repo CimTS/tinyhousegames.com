@@ -145,3 +145,5 @@
     overlays.showTitle();
   });
 })();
+// Offline play and install: a service worker for this folder only (same-origin cache, see sw.js).
+if("serviceWorker" in navigator&&location.protocol!=="file:")window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js",{scope:"./"}).catch(()=>{}));

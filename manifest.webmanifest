@@ -1,0 +1,14 @@
+{
+  "id": "/",
+  "name": "Tiny House Games",
+  "short_name": "Tiny House",
+  "start_url": "/",
+  "scope": "/",
+  "display": "browser",
+  "theme_color": "#090b14",
+  "background_color": "#090b14",
+  "icons": [
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}

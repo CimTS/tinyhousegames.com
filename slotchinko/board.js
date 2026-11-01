@@ -65,11 +65,15 @@
 
     // Bottom pockets and separators.
     const bucketY = h - 19, bucketW = w / 7;
-    for (let i = 1; i < 7; i++) Composite.add(this.world, Bodies.rectangle(i * bucketW, bucketY - 9, 3, 19, {
-      isStatic: true, label: "divider", render: { fillStyle: "#34445f" },
-      collisionFilter: { category: 0x0002, mask: 0x0001 }
-    }));
+    this.dividers = []; this.wideCenter = false;
+    for (let i = 1; i < 7; i++) {
+      const d = Bodies.rectangle(i * bucketW, bucketY - 9, 3, 19, {
+        isStatic: true, label: "divider", render: { fillStyle: "#34445f" },
+        collisionFilter: { category: 0x0002, mask: 0x0001 }
+      });
+      this.dividers.push(d); Composite.add(this.world, d);
+    }
     // Outer pockets turn into hazard drains from DRAIN_ROUND on.
-    this.drainPockets = this.round >= window.SlotchinkoData.BALANCE.DRAIN_ROUND ? [0, 6] : [];
+    this.drainPockets = this.round >= (this.drainRound || window.SlotchinkoData.BALANCE.DRAIN_ROUND) ? [0, 6] : [];
   };
 })();

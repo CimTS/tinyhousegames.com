@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="description" content="Slotchinko: poker hands power a pachinko drop. Stack chips, beat eight blinds. A free browser game from Tiny House Games for phone and desktop.">
+  <meta name="description" content="Slotchinko: poker hands power a pachinko drop. Stack chips, beat 16 blinds. A free browser game from Tiny House Games for phone and desktop.">
   <link rel="canonical" href="https://tinyhousegames.com/slotchinko/">
   <meta property="og:site_name" content="Tiny House Games">
   <meta property="og:title" content="Slotchinko: play free in your browser">
@@ -33,12 +33,13 @@
     <header class="topbar">
       <div class="brand"><span class="brand-mark">✦</span><span>SLOT<span class="accent">CHINKO</span></span></div>
       <div class="stats">
-        <div><small>ROUND</small><b id="round-value">1/8</b></div>
+        <div><small>ROUND</small><b id="round-value">1/16</b></div>
         <div><small>SCORE</small><b id="score-value">0</b></div>
         <div><small>BLIND</small><b id="target-value">45</b></div>
         <div><small>¢</small><b id="coins-value">7</b></div>
       </div>
-      <button id="help-button" class="help-button" type="button" aria-label="How to play and settings">?</button>
+      <button id="help-button" class="help-button" type="button" aria-label="How to play">?</button>
+      <button id="settings-button" class="help-button settings-button" type="button" aria-label="Sound settings"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M10.3 2.8h3.4l.5 2.6 1.9.8 2.2-1.5 2.4 2.4-1.5 2.2.8 1.9 2.6.5v3.4l-2.6.5-.8 1.9 1.5 2.2-2.4 2.4-2.2-1.5-1.9.8-.5 2.6h-3.4l-.5-2.6-1.9-.8-2.2 1.5-2.4-2.4 1.5-2.2-.8-1.9-2.6-.5v-3.4l2.6-.5.8-1.9-1.5-2.2 2.4-2.4 2.2 1.5 1.9-.8z"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.9"/></svg></button>
       <div id="target-bar" class="target-bar" role="progressbar" aria-label="Progress to the blind target" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="target-bar-fill"></i></div>
     </header>
 
@@ -88,6 +89,7 @@
         <canvas id="game-canvas"></canvas>
         <div id="aim-guide"><span>DRAG TO AIM · RELEASE TO DROP</span><i></i></div>
         <div id="board-overlay" class="board-overlay">YOUR BOARD IS WAITING</div>
+        <div id="payout-board" class="payout-stack payout-stack-board" aria-hidden="true"></div>
         <div id="target-flash" class="target-flash" aria-hidden="true">TARGET HIT!</div>
       </div>
       <div class="board-footer"><span id="balls-left">BALLS: 0</span><span id="round-earned">THIS DROP: 0</span></div>
@@ -104,13 +106,17 @@
   </main>
 
   <div id="toast" role="status" aria-live="polite"></div>
+  <div id="payout-layer" class="payout-stack payout-stack-hud" aria-live="polite"></div>
   <div id="title-screen" class="overlay" role="dialog" aria-labelledby="title-name" hidden>
     <div class="overlay-card">
       <div class="title-logo" id="title-name"><span class="brand-mark">✦</span>SLOT<span class="accent">CHINKO</span></div>
-      <p class="overlay-lead">Draw a poker hand. Drop it through the pegs. Beat eight blinds.</p>
+      <p class="overlay-lead">Draw a poker hand. Drop it through the pegs. Beat 16 blinds.</p>
       <p class="overlay-best" id="title-best"></p>
-      <button id="play-button" class="btn btn-primary overlay-button" type="button" data-focus>PLAY</button>
+      <button id="continue-button" class="btn btn-primary overlay-button continue-button" type="button" hidden><span>CONTINUE</span><small id="continue-detail"></small></button>
+      <button id="play-button" class="btn btn-primary overlay-button" type="button" data-focus>NEW RUN</button>
+      <button id="title-collection" class="btn btn-secondary overlay-button" type="button">COLLECTION</button>
       <button id="title-howto" class="btn btn-secondary overlay-button" type="button">HOW TO PLAY</button>
+      <button id="title-settings" class="btn btn-secondary overlay-button title-settings" type="button"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M10.3 2.8h3.4l.5 2.6 1.9.8 2.2-1.5 2.4 2.4-1.5 2.2.8 1.9 2.6.5v3.4l-2.6.5-.8 1.9 1.5 2.2-2.4 2.4-2.2-1.5-1.9.8-.5 2.6h-3.4l-.5-2.6-1.9-.8-2.2 1.5-2.4-2.4 1.5-2.2-.8-1.9-2.6-.5v-3.4l2.6-.5.8-1.9-1.5-2.2 2.4-2.4 2.2 1.5 1.9-.8z"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.9"/></svg> SOUND</button>
     </div>
   </div>
 
@@ -125,10 +131,83 @@
       </ol>
       <p><b>Your most common suit sets the ball type:</b> ♥ splits · ♠ heavy, breaks pegs · ♦ bonus bucket value · ♣ sticky.</p>
       <p><b>Sets:</b> heart + split · diamond + fortune · spade + gravity · club + control · economy + combo · element + synergy.</p>
-      <p>From blind 3 the outer pockets are drains that pay nothing. Clear all eight blinds to win.</p>
+      <p>From blind 3 the outer pockets are drains that pay nothing. Clear all 16 blinds to win.</p>
+      <p><b>Path:</b> after each shop pick a plain blind, an Elite (harder, pays a Rare Chip), an Event or the Lounge. Milestones unlock new decks and items (see Collection). Win to open Ascension.</p>
       <p class="howto-keys">Keyboard: 1 to 5 hold · D draw · Enter drop · arrows aim.</p>
+      <p class="howto-privacy">Your progress and settings are saved only on this device. Nothing is collected or sent anywhere.</p>
       <label class="toggle-row"><input id="motion-toggle" type="checkbox"><span>Reduce motion and vibration</span></label>
       <button id="howto-close" class="btn btn-primary overlay-button" type="button" data-focus>GOT IT</button>
+    </div>
+  </div>
+
+  <div id="settings-screen" class="overlay" role="dialog" aria-labelledby="settings-title" hidden>
+    <div class="overlay-card settings-card">
+      <h2 id="settings-title">SOUND</h2>
+      <p class="overlay-lead">Saved on this device.</p>
+      <div class="vol-row">
+        <label for="music-volume"><span class="vol-icon" aria-hidden="true">♫</span>MUSIC</label>
+        <output id="music-volume-value" for="music-volume">100%</output>
+        <input id="music-volume" type="range" min="0" max="100" step="1" value="100">
+      </div>
+      <div class="vol-row">
+        <label for="sfx-volume"><span class="vol-icon" aria-hidden="true">✦</span>EFFECTS</label>
+        <output id="sfx-volume-value" for="sfx-volume">100%</output>
+        <input id="sfx-volume" type="range" min="0" max="100" step="1" value="100">
+      </div>
+      <label class="switch-row"><span>Mute all sound</span><input id="mute-toggle" type="checkbox" role="switch"></label>
+      <div class="danger-zone">
+        <button id="clear-save" class="btn clear-save" type="button">CLEAR SAVE DATA</button>
+        <div id="clear-confirm" class="clear-confirm" hidden>
+          <p><b>Clear save data?</b> This erases the run in progress, best scores, wins, unlocks and your Collection.</p>
+          <label class="toggle-row"><input id="clear-settings" type="checkbox"><span>Also reset sound settings</span></label>
+          <div class="clear-actions"><button id="clear-cancel" class="btn btn-secondary" type="button">KEEP</button><button id="clear-yes" class="btn clear-yes" type="button">ERASE</button></div>
+        </div>
+      </div>
+      <button id="settings-close" class="btn btn-primary overlay-button" type="button" data-focus>DONE</button>
+    </div>
+  </div>
+
+  <div id="deck-screen" class="overlay" role="dialog" aria-labelledby="deck-title" hidden>
+    <div class="overlay-card deck-card-wrap">
+      <div class="sheet-head"><h2 id="deck-title">CHOOSE YOUR DECK</h2><small id="deck-count"></small></div>
+      <div id="deck-list" class="deck-list"></div>
+      <div class="ng-picker">
+        <button id="ng-down" class="ng-step" type="button" aria-label="Lower Ascension">−</button>
+        <div><b id="ng-level">STANDARD</b><small id="ng-detail"></small></div>
+        <button id="ng-up" class="ng-step" type="button" aria-label="Raise Ascension">+</button>
+      </div>
+      <ul id="ng-mods" class="ng-mods" hidden></ul>
+      <button id="deck-start" class="btn btn-primary overlay-button" type="button" data-focus>START RUN</button>
+      <button id="deck-back" class="btn btn-secondary overlay-button" type="button">BACK</button>
+    </div>
+  </div>
+
+  <div id="collection-screen" class="overlay" role="dialog" aria-labelledby="collection-title" hidden>
+    <div class="overlay-card collection-card">
+      <div class="sheet-head is-stacked"><h2 id="collection-title">COLLECTION</h2><small id="collection-count"></small></div>
+      <div id="collection-body" class="collection-body"></div>
+      <button id="collection-close" class="btn btn-primary overlay-button" type="button" data-focus>DONE</button>
+    </div>
+  </div>
+
+  <div id="path-screen" class="overlay" role="dialog" aria-labelledby="path-title" hidden>
+    <div class="overlay-card path-card">
+      <span class="market-kicker">THE ROAD AHEAD</span>
+      <h2 id="path-title">CHOOSE YOUR PATH</h2>
+      <p class="overlay-lead" id="path-sub"></p>
+      <p class="path-boss" id="path-boss" hidden></p>
+      <div id="path-list" class="path-list"></div>
+      <button id="path-back" class="btn btn-secondary overlay-button" type="button">BACK TO SHOP</button>
+    </div>
+  </div>
+
+  <div id="event-screen" class="overlay" role="dialog" aria-labelledby="event-title" hidden>
+    <div class="overlay-card event-card">
+      <div class="event-top"><span class="market-kicker">EVENT</span><span class="event-coins" id="event-coins"></span></div>
+      <span class="event-icon" id="event-icon" aria-hidden="true"></span>
+      <h2 id="event-title"></h2>
+      <p class="event-text" id="event-text"></p>
+      <div id="event-options" class="event-options"></div>
     </div>
   </div>
 
@@ -145,12 +224,22 @@
       <h2 id="end-title">RUN OVER</h2>
       <p class="overlay-lead" id="end-message"></p>
       <p class="new-best" id="end-new-best" hidden>NEW BEST SCORE</p>
+      <p class="end-ng" id="end-ng" hidden></p>
       <dl class="end-stats">
         <div><dt>SCORE</dt><dd id="end-score">0</dd></div>
-        <div><dt>BLINDS</dt><dd id="end-blinds">0/8</dd></div>
+        <div><dt>BLINDS</dt><dd id="end-blinds">0/16</dd></div>
         <div><dt>BEST</dt><dd id="end-best">0</dd></div>
       </dl>
+      <dl class="end-summary">
+        <div><dt>BEST HAND</dt><dd id="end-hand">—</dd></div>
+        <div><dt>COINS EARNED</dt><dd id="end-coins">0¢</dd></div>
+        <div><dt>TOP CHIP</dt><dd id="end-chip">—</dd></div>
+        <div><dt>BEST DROP</dt><dd id="end-drop">0</dd></div>
+      </dl>
+      <div class="end-unlocks" id="end-unlocks" hidden><b>NEW UNLOCKS</b><ul id="end-unlock-list"></ul></div>
+      <button id="ng-button" class="btn btn-primary overlay-button ng-button" type="button" hidden>ASCEND TO <span id="ng-button-level">1</span> →</button>
       <button id="restart-button" class="btn btn-primary overlay-button" type="button" data-focus>NEW RUN</button>
+      <button id="deck-button" class="btn btn-secondary overlay-button" type="button" hidden>CHOOSE DECK</button>
       <small class="end-seed" id="end-seed"></small>
     </div>
   </div>
@@ -163,13 +252,16 @@
   <script src="shop.js"></script>
   <script src="physics.js"></script>
   <script src="board.js"></script>
+  <script src="path.js"></script>
   <script src="game.js"></script>
+  <script src="save.js"></script>
   <script src="vice-voices.js"></script>
   <script src="music.js"></script>
   <script src="vendor/zzfx/zzfx-build.js"></script>
   <script src="sound.js"></script>
   <script src="sound-hooks.js"></script>
   <script src="boardview.js"></script>
+  <script src="payouts.js"></script>
   <script src="view.js"></script>
   <script src="view-shop.js"></script>
   <script src="overlays.js"></script>

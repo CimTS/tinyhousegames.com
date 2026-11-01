@@ -2,7 +2,20 @@
  * Hooks wrap SlotchinkoGame methods, so game logic is untouched. */
 (() => {
   "use strict";
-  const KEY = "slotchinko-muted";
+  const KEY = "slotchinko-muted", VKEY = "slotchinko-audio";
+  // Volume sliders scale the tuned bus levels; 1 (100%) is the mix as designed.
+  const BASE = { music: 0.55, sfx: 0.135 };
+  const clamp = v => Math.min(1, Math.max(0, Number(v) || 0));
+  function readVolume() {
+    try {
+      const d = JSON.parse(localStorage.getItem(VKEY));
+      if (d && typeof d === "object") return { music: d.music === undefined ? 1 : clamp(d.music), sfx: d.sfx === undefined ? 1 : clamp(d.sfx) };
+    } catch { /* bad or missing save: defaults */ }
+    return { music: 1, sfx: 1 };
+  }
+  let volume = readVolume(), mus = null, sting = null;
+  // Music-engine stingers are effects: same level they had on the music bus (bus 0.9 x music 0.55), Effects volume.
+  const STING = 0.9 * 0.55;
   const PENTA = [0, 3, 5, 7, 10, 12, 15, 17, 19, 22, 24, 27]; // A minor pentatonic, matches music
   const hz = s => 440 * Math.pow(2, s / 12);
   let ctx = null, master, sfx, music = null, muted = localStorage.getItem(KEY) === "1";
@@ -31,10 +44,11 @@
     if (clipOff) { const mk = ctx.createGain(); mk.gain.value = 1.3 / Math.tanh(1.3); lp.connect(comp).connect(mk).connect(master); } // same small-signal level as the curve
     else lp.connect(comp).connect(clipIn).connect(clip).connect(master);
     master.connect(limiter).connect(ctx.destination);
-    sfx = ctx.createGain(); sfx.gain.value = 0.135; sfx.connect(lp);
+    sfx = ctx.createGain(); sfx.gain.value = BASE.sfx * volume.sfx; sfx.connect(lp);
     if (ZMODE && window.ZzfxBuild) Z = buildZ();
-    const mus = ctx.createGain(); mus.gain.value = 0.55; mus.connect(lp);
-    if (window.SlotchinkoMusic) music = window.SlotchinkoMusic(ctx, mus);
+    mus = ctx.createGain(); mus.gain.value = BASE.music * volume.music; mus.connect(lp);
+    sting = ctx.createGain(); sting.gain.value = STING * volume.sfx; sting.connect(lp);
+    if (window.SlotchinkoMusic) music = window.SlotchinkoMusic(ctx, mus, null, { out: sting, on: () => !muted && volume.sfx > 0 });
     return ctx;
   }
   function unlock() {
@@ -51,10 +65,32 @@
   function setMuted(m) {
     muted = m; localStorage.setItem(KEY, m ? "1" : "0");
     if (ctx) { master.gain.cancelScheduledValues(ctx.currentTime); master.gain.setTargetAtTime(m ? 0 : 0.35, ctx.currentTime, 0.08); }
-    const b = document.getElementById("mute-button");
-    if (b) { b.textContent = "♪"; b.setAttribute("aria-pressed", String(m)); b.classList.toggle("is-muted", m); b.title = m ? "Sound off" : "Sound on"; }
+    syncUI();
   }
-  const ok = () => ctx && !muted && !document.hidden && ctx.state === "running";
+  function setVolume(kind, v) {
+    if (!(kind in BASE)) return;
+    volume[kind] = clamp(v);
+    try { localStorage.setItem(VKEY, JSON.stringify(volume)); } catch { /* private mode */ }
+    const node = kind === "sfx" ? sfx : mus;
+    if (ctx && node) { node.gain.cancelScheduledValues(ctx.currentTime); node.gain.setTargetAtTime(BASE[kind] * volume[kind], ctx.currentTime, 0.03); }
+    if (ctx && sting && kind === "sfx") { sting.gain.cancelScheduledValues(ctx.currentTime); sting.gain.setTargetAtTime(STING * volume.sfx, ctx.currentTime, 0.03); }
+    syncUI();
+  }
+  // Settings panel (index.html #settings-screen) mirrors the saved state.
+  function syncUI() {
+    if (!document.getElementById) return;
+    const el = id => document.getElementById(id);
+    for (const k of ["music", "sfx"]) {
+      const r = el(k + "-volume"), o = el(k + "-volume-value"), pct = Math.round(volume[k] * 100);
+      if (r) { r.value = String(pct); r.style.setProperty("--fill", pct + "%"); r.setAttribute("aria-valuetext", pct ? pct + "%" : "off"); }
+      if (o) { o.textContent = pct ? pct + "%" : "OFF"; o.parentElement?.classList.toggle("is-off", !pct); }
+    }
+    const t = el("mute-toggle"); if (t) t.checked = muted;
+    el("settings-screen")?.classList.toggle("is-muted", muted);
+    const b = el("settings-button");
+    if (b) { b.classList.toggle("is-muted", muted); b.title = muted ? "Sound settings (muted)" : "Sound settings"; }
+  }
+  const ok = () => ctx && !muted && volume.sfx > 0 && !document.hidden && ctx.state === "running";
 
   // Voice pool: at most MAX_VOICES sfx at once; the oldest fades out quickly to make room.
   function addVoice(src, g, at, peak) {
@@ -245,16 +281,18 @@
   } else console.info("[sound] SlotchinkoGame not found; SFX hooks disabled");
 
   window.addEventListener("DOMContentLoaded", () => {
-    const stats = document.querySelector(".topbar");
-    if (stats && !document.getElementById("mute-button")) {
-      const b = document.createElement("button"); b.id = "mute-button"; b.className = "mute-button"; b.type = "button"; b.setAttribute("aria-label", "Toggle sound");
-      b.addEventListener("click", () => { unlock(); setMuted(!muted); if (!muted) S.hold(true); });
-      stats.appendChild(b);
+    const el = id => document.getElementById(id);
+    let lastPreview = 0;
+    for (const k of ["music", "sfx"]) {
+      el(k + "-volume")?.addEventListener("input", e => {
+        unlock(); setVolume(k, Number(e.target.value) / 100);
+        const now = performance.now();
+        if (k === "sfx" && now - lastPreview > 120) { lastPreview = now; S.hold(true); } // hear the new level
+      });
     }
-    const st = document.createElement("style");
-    st.textContent = ".mute-button{flex:0 0 auto;width:30px;height:30px;border-radius:7px;border:1px solid #29334b;background:#111624;color:var(--cyan,#45f3e2);font:700 15px 'Barlow Condensed',sans-serif;box-shadow:0 0 8px rgba(69,243,226,.25);cursor:pointer;padding:0}.mute-button.is-muted{color:var(--muted,#7d8aa7);box-shadow:none;text-decoration:line-through}";
-    document.head.appendChild(st);
+    el("mute-toggle")?.addEventListener("change", e => { unlock(); setMuted(e.target.checked); if (!muted) S.hold(true); });
     setMuted(muted);
   });
-  window.SlotchinkoSound = { sfx: S, get zzfx() { return Z; }, get voices() { return active.length; }, get music() { return music; }, setMuted, get muted() { return muted; } };
+  window.SlotchinkoSound = { sfx: S, get zzfx() { return Z; }, get voices() { return active.length; }, get music() { return music; }, setMuted, get muted() { return muted; },
+    setVolume, get volume() { return { ...volume }; }, get nodes() { return { sfx, music: mus, master, stingers: sting }; } };
 })();

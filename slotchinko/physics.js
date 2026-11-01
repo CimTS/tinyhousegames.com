@@ -83,6 +83,11 @@
 
     /* Wells bend a fall; the pull is capped below gravity so they can never hold a ball. */
     _applyWells(ball) {
+      // Magnet Core: a gentle sideways pull toward the centre pocket, stronger lower down.
+      if (ball.plugin.magnet) {
+        const dx = this.width / 2 - ball.position.x, depth = clamp(ball.position.y / this.height, 0, 1);
+        if (Math.abs(dx) > 2) Body.applyForce(ball, ball.position, { x: Math.sign(dx) * ball.mass * this.engine.gravity.scale * 0.09 * ball.plugin.magnet * depth * Math.min(1, Math.abs(dx) / 40), y: 0 });
+      }
       for (const well of this.wells) {
         const dx = well.x - ball.position.x, dy = well.y - ball.position.y;
         const d = Math.hypot(dx, dy);
@@ -140,7 +145,7 @@
     _createBall(x, y, radius, plugin = {}) {
       const element = plugin.element || "heart";
       const frictionAir = plugin.sticky ? 0.018 : 0.002;
-      const bounce = (plugin.heavy ? 0.34 : plugin.sticky ? 0.42 : 0.7) * (1 - (plugin.plating || 0));
+      const bounce = (plugin.heavy ? 0.34 : plugin.sticky ? 0.42 : 0.7) * (1 - (plugin.plating || 0)) * (1 + (plugin.bounce || 0));
       const ball = Bodies.circle(x, y, radius, {
         label: "ball", restitution: bounce,
         friction: plugin.sticky ? 0.18 : 0.012, frictionAir,
@@ -165,18 +170,45 @@
       return ball;
     }
 
+    /* Pocket edges in world x (8 values for 7 pockets). Wide Jackpot gives the x4 pocket the inner
+       half of each neighbour. Drawing and scoring both read these, so what you see is what scores. */
+    pocketEdges(wide = this.wideCenter) {
+      const bw = this.width / 7, e = [0, 1, 2, 3, 4, 5, 6, 7].map(i => i * bw);
+      if (wide) { e[3] = 2.5 * bw; e[4] = 4.5 * bw; }
+      return e;
+    }
+    pocketAt(x, wide = this.wideCenter) {
+      const e = this.pocketEdges(wide);
+      for (let i = 0; i < 7; i++) if (x < e[i + 1]) return i;
+      return 6;
+    }
+    /* What a pocket pays before per-ball bonuses (fortune, charge). Labels and scoring both read this.
+       centerMult: Jackpot Funnel on the x4 pocket; the board keeps the owned value for drawing. */
+    pocketValue(i, p = {}) {
+      const v = this.bucketValues[i], m = p.centerMult ?? this.centerMult ?? 1;
+      return i === 3 ? v * m : v;
+    }
+    /* Turns Wide Jackpot on or off for the board: moves the two centre dividers to the new edges. */
+    setWideCenter(on) {
+      this.wideCenter = !!on;
+      const e = this.pocketEdges();
+      (this.dividers || []).forEach((d, k) => Body.setPosition(d, { x: e[k + 1], y: d.position.y }));
+    }
+
     /* The pocket comes from x; on drain rounds the two outer pockets are hazards. */
     _finishBall(ball) {
       if (!ball || !this.balls.has(ball.id)) return;
       this.balls.delete(ball.id); Composite.remove(this.world, ball);
-      const pocket = clamp(Math.floor(ball.position.x / (this.width / 7)), 0, 6);
+      const bw = this.width / 7, p = ball.plugin;
+      let pocket = this.pocketAt(clamp(ball.position.x, 0, this.width - 0.01), this.wideCenter || !!p.wideCenter), nudged = false;
+      // Nudge: a ball bound for a drain or a x0.5 pocket moves one pocket inward.
+      if (p.nudge && (this.drainPockets.includes(pocket) || this.bucketValues[pocket] < 1)) { pocket += pocket < 3 ? 1 : -1; nudged = true; }
       const drained = this.drainPockets.includes(pocket);
-      const p = ball.plugin;
-      let value = this.bucketValues[pocket];
+      let value = this.pocketValue(pocket, p);
       if (!drained && p.fortune) value *= FORTUNE_BUCKET;
       value *= p.multiplier || 1;
       if (!drained && p.charge) value *= 1 + Math.min(0.15, p.charge * 0.05);
-      this.callbacks.onBucket?.({ ball, index: pocket, multiplier: value, drained, element: p.element });
+      this.callbacks.onBucket?.({ ball, index: pocket, multiplier: value, drained, nudged, element: p.element });
     }
   }
 

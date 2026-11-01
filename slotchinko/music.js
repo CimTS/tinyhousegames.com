@@ -57,7 +57,9 @@
     g.gain.linearRampToValueAtTime(0, t + a + hold + r + 0.01); // land on true zero before the source stops
   }
 
-  function create(ctx, out, shared) {
+  // fx (optional): { out, on() } — event stingers (big-hand chord, win flourish/chord, riser) are effects,
+  // so they play into fx.out (the Effects volume) and only while fx.on(). Without fx they use the music bus.
+  function create(ctx, out, shared, fx) {
     const n = build(ctx, out);
     const st = shared || { intensity: 0.15, target: 0.15, prog: 0, bar: 0, tempo: 1, mood: "play", seed: 1, nextBar: 0, timer: null, running: false, pendingBig: 0 };
     // Pre-rendered chunk contexts share st: start their layers/filter where the previous bar left them.
@@ -71,10 +73,11 @@
     // OfflineAudioContext with the same voices and state, then played as one AudioBuffer. Chunks overlap by
     // their tails, so they sum seamlessly; the phone runs ~1-3 buffer sources instead of ~150 live nodes.
     const PR = !shared && typeof location !== "undefined" && !/[?&]music=(live|vice)(&|$)/.test(location.search) && typeof OfflineAudioContext !== "undefined";
+    const PR_AHEAD = 3, PR_FADE = 0.015; // bars rendered ahead (was 2: a busy phone main thread made chunks late)
     const PR_TAIL = 5; // seconds after the bar: pad release (2.6 s) and the ping-pong delay die out
     let prBusy = false;
     function prPump() {
-      if (!st.running || prBusy || st.nextBar > ctx.currentTime + 2 * 4 * beat()) return;
+      if (!st.running || prBusy || st.nextBar > ctx.currentTime + PR_AHEAD * 4 * beat()) return;
       prBusy = true;
       const T = st.nextBar, barLen = 4 * beat(), sr = ctx.sampleRate;
       st.nextBar = T + barLen;
@@ -83,22 +86,27 @@
       oc.startRendering().then(buf => {
         const fl = Math.floor(sr * 0.1); // 100 ms fade on the (already near-silent) tail end
         for (let c = 0; c < buf.numberOfChannels; c++) { const d = buf.getChannelData(c); for (let i = 0; i < fl; i++) d[d.length - 1 - i] *= i / fl; }
-        const s = ctx.createBufferSource(); s.buffer = buf; s.connect(out);
-        const at = T - 0.05;
-        if (at >= ctx.currentTime) s.start(at); else s.start(ctx.currentTime, ctx.currentTime - at);
-        s.onended = () => s.disconnect();
+        const s = ctx.createBufferSource(), g = ctx.createGain(); s.buffer = buf; s.connect(g).connect(out);
+        const at = T - 0.05, now = ctx.currentTime;
+        if (at >= now) s.start(at);
+        else {
+          // Late chunk: joining mid-waveform is a hard click (snare hits were the worst). Fade it in over 15 ms.
+          g.gain.setValueAtTime(0, now); g.gain.linearRampToValueAtTime(1, now + PR_FADE);
+          s.start(now, now - at); st.late = (st.late || 0) + 1;
+        }
+        s.onended = () => { s.disconnect(); g.disconnect(); };
       }).catch(e => console.warn("[music] prerender failed", e)).finally(() => { prBusy = false; prPump(); });
     }
 
-    function padVoice(t, semi, dur, vel, bright) {
-      if (V) return V.pad(t, semi, dur, vel, bright);
+    function padVoice(t, semi, dur, vel, bright, dest) {
+      if (V && !dest) return V.pad(t, semi, dur, vel, bright);
       const g = ctx.createGain(), f = ctx.createBiquadFilter();
       f.type = "lowpass"; f.frequency.setValueAtTime(500 + bright * 1800, t); f.Q.value = 0.7;
       [-9, 0, 8].forEach((cents, i) => {
         const o = ctx.createOscillator(); o.type = "sawtooth"; o.frequency.value = hz(semi); o.detune.value = cents + (rnd() - 0.5) * 3;
         const og = ctx.createGain(); og.gain.value = i === 1 ? 0.5 : 0.35; o.connect(og).connect(f); o.start(t); o.stop(t + dur + 2.6);
       });
-      f.connect(g).connect(n.layer.pad);
+      f.connect(g).connect(dest || n.layer.pad);
       g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vel, t + Math.min(1.4, dur * 0.4));
       g.gain.setValueAtTime(vel, t + dur); g.gain.linearRampToValueAtTime(0, t + dur + 2.4);
     }
@@ -130,7 +138,7 @@
       s.start(t, rnd() * 0.5); s.stop(t + 0.3);
     }
     function pluck(t, semi, dur, vel, dest, type) {
-      if (V) return V.pluck(t, semi, dur, vel, dest);
+      if (V && dest !== FX) return V.pluck(t, semi, dur, vel, dest);
       const o = ctx.createOscillator(), o2 = ctx.createOscillator(), g = ctx.createGain(), f = ctx.createBiquadFilter();
       o.type = type || "triangle"; o2.type = "sine"; o.frequency.value = hz(semi); o2.frequency.value = hz(semi + 12); o2.detune.value = 4;
       const g2 = ctx.createGain(); g2.gain.value = 0.25; f.type = "lowpass"; f.frequency.setValueAtTime(3200, t); f.frequency.exponentialRampToValueAtTime(900, t + dur);
@@ -139,7 +147,8 @@
     }
 
     function setLayers(t, i) {
-      const r = (k, v) => { n.layer[k].gain.cancelScheduledValues(t); n.layer[k].gain.setValueAtTime(n.layer[k].gain.value, t); n.layer[k].gain.linearRampToValueAtTime(v, t + 1.2); (st.lv || (st.lv = {}))[k] = v; };
+      // Hold the real level at t (not a stale .value read) before ramping.
+      const r = (k, v) => { const p = n.layer[k].gain; if (p.cancelAndHoldAtTime) p.cancelAndHoldAtTime(t); else { p.cancelScheduledValues(t); p.setValueAtTime(st.lv && st.lv[k] != null ? st.lv[k] : p.value, t); } n.layer[k].gain.linearRampToValueAtTime(v, t + 1.2); (st.lv || (st.lv = {}))[k] = v; };
       const fail = st.mood === "fail";
       r("pad", 0.11); r("bass", fail ? 0.12 : 0.32);
       r("drums", fail ? 0 : i > 0.33 ? 0.5 + (i - 0.33) * 0.5 : 0);
@@ -177,27 +186,28 @@
         let idx = 4 + Math.floor(rnd() * 3);
         pat.forEach(([at, len]) => { idx = Math.max(2, Math.min(9, idx + Math.floor(rnd() * 3) - 1)); pluck(t + at * b, PENTA[idx] + 12, len * b, 0.7, n.layer.lead, "sine"); });
       }
-      if (st.pendingBig) { riser(t); st.pendingBig = 0; }
+      if (st.pendingBig && !fx) { riser(t, n.bus); st.pendingBig = 0; }
       st.bar++; if (st.bar % 8 === 0) st.prog = (st.prog + 1) % PROGS.length;
       return t + bar;
     }
 
-    function riser(t) {
+    function riser(t, dest) {
       const s = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
       s.buffer = n.noise; s.loop = true; f.type = "bandpass"; f.Q.value = 3;
       f.frequency.setValueAtTime(400, t); f.frequency.exponentialRampToValueAtTime(5000, t + 0.9);
       g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.06, t + 0.7); g.gain.linearRampToValueAtTime(0, t + 1.1);
-      s.connect(f).connect(g).connect(n.bus); s.start(t); s.stop(t + 1.2);
+      s.connect(f).connect(g).connect(dest); s.start(t); s.stop(t + 1.2);
     }
     function sweep(t) {
       const fq = n.tone.frequency; fq.cancelScheduledValues(t); fq.setValueAtTime(fq.value, t);
       fq.exponentialRampToValueAtTime(7000, t + 0.35); fq.exponentialRampToValueAtTime(1100 + st.intensity * st.intensity * 5200, t + 2.2);
     }
-    function flourish(t, notes, gap, vel) { notes.forEach((s, k) => pluck(t + k * gap, s, 1.4, vel, n.bus, "triangle")); }
+    function flourish(t, notes, gap, vel) { notes.forEach((s, k) => pluck(t + k * gap, s, 1.4, vel, FX, "triangle")); }
 
     function tick() {
       while (st.nextBar < ctx.currentTime + 0.4) st.nextBar = scheduleBar(Math.max(st.nextBar, ctx.currentTime + 0.05));
     }
+    const FX = fx ? fx.out : n.bus, fxOn = () => !fx || fx.on();
     const api = {
       get state() { return st; },
       start() { if (st.running) return; if (PR) { st.running = true; st.nextBar = ctx.currentTime + 0.1; prPump(); st.timer = setInterval(prPump, 250); return; } st.running = true; st.nextBar = ctx.currentTime + 0.1; tick(); st.timer = setInterval(tick, 100); },
@@ -205,8 +215,12 @@
       setIntensity(v) { st.target = Math.max(0, Math.min(1, Number(v) || 0)); },
       accent(type, at) {
         const t = at ?? ctx.currentTime + 0.02;
-        if (type === "big") { sweep(t); st.pendingBig = 1; WIN_CHORD.forEach(s => pluck(t, s + 12, 1.2, 0.09, n.bus, "sine")); }
-        else if (type === "win") { sweep(t); flourish(t, [3, 7, 10, 15, 19], 0.09, 0.14); WIN_CHORD.forEach(s => padVoice(t, s, 2.2, 0.1, 0.8)); st.prog = (st.prog + 1) % PROGS.length; st.bar = 0; }
+        if (type === "big") {
+          sweep(t);
+          if (!fx) st.pendingBig = 1; else if (fxOn()) riser(t + 0.1, FX); // live: the riser plays right away as an effect
+          if (fxOn()) WIN_CHORD.forEach(s => pluck(t, s + 12, 1.2, 0.09, FX, "sine"));
+        }
+        else if (type === "win") { sweep(t); if (fxOn()) { flourish(t, [3, 7, 10, 15, 19], 0.09, 0.14); WIN_CHORD.forEach(s => padVoice(t, s, 2.2, 0.1, 0.8, fx ? FX : null)); } st.prog = (st.prog + 1) % PROGS.length; st.bar = 0; }
         else if (type === "fail") { st.mood = "fail"; st.tempo = 0.8; setLayers(t, 0); st.target = 0.1; }
         else if (type === "reset") { st.mood = "play"; st.tempo = 1; st.target = 0.15; }
       },

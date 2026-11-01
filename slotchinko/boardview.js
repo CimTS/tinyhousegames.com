@@ -24,8 +24,8 @@
 
     /* Floating "+points" over the pocket a ball landed in. */
     score(pocket, text, good) {
-      const w = this.getPhysics().width / 7;
-      this.floats.push({ x: (pocket + 0.5) * w, y: this.getPhysics().height - 40, text, good, born: performance.now() });
+      const e = this.getPhysics().pocketEdges?.() || [0, 1, 2, 3, 4, 5, 6, 7].map(i => i * this.getPhysics().width / 7);
+      this.floats.push({ x: (e[pocket] + e[pocket + 1]) / 2, y: this.getPhysics().height - 40, text, good, born: performance.now() });
       if (this.floats.length > 14) this.floats.shift();
       this.flashes.set(pocket, performance.now());
     }
@@ -52,16 +52,19 @@
     }
 
     _buckets(ph, now) {
-      const { ctx } = this, w = ph.width / 7, top = ph.height - 37;
+      const { ctx } = this, top = ph.height - 37, e = ph.pocketEdges(), wide = ph.wideCenter;
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
       ph.bucketValues.forEach((value, i) => {
+        const x0 = e[i], w = e[i + 1] - e[i], mid = x0 + w / 2, big = wide && i === 3;
         const drain = ph.drainPockets.includes(i), lit = now - (this.flashes.get(i) || -1e6);
-        ctx.fillStyle = drain ? "#ff4fa31f" : "#ffd16610"; ctx.fillRect(i * w + 1.5, top, w - 3, 37);
-        if (lit < 260 && !this.reducedMotion()) { ctx.fillStyle = `rgba(255,209,102,${0.4 * (1 - lit / 260)})`; ctx.fillRect(i * w + 1.5, top, w - 3, 37); }
+        ctx.fillStyle = drain ? "#ff4fa31f" : big ? "#ffd16630" : "#ffd16610"; ctx.fillRect(x0 + 1.5, top, w - 3, 37);
+        if (big) { ctx.strokeStyle = "#ffd166aa"; ctx.lineWidth = 1; ctx.strokeRect(x0 + 2, top + 0.5, w - 4, 36); }
+        if (lit < 260 && !this.reducedMotion()) { ctx.fillStyle = `rgba(255,209,102,${0.4 * (1 - lit / 260)})`; ctx.fillRect(x0 + 1.5, top, w - 3, 37); }
         ctx.fillStyle = drain ? "#ff8cc4" : "#ffd166";
-        ctx.font = `700 ${drain ? 11 : 13}px 'Barlow Condensed',sans-serif`;
-        ctx.fillText(drain ? "DRAIN" : `×${value}`, (i + 0.5) * w, ph.height - 14);
-        if (i) { ctx.fillStyle = "#34445f"; ctx.fillRect(i * w - 1.5, top, 3, 19); }
+        // Narrow neighbours of a wide x4 get a smaller label so it still fits.
+        ctx.font = `700 ${drain ? 11 : big ? 15 : w < 30 ? 10 : 13}px 'Barlow Condensed',sans-serif`;
+        ctx.fillText(drain ? "DRAIN" : `×${+(ph.pocketValue?.(i) ?? value).toFixed(2)}`, mid, ph.height - 14);
+        if (i) { ctx.fillStyle = "#34445f"; ctx.fillRect(x0 - 1.5, top, 3, 19); }
       });
     }
 

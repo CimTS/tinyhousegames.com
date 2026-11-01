@@ -49,7 +49,25 @@
     { id:"rainbow-engine", name:"Rainbow Engine", icon:"🌈", rarity:"rare", kind:"chip", cost:10, stackable:false, maxStack:1, tags:["element","synergy"], desc:"Each distinct suit in your hand adds +8% score. Flushes gain another +30%.", effect:{suitDiversity:0.08,flushBonus:0.30} },
     { id:"golden-touch", name:"Golden Touch", icon:"✦", rarity:"legendary", kind:"chip", cost:14, stackable:false, maxStack:1, tags:["economy","legendary"], desc:"Cleared blinds pay +5 coins. All scoring gains +12%.", effect:{coinsPerBlind:5,scoreMult:1.12} },
     { id:"chaos-theory", name:"Chaos Theory", icon:"⚡", rarity:"legendary", kind:"chip", cost:15, stackable:false, maxStack:1, tags:["balls","risk","legendary"], desc:"+2 balls and +30% score. Hazard drains pay half a normal bucket.", effect:{extraBalls:2,scoreMult:1.30,drainHalf:true} },
+    { id:"grinning-ace", name:"The Grinning Ace", icon:"Ⓐ", rarity:"common", kind:"chip", cost:4, stackable:false, maxStack:1, tags:["wild","balls"], desc:"High Card and One Pair hands drop +2 balls.", flavor:"\"Bad hand? I've won with worse. I'm a little wild like that.\"", effect:{grinBalls:2} },
+    { id:"ricochet-rig", name:"Ricochet Rig", icon:"⤨", rarity:"uncommon", kind:"chip", cost:6, stackable:true, maxStack:2, tags:["bounce","launch"], desc:"+6% score. Balls bounce 12% harder off pegs.", effect:{scoreMult:1.06,bounce:0.12} },
+    { id:"croupier-cut", name:"Croupier's Cut", icon:"♠", rarity:"uncommon", kind:"chip", cost:7, stackable:true, maxStack:2, tags:["economy","wild"], desc:"+1 coin for each ball in the ×4 pocket, up to 3 per drop. Copies add +3 more.", effect:{croupier:1} },
+    { id:"jackpot-funnel", name:"Jackpot Funnel", icon:"▼", rarity:"rare", kind:"chip", cost:10, stackable:false, maxStack:1, tags:["bucket","gravity"], desc:"The ×4 pocket pays ×5.", effect:{funnel:1} },
     { id:"world-tree", name:"World Tree", icon:"♧", rarity:"legendary", kind:"chip", cost:15, stackable:false, maxStack:1, tags:["element","synergy","legendary"], desc:"+15% score on every ball, and +60% more when your hand holds all four suits.", effect:{fourSuitBonus:0.60,allElementScore:0.15} }
+  ];
+
+  // Deck cards: bought cards change the deck for the rest of the run.
+  const CARD_CATALOG = [
+    { id:"ace-sleeve", name:"Ace Up the Sleeve", icon:"A", rarity:"common", kind:"card", cost:4, maxStack:3, desc:"Add an extra Ace to your deck (suits rotate ♥ ♠ ♦ ♣).", deck:"addAce" },
+    { id:"trim-deck", name:"Trim the Deck", icon:"✂", rarity:"uncommon", kind:"card", cost:6, maxStack:1, desc:"Remove every 2 from your deck. Fewer junk draws.", deck:"trim" },
+    { id:"gold-leaf", name:"Gold Leaf", icon:"✪", rarity:"rare", kind:"card", cost:9, maxStack:1, desc:"Upgrade your Aces to gold: each gold card in a hand adds +0.25 base power.", deck:"gold" }
+  ];
+
+  // Pachinko buffs: board changes for the next drop, or for the whole run.
+  const BUFF_CATALOG = [
+    { id:"rubber-pegs", name:"Rubber Pegs", icon:"◍", rarity:"common", kind:"buff", cost:3, duration:"drop", desc:"Next drop: balls bounce 25% more and score +10%.", action:"bounce", value:0.25 },
+    { id:"wide-jackpot", name:"Wide Jackpot", icon:"⇿", rarity:"uncommon", kind:"buff", cost:5, duration:"drop", desc:"Next drop: the ×4 pocket is twice as wide.", action:"wide", value:1 },
+    { id:"magnet-core", name:"Magnet Core", icon:"⊕", rarity:"rare", kind:"buff", cost:9, duration:"run", desc:"Whole run: a magnet under the board pulls balls toward the ×4 pocket.", effect:{magnet:1} }
   ];
 
   const CONSUMABLE_CATALOG = [
@@ -58,19 +76,108 @@
     { id:"coin-flip", name:"Coin Flip", icon:"¢", rarity:"uncommon", kind:"consumable", cost:3, desc:"Gain 6 coins immediately.", action:"coins", value:6 },
     { id:"wild-card", name:"Wild Current", icon:"✧", rarity:"uncommon", kind:"consumable", cost:5, desc:"Next hand: every ball counts as all four suits.", action:"rainbow", value:1 },
     { id:"glass-charge", name:"Glass Charge", icon:"◇", rarity:"rare", kind:"consumable", cost:6, desc:"Next drop: the first ball to hit a peg scores ×6.", action:"glass", value:6 },
+    { id:"spare-ball", name:"Spare Ball", icon:"•", rarity:"common", kind:"consumable", cost:2, desc:"Next hand: +1 ball.", action:"balls", value:1 },
+    { id:"redeal", name:"Redeal", icon:"↺", rarity:"common", kind:"consumable", cost:3, desc:"Throw back your whole hand: five new cards and both draws back.", action:"redeal", value:1 },
+    { id:"nudge", name:"Nudge", icon:"⇥", rarity:"uncommon", kind:"consumable", cost:3, desc:"Next drop: balls headed for a ×0.5 pocket or a drain get nudged one pocket inward.", action:"nudge", value:1 },
     { id:"blind-skip", name:"Blind Skip", icon:"»", rarity:"rare", kind:"consumable", cost:8, desc:"Clear this blind with no drop: it counts as cleared, pays its reward and opens the shop. Not on the final blind.", action:"skip", value:1 }
   ];
 
   const RARITY_WEIGHT = { common:58, uncommon:27, rare:12, legendary:3 };
   const RARITY_ORDER = ["common","uncommon","rare","legendary"];
 
-  // Tuned with tools/balance.js; reasoning is in NOTES.md.
+  // Blind score targets: the one table to tune. Score carries over, so each is a running total.
+  // Blinds 1-8 are the original curve; 9-16 ask each drop for more (checked with tools/slotchinko-sim.mjs).
+  const BLIND_TARGETS=[45,170,420,850,1500,2700,4800,8500, 12400,16500,20900,25600,30600,35900,41500,47500];
   const BALANCE={
-    FINAL_BLIND:8, BLIND_TARGETS:[45,170,420,850,1500,2700,4800,8500],
+    FINAL_BLIND:BLIND_TARGETS.length, BLIND_TARGETS,
     START_COINS:7, BLIND_PAY:3, BASE_BALL_SCORE:25, HEART_SPLIT_HIT:3, DRAIN_ROUND:3,
-    REROLL_BASE:2, MAX_CHIPS:12, MAX_BAG:3, MAX_HAND_BALLS:24,
+    REROLL_BASE:2, SHOP_SLOTS:{chip:3,card:2,consumable:2,buff:2}, CROUPIER_CAP:3, FUNNEL_MULT:1.25, GOLD_POWER:0.25, MAX_CHIPS:12, MAX_BAG:3, MAX_HAND_BALLS:24,
     PRESS_STEP:500, PRESS_CAP:3, CLUB_COIN_HITS:5, DIAMOND_BONUS:35, GLASS_MULT:1.5
   };
 
-  window.SlotchinkoData={BALANCE,SUITS,SUIT_GLYPHS,SUIT_NAMES,RANKS,HANDS,CHIP_CATALOG,CONSUMABLE_CATALOG,RARITY_WEIGHT,RARITY_ORDER};
+  // Ascension (New Game+): win at a level to open the next. Each level raises targets and adds the next rule; rules stack.
+  const NG={ MAX:8, TARGET_STEP:0.12, MODS:[
+    { id:"tight-shop", name:"Tight Shop", icon:"¢", desc:"Every shop price +1¢." },
+    { id:"hungry-drains", name:"Hungry Drains", icon:"▽", desc:"Drains open from blind 2." },
+    { id:"thin-hands", name:"Thin Hands", icon:"•", desc:"From blind 2, every hand drops 1 fewer ball." },
+    { id:"boss-blinds", name:"Boss Blinds", icon:"☠", desc:"Blinds 4, 8, 12 and 16 get a boss rule." },
+    { id:"lean-purse", name:"Lean Purse", icon:"◌", desc:"Cleared blinds pay 1¢ less." },
+    { id:"pricey-rerolls", name:"Pricey Rerolls", icon:"↻", desc:"Rerolls cost 2¢ more." },
+    { id:"short-bag", name:"Short Bag", icon:"▣", desc:"Your Bag holds 1 fewer item." },
+    { id:"high-stakes", name:"High Stakes", icon:"♛", desc:"Targets climb another 25%." }
+  ]};
+  // Boss rules (Ascension 4+). "climb" scales how far this blind's target rises over the last one.
+  const BOSSES=[
+    { id:"wall", name:"The Wall", icon:"▥", desc:"This blind's target climbs 30% further.", climb:1.3 },
+    { id:"fog", name:"The Fog", icon:"☁", desc:"Only one draw this blind." },
+    { id:"weight", name:"The Weight", icon:"⚓", desc:"Every hand drops 2 fewer balls this blind." }
+  ];
+  // Starting decks: House is open; the rest unlock from milestones (UNLOCKS).
+  const DECKS=[
+    { id:"house", name:"House Deck", icon:"♠", desc:"The standard 52. No tricks." },
+    { id:"mint", name:"Mint Deck", icon:"▣", desc:"Start with a Coin Press." },
+    { id:"rubber", name:"Rubber Deck", icon:"◍", desc:"Balls bounce 15% harder all run." },
+    { id:"ace-high", name:"Ace-High Deck", icon:"A", desc:"Four extra Aces in the deck." },
+    { id:"glass", name:"Glass Deck", icon:"◇", desc:"Score ×1.6, but Chips can shatter after a blind." },
+    { id:"hoarder", name:"Hoarder Deck", icon:"▤", desc:"Bag holds 2 more. One fewer Chip per shop." },
+    { id:"wild-suit", name:"Two-Tone Deck", icon:"♥♠", desc:"Suits count by colour: red with red, black with black." },
+    { id:"pachinko", name:"Pachinko Deck", icon:"◎", desc:"+1 ball every hand, 20% less power." }
+  ];
+  // The path between blinds (chosen after the shop).
+  const NODES={
+    blind:{ name:"Blind", icon:"●", desc:"The next blind, straight up." },
+    elite:{ name:"Elite Blind", icon:"♛", desc:"Target climbs 50% further. Clear it for +6¢ and a free Rare Chip." },
+    event:{ name:"Event", icon:"?", desc:"Someone at the table has an offer." },
+    rest:{ name:"Lounge", icon:"☕", desc:"Catch your breath before the blind." }
+  };
+  // Events: two choices each. "need" is the coins a choice costs (it is disabled when short).
+  const EVENTS=[
+    { id:"wager", icon:"♣", name:"The Croupier's Wager", text:"\"Five coins says you can't call this flip.\"",
+      options:[{ label:"Bet 5¢", detail:"Half the time, win 12¢.", need:5 },{ label:"Walk away", detail:"Nothing happens." }] },
+    { id:"loaded-dice", icon:"⚂", name:"Loaded Dice", text:"A stranger offers to swap one of your Chips for something rarer.",
+      options:[{ label:"Swap", detail:"Lose a random Chip, gain a random Rare Chip.", needChip:true },{ label:"Pass", detail:"Keep what you have." }] },
+    { id:"wallet", icon:"¢", name:"Lost Wallet", text:"There's a fat wallet under your stool.",
+      options:[{ label:"Keep it", detail:"+7¢, but this blind's target climbs 20% further." },{ label:"Hand it in", detail:"Good karma: +3 balls on your next hand." }] },
+    { id:"mechanic", icon:"⚙", name:"The Peg Mechanic", text:"\"I can make these pegs sing. Small fee.\"",
+      options:[{ label:"Pay 4¢", detail:"Balls bounce 8% harder for the rest of the run.", need:4 },{ label:"No thanks", detail:"Nothing happens." }] },
+    { id:"sleeve", icon:"A", name:"Ace Up the Sleeve", text:"A dealer slides you a card under the table.",
+      options:[{ label:"Take the Ace", detail:"Add an Ace to your deck." },{ label:"Sell it back", detail:"+3¢." }] },
+    { id:"blood-moon", icon:"◑", name:"Blood Moon", text:"The lights go red. The house is feeling generous, and hungry.",
+      options:[{ label:"Embrace it", detail:"Target climbs 25% further. This blind pays double." },{ label:"Look away", detail:"Nothing happens." }] }
+  ];
+  const LOUNGE={ id:"lounge", icon:"☕", name:"The Lounge", text:"Quiet music, soft chairs. Pick one.",
+    options:[{ label:"Stretch", detail:"+3 balls on your next hand." },{ label:"Focus", detail:"+50% power on your next hand." }] };
+
+  // Unlock pool: some items and decks start locked and open from milestones. test(summary) runs at the end of a run.
+  const UNLOCKS=[
+    { kind:"item", id:"diamond-matrix", hint:"Clear blind 3.", test:m=>m.blinds>=3 },
+    { kind:"item", id:"croupier-cut", hint:"Earn 40¢ in one run.", test:m=>m.coinsEarned>=40 },
+    { kind:"item", id:"jackpot-funnel", hint:"Score 2,500 in a single drop.", test:m=>m.bestDrop>=2500 },
+    { kind:"item", id:"phoenix-heart", hint:"Drop a Full House or better.", test:m=>m.bestRank>=6 },
+    { kind:"item", id:"rainbow-engine", hint:"Drop a Flush.", test:m=>(m.hands.Flush||0)>0 },
+    { kind:"item", id:"singularity", hint:"End a run owning two gravity Chips.", test:m=>m.chipTags.filter(t=>t==="gravity").length>=2 },
+    { kind:"item", id:"chaos-theory", hint:"Clear blind 8.", test:m=>m.blinds>=8 },
+    { kind:"item", id:"glass-charge", hint:"Drop Three of a Kind 5 times in one run.", test:m=>(m.hands["Three of a Kind"]||0)>=5 },
+    { kind:"item", id:"world-tree", hint:"Win a run.", test:m=>m.victory },
+    { kind:"deck", id:"mint", hint:"Earn 60¢ in one run.", test:m=>m.coinsEarned>=60 },
+    { kind:"deck", id:"rubber", hint:"Clear blind 6.", test:m=>m.blinds>=6 },
+    { kind:"deck", id:"ace-high", hint:"Drop Four of a Kind.", test:m=>m.bestRank>=7 },
+    { kind:"deck", id:"hoarder", hint:"Fill your Bag.", test:m=>m.maxBag>=3 },
+    { kind:"deck", id:"glass", hint:"Score 6,000 in a single drop.", test:m=>m.bestDrop>=6000 },
+    { kind:"deck", id:"wild-suit", hint:"Drop 3 Flushes in one run.", test:m=>(m.hands.Flush||0)>=3 },
+    { kind:"deck", id:"pachinko", hint:"Win a run.", test:m=>m.victory }
+  ];
+  // Collection families: a Chip joins the first family that shares one of its tags.
+  const FAMILIES=[
+    { id:"heart", name:"Hearts", icon:"♥", tags:["heart","split"] },
+    { id:"diamond", name:"Diamonds", icon:"♦", tags:["diamond","fortune"] },
+    { id:"spade", name:"Spades", icon:"♠", tags:["spade","gravity"] },
+    { id:"club", name:"Clubs", icon:"♣", tags:["club","control"] },
+    { id:"coin", name:"Coin", icon:"¢", tags:["economy","combo","wild"] },
+    { id:"bounce", name:"Bounce", icon:"⤨", tags:["bounce","launch","bucket","defense"] },
+    { id:"element", name:"Element", icon:"✥", tags:["element","synergy","prism"] },
+    { id:"chaos", name:"Chaos", icon:"⚡", tags:["balls","risk","glass","echo"] }
+  ];
+
+  window.SlotchinkoData={NG,DECKS,BOSSES,NODES,EVENTS,LOUNGE,UNLOCKS,FAMILIES,BALANCE,SUITS,SUIT_GLYPHS,SUIT_NAMES,RANKS,HANDS,CHIP_CATALOG,CARD_CATALOG,BUFF_CATALOG,CONSUMABLE_CATALOG,RARITY_WEIGHT,RARITY_ORDER};
 })();

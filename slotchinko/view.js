@@ -7,7 +7,21 @@
   const plural=n=>`${n} BALL${n===1?"":"S"}`;
 
   class GameView{
-    constructor(prefs,overlays){this.prefs=prefs;this.overlays=overlays;this.sig={};}
+    constructor(prefs,overlays){
+      this.prefs=prefs;this.overlays=overlays;this.sig={};
+      const L=window.SlotchinkoPayoutLayer;
+      this.payoutLayers=L?{hud:new L($("payout-layer")),board:new L($("payout-board"))}:null;
+    }
+    /* Coins pop under the coin counter; balls and points pop on the board. */
+    payout(e){
+      if(!this.payoutLayers)return;
+      if(e.kind==="coin"){
+        // Sit just under the top bar (below the coin counter, never over it); top of the screen once it scrolls away.
+        const bar=document.querySelector(".topbar"),y=bar?bar.getBoundingClientRect().bottom:0;
+        $("payout-layer").style.top=`${Math.max(10,Math.round(y)+8)}px`;
+        this.payoutLayers.hud.show(e);
+      }else this.payoutLayers.board.show(e);
+    }
     attach(game,board){this.game=game;this.board=board;}
 
     /* Skips DOM writes when nothing changed; render() runs on every landing ball. */
@@ -53,7 +67,7 @@
       const spin=$("spin-button"),drop=$("drop-button"),shop=s.phase==="roundEnd"&&s.won&&!s.victory;
       spin.disabled=s.phase!=="slot"||s.spins>=s.maxSpins;
       if(this.changed("spin",s.spins))spin.innerHTML=`↻ DRAW <span class="subtle">(${s.maxSpins-s.spins} LEFT)</span>`;
-      if(this.changed("drop",shop))drop.innerHTML=shop?"NEXT BLIND →":"DROP HAND ↓";
+      if(this.changed("drop",shop))drop.innerHTML=shop?"CHOOSE PATH →":"DROP HAND ↓";
       drop.disabled=!(shop||s.phase==="slot");
     }
 

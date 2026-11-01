@@ -9,19 +9,25 @@
     {need:["spade","gravity"],label:"SINGULARITY +12%",apply:t=>{t.wellPull+=0.5;t.scoreMult*=1.12;}},
     {need:["club","control"],label:"ROOT NETWORK +8%",apply:t=>{t.scoreMult*=1.08;}},
     {need:["economy","combo"],label:"CASH LOOP +1¢",apply:t=>{t.coinsPerBlind+=1;}},
-    {need:["element","synergy"],label:"ELEMENTAL OVERDRIVE +10%",apply:t=>{t.allElementScore+=0.10;}}
+    {need:["bounce","launch"],label:"TRICK SHOT +10%",apply:t=>{t.scoreMult*=1.10;}},
+    {need:["wild","economy"],label:"HOUSE FAVOR +1¢",apply:t=>{t.coinsPerBlind+=1;}},
+    {need:["bucket","gravity"],label:"SINKHOLE +10%",apply:t=>{t.scoreMult*=1.10;}},
+    {need:["element","synergy"],label:"ELEMENTAL OVERDRIVE +10%",apply:t=>{t.allElementScore+=0.10;}},
+    {need:["bounce","gravity"],label:"PINBALL WIZARD +12%",apply:t=>{t.scoreMult*=1.12;}},
+    {need:["wild","balls"],label:"LOADED TABLE +1 BALL",apply:t=>{t.extraBalls+=1;}}
   ];
 
   /* A set needs two different Chips: one carrying each tag. */
   const setActive=(chips,[a,b])=>chips.some(x=>x.tags?.includes(a)&&chips.some(y=>y.id!==x.id&&y.tags?.includes(b)));
 
+  window.SlotchinkoSets=SYNERGIES;
   window.SlotchinkoScoring={
     _effects(){
       const totals={scoreMult:1,extraBalls:0,fortune:0,allElementScore:0,wellPull:0,spadeWell:0,
         spadeScore:0,spadeDamage:0,diamondScore:0,clubScore:0,splitBonus:0,splitChain:0,reactor:0,
         plating:0,stickPower:0,launchSpread:0,coinsPerBlind:0,pressCoins:0,flushBonus:0,suitDiversity:0,
         fourSuitBonus:0,diamondBonus:0,clubCoins:0,glass:0,drainHalf:false};
-      for(const chip of this.state.chips){
+      for(const chip of [...this.state.chips,...(this.state.runBuffs||[])]){
         for(const [key,value] of Object.entries(chip.effect||{})){
           if(key==="scoreMult")totals[key]*=value;
           else if(typeof value==="number")totals[key]=(totals[key]||0)+value;
@@ -45,6 +51,7 @@
       const distinct=new Set(s.cards.map(c=>c.suit)).size;
       synergy+=distinct*fx.suitDiversity;
       if(distinct===4)synergy+=fx.fourSuitBonus;
+      synergy+=0.4*this._boost(s.activeBoosts||[],"bounce"); // Rubber Pegs: +10% at 0.25 bounce
       const drainFactor=drained?(fx.drainHalf?0.5:0):1;
       return Math.round(BALANCE.BASE_BALL_SCORE*s.power*multiplier*fx.scoreMult*synergy*(p.glass||1)*drainFactor);
     }

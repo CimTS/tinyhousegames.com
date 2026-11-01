@@ -62,9 +62,9 @@ export function renderGames(list, doc = globalThis.document) {
     const url = hasText(game.url) ? game.url.trim() : '';
     if (url && url !== '#') {
       const link = doc.createElement('a');
-      link.className = 'game-card__link';
+      link.className = 'game-card__link pill';
       link.href = url;
-      link.textContent = 'Play';
+      link.textContent = hasText(game.cta) ? game.cta : 'Play';
       if (/^(https?:)?\/\//i.test(url)) link.rel = 'noopener';
       card.append(link);
     }

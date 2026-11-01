@@ -16,3 +16,15 @@
 .app-shot img{display:block;width:100%;height:auto;border-radius:3px}
 .app-shot figcaption{margin-top:.45rem}
 .app-card p{margin:.6rem 0;font-size:.95rem;line-height:1.5}
+/* featured web game on the home sign */
+.feature{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);align-items:center;gap:1.1rem;max-width:40rem;margin:0 auto 1.6rem;padding:.9rem;text-align:left;transform:rotate(-.5deg)}
+.feature__shot{display:block;border-radius:14px 12px 16px 10px;overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,.4);transform:rotate(1deg);transition:transform .2s}
+.feature__shot:hover{transform:rotate(-.5deg) scale(1.02)}
+.feature__shot img{display:block;width:100%;height:auto}
+.glass .feature__kicker{margin:0 0 .2rem;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:#ffc47a}
+.feature__title{margin:0 0 .35rem;font-size:1.7rem;color:#fff1dc}
+.glass .feature__pitch{margin:0 0 .9rem;font-size:.98rem;line-height:1.45}
+.feature__play{font-weight:700}
+.game-card__link.pill{align-self:center;font-size:.88rem;padding:.45rem .9rem}
+@media (max-width:600px){.feature{grid-template-columns:1fr;gap:.7rem;text-align:center;width:100%;box-sizing:border-box}.feature__title{font-size:1.5rem}}
+@media (prefers-reduced-motion:reduce){.feature__shot,.feature__shot:hover{transition:none;transform:none}}

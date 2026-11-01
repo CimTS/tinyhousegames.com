@@ -23,3 +23,4 @@ nav a:hover{transform:none;background:linear-gradient(#b67c49,#94613a)}
 nav a:active{transform:translateY(1px)}
 nav .ico{font-size:1.15rem}
 @media (max-width:600px){nav{border-bottom:2px solid #2e1a0e}}
+section[id],h2[id]{scroll-margin-top:7.5rem}

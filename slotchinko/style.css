@@ -1,0 +1,186 @@
+:root{--bg:#090b14;--panel:#111624;--panel2:#171e30;--line:#29334b;--muted:#7d8aa7;--text:#edf3ff;--cyan:#45f3e2;--pink:#ff4fa3;--gold:#ffd166;--green:#8cff9b}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;overscroll-behavior:none}
+body{touch-action:pan-y;overflow:hidden;user-select:none}
+button{font:inherit;color:inherit}
+#app{width:min(100%,560px);height:100dvh;min-height:600px;margin:0 auto;touch-action:pan-y;overscroll-behavior-y:contain;padding:env(safe-area-inset-top) 14px env(safe-area-inset-bottom);display:flex;flex-direction:column;gap:9px;overflow-y:auto;scrollbar-width:none}
+#app::-webkit-scrollbar{display:none}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 2px 3px;gap:8px}
+.brand{font:900 21px 'Barlow Condensed',sans-serif;letter-spacing:1.5px;white-space:nowrap}.brand-mark{color:var(--cyan);margin-right:6px}.accent{color:var(--cyan)}
+.stats{display:flex;gap:12px}.stats div{display:flex;flex-direction:column;align-items:flex-end;gap:1px}.stats small,.hand-row small{font-size:8px;color:var(--muted);letter-spacing:1px}.stats b{font:700 17px 'Barlow Condensed',sans-serif}
+.phase-banner{padding:8px 11px;border:1px solid #25334a;border-left:3px solid var(--cyan);background:#0e1523;border-radius:7px}.phase-banner>div{font:700 12px 'Barlow Condensed',sans-serif;letter-spacing:1.4px;color:var(--cyan)}.phase-banner p{margin:3px 0 0;color:#9eabc4;font-size:9px;line-height:1.4}.live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 9px var(--green);margin-right:7px}
+.panel{background:linear-gradient(145deg,#141b2b,#0f1420);border:1px solid var(--line);border-radius:10px;padding:11px;box-shadow:0 8px 25px #0003}
+.section-heading{display:flex;justify-content:space-between;align-items:center;color:var(--cyan);font:700 11px 'Barlow Condensed',sans-serif;letter-spacing:1.4px;margin-bottom:9px}.micro{font:8px 'DM Mono',monospace;color:var(--muted);letter-spacing:.5px}
+.reels{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+.reel{height:72px;min-width:0;border:1px solid #34415b;border-radius:7px;background:linear-gradient(180deg,#202b40,#131a29);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;position:relative;touch-action:manipulation}
+.reel .symbol{font:38px/1 'Barlow Condensed',sans-serif;text-shadow:0 0 12px currentColor}.reel small{font-size:7px;color:#77849e;letter-spacing:1px}
+.reel.held{border-color:var(--gold);box-shadow:inset 0 0 0 1px #ffd16655,0 0 12px #ffd16622;background:linear-gradient(180deg,#3a3023,#1b1c27)}.reel.held small{color:var(--gold)}.suit-heart{color:#ff5c91}.suit-spade{color:#c4d5ff}.suit-diamond{color:#ffbd55}.suit-club{color:#75f2b0}
+.hand-row{display:flex;justify-content:space-between;align-items:center;padding:9px 2px 7px}.hand-row>div{display:flex;flex-direction:column;gap:2px}.hand-row strong{font:700 19px 'Barlow Condensed',sans-serif}.hand-score{text-align:right}.hand-score strong{color:var(--gold)}
+.action-row{display:grid;grid-template-columns:1fr 1.2fr;gap:8px}.btn{height:43px;border-radius:7px;border:1px solid #3a4965;font:800 13px 'Barlow Condensed',sans-serif;letter-spacing:1px;touch-action:manipulation}.btn:disabled{opacity:.35}.btn-secondary{background:#202a3e;color:#d5def0}.btn-primary{background:linear-gradient(100deg,#20b9b1,#4af3db);color:#061517;border:0;box-shadow:0 4px 18px #29e6d333}.subtle{font:9px 'DM Mono',monospace;opacity:.65}
+.hand-note{display:flex;align-items:center;gap:9px;padding:8px 10px;border:1px solid #28334a;border-radius:8px;background:#101725}.hand-note-icon{font-size:22px;color:var(--pink)}.hand-note b{font:700 10px 'Barlow Condensed',sans-serif;letter-spacing:1px}.hand-note p{margin:2px 0 0;color:var(--muted);font-size:8px}.hand-note-right{margin-left:auto;color:var(--gold);font-size:9px;white-space:nowrap}
+.board-panel{padding-bottom:8px}.board-panel .section-heading{margin-bottom:5px}
+#plinko-canvas{height:clamp(210px,31vh,285px);width:100%;position:relative;border:1px solid #283650;border-radius:7px;overflow:hidden;background:radial-gradient(ellipse at 50% 10%,#1b2a43,#0a101c 72%)}
+#game-canvas{width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
+#aim-guide{position:absolute;top:7px;left:50%;transform:translateX(-50%);color:#8da2c3;font-size:8px;letter-spacing:1px;pointer-events:none;opacity:.8}#aim-guide i{display:block;width:1px;height:18px;margin:3px auto 0;background:linear-gradient(var(--cyan),transparent)}
+.board-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#8092b4;font:700 12px 'Barlow Condensed',sans-serif;letter-spacing:2px;background:#080d1788;pointer-events:none}.board-overlay.hidden{display:none}
+.bucket-legend{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;color:var(--gold);font-size:9px;padding:5px 0 2px}.board-footer{display:flex;justify-content:space-between;color:var(--muted);font-size:8px;letter-spacing:.5px}
+.shop-panel{min-height:80px}.shop-content{display:grid;grid-template-columns:1fr;gap:7px}.shop-hint{margin:0;color:var(--muted);font-size:9px;line-height:1.5}.chip-card{display:flex;align-items:center;gap:9px;padding:8px;border:1px solid #33415d;border-radius:7px;background:#151e2e}.chip-icon{font-size:22px;color:var(--pink)}.chip-info{flex:1}.chip-info b{display:block;font:700 13px 'Barlow Condensed',sans-serif}.chip-info small{display:block;color:var(--muted);font-size:8px;line-height:1.4;margin-top:2px}.buy-chip{border:1px solid #3bceb9;background:#112b2c;color:var(--cyan);border-radius:5px;padding:7px 9px;font-size:9px;touch-action:manipulation}
+footer{display:flex;justify-content:space-between;color:#53617b;font-size:7px;letter-spacing:.5px;padding:2px 2px 10px}
+#toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translate(-50%,20px);opacity:0;transition:.2s;background:#eafdf9;color:#071b1b;padding:9px 14px;border-radius:30px;font-size:10px;font-weight:bold;pointer-events:none;z-index:10;white-space:nowrap}#toast.show{opacity:1;transform:translate(-50%,0)}
+@media(min-height:850px){#app{justify-content:flex-start;gap:12px}.reel{height:82px}#plinko-canvas{height:300px}}
+@media(max-width:360px){#app{padding-left:9px;padding-right:9px}.stats{gap:8px}.brand{font-size:18px}.reel{height:64px}.reel .symbol{font-size:33px}}
+
+/* Poker card face upgrade */
+.reel{height:82px;display:grid;grid-template-rows:1fr auto 14px;justify-items:center;align-items:center;padding:5px 2px 3px;gap:0}
+.reel .card-rank{font:800 20px/1 'Barlow Condensed',sans-serif;color:#edf3ff;align-self:end}
+.reel .symbol{font:27px/1 'Barlow Condensed',sans-serif;align-self:center}
+.reel small{font-size:7px;line-height:12px}
+.reel.held{transform:translateY(-2px);border-color:var(--gold);box-shadow:inset 0 0 0 1px #ffd16655,0 3px 0 #a87828,0 0 13px #ffd16628}
+.reel.dealing{animation:cardDeal .22s ease-out}
+@keyframes cardDeal{0%{transform:translateY(-9px) scale(.96);opacity:.4}100%{transform:translateY(0) scale(1);opacity:1}}
+.reel .card-rank.red-card{color:#ff729e}
+.hand-row>div:first-child{min-width:0}
+#hand-detail{font-size:8px;color:var(--muted);line-height:1.4}
+@media(max-width:360px){.reel{height:73px}.reel .card-rank{font-size:18px}.reel .symbol{font-size:24px}}
+
+
+/* Balatro-inspired shop, rarity frames, loadout and consumables */
+.inventory-panel{padding:10px}
+.owned-chips{display:flex;flex-wrap:wrap;gap:5px;min-height:24px}
+.owned-chip{display:inline-flex;align-items:center;gap:4px;padding:5px 7px;border:1px solid #3a4965;border-radius:5px;background:#192338;font-size:8px;line-height:1.2}
+.empty-inventory{color:var(--muted);font-size:8px;line-height:1.5}
+.synergy-line{margin-top:7px;padding:6px 8px;border-radius:5px;background:#0b2226;border:1px solid #1b5554;color:var(--cyan);font-size:8px;line-height:1.4}
+.consumable-row{margin-top:9px;padding-top:8px;border-top:1px solid #27334a}
+.consumable-heading{display:flex;justify-content:space-between;color:#c4cee2;font:700 10px 'Barlow Condensed',sans-serif;letter-spacing:1px;margin-bottom:6px}
+.consumable-heading small{font:7px 'DM Mono',monospace;color:var(--muted)}
+.consumable-bag{display:flex;gap:6px;overflow-x:auto;min-height:30px}
+.consumable-item{display:flex;align-items:center;gap:6px;white-space:nowrap;padding:7px 8px;border:1px solid #59617d;border-radius:6px;background:#22263a;color:var(--text);font-size:8px;touch-action:manipulation}
+.consumable-item span{font-size:15px}.consumable-item small{color:var(--gold);font-size:7px}
+.shop-toolbar{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:3px 1px 8px}
+.shop-toolbar>div{display:flex;flex-direction:column;gap:2px}.shop-toolbar b{font:800 13px 'Barlow Condensed',sans-serif;letter-spacing:1.2px;color:var(--gold)}
+.shop-toolbar small{font-size:7px;color:var(--muted)}
+.reroll-button{border:1px solid #56627c;background:#202a3e;color:#e4ecff;border-radius:6px;padding:8px 9px;font-size:8px;touch-action:manipulation}
+.reroll-button:disabled,.buy-chip:disabled{opacity:.35}
+.shop-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.shop-item{min-width:0;display:flex;flex-direction:column;gap:5px;padding:8px;border:1px solid #39455f;border-radius:8px;background:linear-gradient(150deg,#1a2437,#111827);box-shadow:inset 0 2px 0 #ffffff08}
+.item-top{display:flex;justify-content:space-between;align-items:center}.item-icon{font-size:23px;line-height:1.1}
+.rarity-label{font-size:7px;text-transform:uppercase;letter-spacing:.8px;font-weight:bold}
+.item-name{font:800 13px 'Barlow Condensed',sans-serif;letter-spacing:.3px}
+.shop-item p{margin:0;color:#a4b0c8;font-size:8px;line-height:1.45;min-height:34px}
+.item-bottom{display:flex;justify-content:space-between;align-items:center;gap:4px;margin-top:auto}
+.item-kind{font-size:6px;color:var(--muted);letter-spacing:.3px}
+.buy-chip{padding:7px 8px;font-size:8px;white-space:nowrap}
+.shop-footer{display:flex;justify-content:space-between;margin-top:8px;padding-top:7px;border-top:1px solid #2a354b;color:var(--muted);font-size:7px;letter-spacing:.4px}
+.rarity-common{border-color:#53627a}
+.rarity-uncommon{border-color:#299e7e;box-shadow:inset 0 2px 0 #299e7e22}
+.rarity-rare{border-color:#477bd0;box-shadow:inset 0 2px 0 #477bd033}
+.rarity-legendary{border-color:#bd8734;box-shadow:inset 0 2px 0 #ffd16655,0 0 12px #ffd16612}
+.rarity-common .rarity-label{color:#aebbd0}.rarity-uncommon .rarity-label{color:#55e0b4}
+.rarity-rare .rarity-label{color:#83adff}.rarity-legendary .rarity-label{color:#ffd166}
+@media(max-width:370px){.shop-grid{grid-template-columns:1fr}.shop-item p{min-height:0}.item-icon{font-size:20px}}
+
+
+/* ── Black Market polish pass ─────────────────────────────────────────── */
+.shop-panel{
+  position:relative;isolation:isolate;overflow:hidden;
+  background:
+    radial-gradient(ellipse at 4% 0%,#24314c66,transparent 45%),
+    linear-gradient(155deg,#151d30 0%,#0d1321 70%,#101827 100%);
+  border-color:#34435f;
+  box-shadow:0 12px 34px #0006,inset 0 1px 0 #ffffff0b;
+}
+.shop-panel:before{
+  content:"";position:absolute;inset:0 0 auto;height:2px;z-index:-1;
+  background:linear-gradient(90deg,transparent,var(--cyan),#8d72ff,var(--gold),transparent);opacity:.8
+}
+.shop-panel>.section-heading{position:relative;z-index:1;margin-bottom:11px}
+.shop-content{position:relative;z-index:1;display:flex;flex-direction:column;gap:8px}
+.shop-toolbar{align-items:center;padding:9px 10px;margin-bottom:1px;border:1px solid #34415c;border-radius:9px;background:linear-gradient(110deg,#1a263d,#141b2c 70%);box-shadow:inset 0 1px 0 #ffffff0a}
+.market-title{display:flex;flex-direction:column;gap:2px;min-width:0}
+.market-kicker{font-size:7px;letter-spacing:1.4px;color:var(--cyan);font-weight:500}
+.market-title>b{font:900 19px/1 'Barlow Condensed',sans-serif;letter-spacing:1.4px;color:#ffe078}
+.market-title>b i{font-style:normal;color:var(--cyan);font-size:13px}
+.market-title>small{font-size:7px;color:#8493b2;letter-spacing:.2px}
+.reroll-button{display:grid;grid-template-columns:auto auto;grid-template-rows:auto auto;align-items:center;column-gap:5px;min-width:78px;padding:8px 10px;border:1px solid #586985;border-radius:7px;background:linear-gradient(180deg,#293651,#1b263b);box-shadow:0 3px 0 #0b111d;color:#eaf1ff;touch-action:manipulation}
+.reroll-button>span{grid-row:1/3;font-size:17px;color:var(--cyan)}
+.reroll-button>b{font:800 9px 'Barlow Condensed',sans-serif;letter-spacing:.8px}
+.reroll-button>small{font-size:8px;color:var(--gold);text-align:left}
+.reroll-button:active{transform:translateY(2px);box-shadow:0 1px 0 #0b111d}
+.shop-stockline{display:flex;justify-content:space-between;align-items:center;padding:1px 2px 3px;color:#7889a9;font-size:7px;letter-spacing:.65px}
+.shop-stockline>span:first-child{color:#aab8d2}
+.shop-stockline>span:last-child{color:#7383a2}
+.shop-stockline b{color:#4de6d4;font-weight:500}
+.stock-dot{display:inline-block;width:5px;height:5px;margin:0 4px 1px 0;border-radius:50%;background:#65f5b5;box-shadow:0 0 7px #65f5b5}
+.shop-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.shop-item{
+  position:relative;isolation:isolate;overflow:hidden;min-height:132px;
+  display:flex;flex-direction:column;gap:7px;padding:10px;
+  border:1px solid #4b5c7a;border-radius:10px;
+  background:linear-gradient(145deg,#202b43 0%,#151d30 55%,#111827 100%);
+  box-shadow:0 5px 12px #0003,inset 0 1px 0 #ffffff0b;
+  animation:shopCardEnter .32s both;animation-delay:calc(var(--card-index,0)*35ms);
+  transition:transform .16s,border-color .16s,box-shadow .16s;
+}
+.shop-item:before{content:"";position:absolute;inset:0 0 auto;height:2px;background:linear-gradient(90deg,transparent,currentColor,transparent);opacity:.8;z-index:-1}
+.shop-item:after{content:"";position:absolute;width:105px;height:105px;right:-48px;top:-50px;border-radius:50%;background:currentColor;opacity:.045;filter:blur(2px);z-index:-1}
+.shop-item:active{transform:scale(.985)}
+.item-top{display:flex;justify-content:space-between;align-items:flex-start;min-height:36px}
+.item-icon-wrap{width:34px;height:34px;display:grid;place-items:center;border:1px solid currentColor;border-radius:9px;background:#0b122088;box-shadow:inset 0 0 14px currentColor}
+.item-icon{font:700 22px/1 'Barlow Condensed',sans-serif;color:currentColor;text-shadow:0 0 12px currentColor}
+.rarity-label{display:flex;align-items:center;gap:5px;padding:4px 6px;border:1px solid currentColor;border-radius:20px;background:#0a102080;font-size:7px;letter-spacing:.9px;font-weight:700;text-transform:uppercase}
+.rarity-label i{width:5px;height:5px;border-radius:50%;background:currentColor;box-shadow:0 0 6px currentColor}
+.item-copy{flex:1;min-width:0}
+.item-name{display:block;font:800 16px/1.1 'Barlow Condensed',sans-serif;letter-spacing:.25px;color:#f2f5ff}
+.shop-item p{margin:4px 0 0;min-height:31px;color:#a9b7d1;font-size:8px;line-height:1.5;max-width:36ch}
+.item-bottom{display:flex;justify-content:space-between;align-items:flex-end;gap:5px;margin-top:2px;padding-top:7px;border-top:1px solid #ffffff12}
+.item-kind{font-size:6px;letter-spacing:.9px;color:#71819f}
+.buy-chip{display:flex;align-items:center;gap:7px;padding:7px 9px;border:1px solid #29d8c7;border-radius:6px;background:linear-gradient(180deg,#0d3a3b,#102b32);color:#63ffec;font-size:7px;font-weight:700;letter-spacing:.65px;box-shadow:0 2px 0 #061c20;touch-action:manipulation}
+.buy-chip b{font:800 11px 'Barlow Condensed',sans-serif;color:#fff}
+.buy-chip:active{transform:translateY(2px);box-shadow:none}
+.buy-chip:disabled{border-color:#566078;background:#252d3e;color:#8793a9;box-shadow:none;opacity:.5}
+.shop-footer{display:flex;justify-content:space-between;align-items:center;margin-top:1px;padding:9px 3px 2px;border-top:1px solid #ffffff16;color:#8190ad;font-size:7px;letter-spacing:.65px}
+.shop-footer span{display:flex;align-items:center;gap:4px}
+.shop-footer b{color:#dce6fb;font-weight:500}
+.rarity-common{color:#c4d2e9;border-color:#536784}
+.rarity-common .rarity-label{color:#c3d0e6}
+.rarity-uncommon{color:#45e0b4;border-color:#1b9b7a;box-shadow:0 5px 12px #0003,inset 0 1px 0 #ffffff0b,0 0 13px #24d6a00b}
+.rarity-uncommon .rarity-label{color:#5cf0c0}
+.rarity-rare{color:#80aaff;border-color:#477bd0;box-shadow:0 5px 12px #0003,inset 0 1px 0 #ffffff0b,0 0 13px #477bd01a}
+.rarity-rare .rarity-label{color:#91b5ff}
+.rarity-legendary{color:#ffd166;border-color:#b98536;background:linear-gradient(145deg,#3a2c22 0%,#242033 55%,#171b2c 100%);box-shadow:0 5px 14px #0004,inset 0 1px 0 #fff2,0 0 18px #ffc34b18}
+.rarity-legendary .rarity-label{color:#ffdb7e}
+.shop-item.is-consumable{background:linear-gradient(145deg,#28233b,#171b30 70%,#121827)}
+.shop-item.is-consumable:before{background:linear-gradient(90deg,transparent,#b08cff,transparent)}
+.shop-empty-state{display:grid;justify-items:center;text-align:center;gap:5px;padding:18px 12px;border:1px dashed #34445e;border-radius:9px;background:#0b132080}
+.shop-empty-icon{font-size:22px;color:var(--gold);text-shadow:0 0 12px #ffd16666}
+.shop-empty-state>b{font:800 13px 'Barlow Condensed',sans-serif;letter-spacing:1px;color:#dbe6fc}
+.shop-empty-state>p{max-width:260px;margin:0;color:#8795b1;font-size:8px;line-height:1.5}
+@keyframes shopCardEnter{from{opacity:0;transform:translateY(7px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+.shop-active footer{display:none}
+.shop-active .shop-panel{z-index:3}
+@media(max-width:380px){
+  .shop-panel{padding:9px}
+  .shop-grid{gap:6px}
+  .shop-item{min-height:140px;padding:8px;gap:6px}
+  .item-name{font-size:14px}
+  .shop-item p{font-size:7px;min-height:34px}
+  .buy-chip{padding:6px 7px;gap:4px}
+  .shop-footer{font-size:6px}
+}
+@media(min-width:700px){
+  .shop-item{min-height:150px;padding:12px}
+  .item-icon-wrap{width:40px;height:40px}
+  .item-icon{font-size:26px}
+  .item-name{font-size:18px}
+  .shop-item p{font-size:9px}
+}
+
+/* Mobile input + shop reachability fixes */
+html,body{overscroll-behavior-y:none}
+#app{scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
+#shop-ui{scroll-margin-top:10px;flex-shrink:0}
+.shop-panel{overflow:visible}
+.shop-content{min-width:0}
+.shop-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.shop-item{min-width:0}
+@media(max-width:390px){.shop-grid{grid-template-columns:1fr}.shop-item{min-height:118px}.shop-item p{min-height:0}}

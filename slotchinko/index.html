@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#090b14">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="description" content="Slotchinko: poker hands power a pachinko drop. Stack chips, beat eight blinds. A free browser game from Tiny House Games for phone and desktop.">
+  <link rel="canonical" href="https://tinyhousegames.com/slotchinko/">
+  <meta property="og:site_name" content="Tiny House Games">
+  <meta property="og:title" content="Slotchinko: play free in your browser">
+  <meta property="og:description" content="Poker hands power a pachinko drop. Stack chips, beat the blinds.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://tinyhousegames.com/slotchinko/">
+  <meta property="og:image" content="https://tinyhousegames.com/slotchinko/og.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Slotchinko title next to a pachinko board of glowing pegs">
+  <meta name="twitter:card" content="summary_large_image">
+  <title>Slotchinko · Tiny House Games</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <link rel="stylesheet" href="fonts/fonts.css">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="polish.css">
+  <link rel="stylesheet" href="site-bar.css">
+</head>
+<body>
+  <main id="app">
+    <nav class="site-bar" aria-label="Tiny House Games"><a href="../" class="site-bar__home"><span aria-hidden="true">🏠</span> Tiny House Games</a><a href="../#games" class="site-bar__more">more games</a></nav>
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">✦</span><span>SLOT<span class="accent">CHINKO</span></span></div>
+      <div class="stats">
+        <div><small>ROUND</small><b id="round-value">1/8</b></div>
+        <div><small>SCORE</small><b id="score-value">0</b></div>
+        <div><small>BLIND</small><b id="target-value">45</b></div>
+        <div><small>¢</small><b id="coins-value">7</b></div>
+      </div>
+      <button id="help-button" class="help-button" type="button" aria-label="How to play and settings">?</button>
+      <div id="target-bar" class="target-bar" role="progressbar" aria-label="Progress to the blind target" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="target-bar-fill"></i></div>
+    </header>
+
+    <section class="phase-banner">
+      <div><span class="live-dot"></span><span id="phase-label">PREPARE YOUR HAND</span></div>
+      <p id="status-message">Spin the reels. Hold the symbols you want to keep.</p>
+    </section>
+
+    <section id="slot-machine" class="panel">
+      <div class="section-heading"><span>01 / THE SLOT</span><span class="micro">TAP CARDS TO HOLD</span></div>
+      <div id="reels" class="reels" aria-label="Slot reels">
+        <button class="reel" data-index="0" aria-label="Card 1"><span class="card-rank">A</span><span class="symbol suit-heart">♥</span><small>HOLD</small></button>
+        <button class="reel" data-index="1" aria-label="Card 2"><span class="card-rank">K</span><span class="symbol suit-spade">♠</span><small>HOLD</small></button>
+        <button class="reel" data-index="2" aria-label="Card 3"><span class="card-rank">Q</span><span class="symbol suit-diamond">♦</span><small>HOLD</small></button>
+        <button class="reel" data-index="3" aria-label="Card 4"><span class="card-rank">J</span><span class="symbol suit-club">♣</span><small>HOLD</small></button>
+        <button class="reel" data-index="4" aria-label="Card 5"><span class="card-rank">10</span><span class="symbol suit-heart">♥</span><small>HOLD</small></button>
+      </div>
+      <div class="hand-row">
+        <div><small>DETECTED HAND</small><strong id="hand-name">High Card</strong><small id="hand-detail">Waiting for deal</small></div>
+        <div class="hand-score"><small>BASE POWER</small><strong id="hand-power">×1</strong></div>
+      </div>
+      <div class="action-row">
+        <button id="spin-button" class="btn btn-secondary">↻ DRAW <span class="subtle">(2 LEFT)</span></button>
+        <button id="drop-button" class="btn btn-primary">DROP HAND <span>↓</span></button>
+      </div>
+    </section>
+
+    <section id="inventory" class="panel inventory-panel" hidden>
+      <div class="section-heading"><span>LOADOUT</span><span class="micro">TAP A CHIP FOR DETAILS</span></div>
+      <div id="owned-chips" class="owned-chips"></div>
+      <div id="synergy-line" class="synergy-line"></div>
+      <div class="consumable-row">
+        <div class="consumable-heading"><span>BAG</span><small id="consumable-count">0/3</small></div>
+        <div id="consumable-bag" class="consumable-bag"></div>
+      </div>
+    </section>
+
+    <section id="hand-management" class="hand-note">
+      <div class="hand-note-icon">✧</div>
+      <div><b>SUIT = ELEMENT</b><p>♥ Split · ♠ Heavy · ♦ Fortune · ♣ Sticky</p></div>
+      <div class="hand-note-right" id="balls-preview">1 BALL</div>
+    </section>
+
+    <section id="plinko-section" class="panel board-panel">
+      <div class="section-heading"><span>02 / THE DROP</span><span class="micro">DRAG TO AIM · RELEASE TO DROP</span></div>
+      <div id="plinko-canvas">
+        <canvas id="game-canvas"></canvas>
+        <div id="aim-guide"><span>DRAG TO AIM · RELEASE TO DROP</span><i></i></div>
+        <div id="board-overlay" class="board-overlay">YOUR BOARD IS WAITING</div>
+        <div id="target-flash" class="target-flash" aria-hidden="true">TARGET HIT!</div>
+      </div>
+      <div class="board-footer"><span id="balls-left">BALLS: 0</span><span id="round-earned">THIS DROP: 0</span></div>
+    </section>
+
+    <section id="shop-ui" class="panel shop-panel">
+      <div class="section-heading"><span>03 / CHIP SHOP</span><span class="micro">PASSIVE SYNERGIES</span></div>
+      <div id="shop-content" class="shop-content">
+        <p class="shop-hint">Beat the blind to earn coins and unlock the shop.</p>
+      </div>
+    </section>
+
+    <footer><span>SLOTCHINKO // V1.0</span><span>HIGH RISK · HIGH MULTIPLIER</span></footer>
+  </main>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+  <div id="title-screen" class="overlay" role="dialog" aria-labelledby="title-name" hidden>
+    <div class="overlay-card">
+      <div class="title-logo" id="title-name"><span class="brand-mark">✦</span>SLOT<span class="accent">CHINKO</span></div>
+      <p class="overlay-lead">Draw a poker hand. Drop it through the pegs. Beat eight blinds.</p>
+      <p class="overlay-best" id="title-best"></p>
+      <button id="play-button" class="btn btn-primary overlay-button" type="button" data-focus>PLAY</button>
+      <button id="title-howto" class="btn btn-secondary overlay-button" type="button">HOW TO PLAY</button>
+    </div>
+  </div>
+
+  <div id="howto-screen" class="overlay" role="dialog" aria-labelledby="howto-title" hidden>
+    <div class="overlay-card howto-card">
+      <h2 id="howto-title">HOW TO PLAY</h2>
+      <ol>
+        <li><b>Hold and draw.</b> Tap cards to keep them. You get two draws. Better hands drop more balls with more power.</li>
+        <li><b>Drop.</b> Press Drop Hand, or drag on the board to aim and release. Each ball scores by the pocket it lands in.</li>
+        <li><b>Beat the blind.</b> Your score carries over. It must reach the blind target after each drop, or the run ends.</li>
+        <li><b>Shop.</b> Coins buy Chips, which last the whole run, and one-shot items for your bag. Two different Chips with matching tags form a set.</li>
+      </ol>
+      <p><b>Your most common suit sets the ball type:</b> ♥ splits · ♠ heavy, breaks pegs · ♦ bonus bucket value · ♣ sticky.</p>
+      <p><b>Sets:</b> heart + split · diamond + fortune · spade + gravity · club + control · economy + combo · element + synergy.</p>
+      <p>From blind 3 the outer pockets are drains that pay nothing. Clear all eight blinds to win.</p>
+      <p class="howto-keys">Keyboard: 1 to 5 hold · D draw · Enter drop · arrows aim.</p>
+      <label class="toggle-row"><input id="motion-toggle" type="checkbox"><span>Reduce motion and vibration</span></label>
+      <button id="howto-close" class="btn btn-primary overlay-button" type="button" data-focus>GOT IT</button>
+    </div>
+  </div>
+
+  <div id="pause-screen" class="overlay" role="dialog" aria-labelledby="pause-title" hidden>
+    <div class="overlay-card">
+      <h2 id="pause-title">PAUSED</h2>
+      <p class="overlay-lead">The drop is on hold.</p>
+      <button id="pause-resume" class="btn btn-primary overlay-button" type="button" data-focus>RESUME</button>
+    </div>
+  </div>
+
+  <div id="end-screen" class="overlay" role="dialog" aria-labelledby="end-title" hidden>
+    <div class="overlay-card">
+      <h2 id="end-title">RUN OVER</h2>
+      <p class="overlay-lead" id="end-message"></p>
+      <p class="new-best" id="end-new-best" hidden>NEW BEST SCORE</p>
+      <dl class="end-stats">
+        <div><dt>SCORE</dt><dd id="end-score">0</dd></div>
+        <div><dt>BLINDS</dt><dd id="end-blinds">0/8</dd></div>
+        <div><dt>BEST</dt><dd id="end-best">0</dd></div>
+      </dl>
+      <button id="restart-button" class="btn btn-primary overlay-button" type="button" data-focus>NEW RUN</button>
+      <small class="end-seed" id="end-seed"></small>
+    </div>
+  </div>
+
+  <script src="vendor/matter.min.js"></script>
+  <script src="rng.js"></script>
+  <script src="data.js"></script>
+  <script src="poker.js"></script>
+  <script src="scoring.js"></script>
+  <script src="shop.js"></script>
+  <script src="physics.js"></script>
+  <script src="board.js"></script>
+  <script src="game.js"></script>
+  <script src="vice-voices.js"></script>
+  <script src="music.js"></script>
+  <script src="vendor/zzfx/zzfx-build.js"></script>
+  <script src="sound.js"></script>
+  <script src="sound-hooks.js"></script>
+  <script src="boardview.js"></script>
+  <script src="view.js"></script>
+  <script src="view-shop.js"></script>
+  <script src="overlays.js"></script>
+  <script src="ui.js"></script>
+</body>
+</html>

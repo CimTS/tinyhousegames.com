@@ -1,0 +1,95 @@
+/* Slotchinko shipping layer: readable text, 44px tap targets, overlays, feedback.
+   Same palette and fonts as style.css. */
+html.reduce-motion *,html.reduce-motion *::before,html.reduce-motion *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+@media(prefers-reduced-motion:reduce){#app{scroll-behavior:auto}}
+html,body{height:100%}
+body{touch-action:manipulation}
+#app{height:100vh;height:100dvh;min-height:0;overflow-y:auto;overflow-x:hidden}
+button{cursor:pointer}button:disabled{cursor:not-allowed}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+[hidden]{display:none!important}
+
+/* Header */
+.topbar{position:relative;flex-wrap:nowrap;padding-bottom:9px;flex-shrink:0}
+.stats{gap:10px;margin-left:auto}
+.stats small{font-size:10px}
+.stats b{font-size:18px}
+.help-button,#mute-button.mute-button{flex:0 0 auto;width:44px;height:44px;border-radius:8px;border:1px solid #3a4965;background:#111624;color:var(--cyan);font:700 19px 'Barlow Condensed',sans-serif;padding:0;touch-action:manipulation}
+.target-bar{position:absolute;left:2px;right:2px;bottom:2px;height:4px;border-radius:2px;background:#222c41;overflow:hidden}
+.target-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--gold));transition:width .25s}
+.target-bar.is-hit i{background:var(--green)}
+@media(max-width:440px){.brand>span:not(.brand-mark){display:none}.brand-mark{margin:0}.stats{gap:9px}}
+@media(max-width:370px){.stats{gap:7px}.stats b{font-size:16px}.help-button,#mute-button.mute-button{width:44px}.brand{display:none}}
+
+/* Readable text: nothing under 10px */
+.subtle,.phase-banner p,.micro,.hand-row small,#hand-detail,.board-footer,.reel small,.hand-note p,.hand-note b,.hand-note-right,#aim-guide,footer,.empty-inventory,.synergy-line,.consumable-heading small,.consumable-item,.consumable-item small,.shop-hint,.shop-empty-state>p,.market-kicker,.market-title>small,.shop-stockline,.shop-footer,.item-kind,.rarity-label,.buy-chip,.reroll-button>b,.reroll-button>small,.owned-chip,.shop-item p{font-size:11px;line-height:1.35}
+.micro{color:#a3afc7}footer{color:#8c99b3;font-size:10px}
+.phase-banner p{margin:3px 0 0;color:#b4c0d6}
+.item-tags{display:block;margin-top:4px;font-size:10px;color:#a3afc7;letter-spacing:.3px}
+.shop-item p{min-height:0;max-width:none;color:#c4cfe3}
+.item-kind{color:#a3afc7;letter-spacing:.3px}
+.market-title>small,.shop-stockline,.shop-stockline>span:last-child,.shop-footer{color:#a3afc7}
+
+/* Tap targets */
+.btn{height:48px;font-size:16px}
+.reel{min-height:64px}
+.reel small{height:14px}
+.buy-chip,.reroll-button,.owned-chip,.consumable-item{min-height:44px}
+.buy-chip{padding:8px 12px;font-size:11px}.buy-chip b{font-size:15px}
+.reroll-button{min-width:88px}.reroll-button>b{font-size:12px}.reroll-button>small{font-size:12px}
+.buy-chip:disabled{opacity:.7;color:#aab5c9}
+.reroll-button:disabled{opacity:.6}
+
+/* Loadout */
+.inventory-panel{flex-shrink:0}
+.owned-chips{flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.owned-chips::-webkit-scrollbar,.consumable-bag::-webkit-scrollbar{display:none}
+.owned-chip{flex:0 0 auto;white-space:nowrap;color:inherit}
+.consumable-item{flex:0 0 auto}
+.consumable-item:disabled{opacity:.6}
+.consumable-item small{font-size:11px}
+
+/* Board */
+#plinko-canvas{height:auto;aspect-ratio:340/270;width:100%;max-width:calc(58dvh*340/270);margin:0 auto;touch-action:none}
+@media(min-height:850px){#plinko-canvas{height:auto}}
+.shop-active #game-canvas{touch-action:pan-y}
+.board-footer{margin-top:5px}
+#aim-guide span{display:none}
+.target-flash{position:absolute;left:0;right:0;top:40%;text-align:center;font:900 34px 'Barlow Condensed',sans-serif;letter-spacing:2px;color:var(--gold);text-shadow:0 0 16px #ffd16699,0 2px 0 #0009;pointer-events:none;opacity:0}
+.target-flash.show{animation:targetFlash 1.2s ease-out both}
+html.reduce-motion .target-flash.show{opacity:1}
+@keyframes targetFlash{0%{opacity:0;transform:scale(.7)}18%{opacity:1;transform:scale(1.08)}30%{transform:scale(1)}75%{opacity:1}100%{opacity:0}}
+.board-overlay{font-size:15px;color:#c1cde2}
+
+/* Shop */
+.shop-grid.no-enter .shop-item{animation:none}
+.shop-item,.shop-item:nth-child(n){min-height:0}
+.item-top{min-height:0}
+@media(min-width:700px){#plinko-canvas{max-width:calc(44dvh*340/270)}}
+.shop-next{width:100%;margin-top:4px}
+.shop-active footer{display:none}
+#toast{font-size:12px;max-width:min(92vw,520px);width:max-content;text-align:center;line-height:1.35;z-index:30;pointer-events:none}
+
+/* Overlays */
+.overlay{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:calc(16px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));background:#060811e8;overflow-y:auto;animation:overlayIn .18s ease-out}
+@keyframes overlayIn{from{opacity:0}to{opacity:1}}
+.overlay-card{width:min(100%,420px);margin:auto;padding:22px 18px;display:flex;flex-direction:column;gap:10px;text-align:center;border:1px solid var(--line);border-radius:12px;background:linear-gradient(145deg,#141b2b,#0f1420);box-shadow:0 14px 40px #0008}
+.overlay-card h2{margin:0;font:900 30px/1.1 'Barlow Condensed',sans-serif;letter-spacing:2px;color:var(--cyan)}
+.overlay-lead{margin:0;font-size:13px;line-height:1.5;color:#c4cfe3}
+.overlay-best{margin:0;font-size:12px;letter-spacing:1px;color:var(--gold)}
+.overlay-button{width:100%}
+.title-logo{font:900 46px/1 'Barlow Condensed',sans-serif;letter-spacing:2px;margin-bottom:4px}
+.howto-card{text-align:left;font-size:13px;line-height:1.45;color:#c4cfe3}
+.howto-card h2{text-align:center}
+.howto-card ol{margin:0;padding-left:20px;display:grid;gap:6px}.howto-card p{margin:0}
+.howto-card b{color:var(--text)}
+.howto-keys{color:#a3afc7;font-size:12px}
+.toggle-row{display:flex;align-items:center;gap:10px;min-height:44px;cursor:pointer}
+.toggle-row input{width:22px;height:22px;accent-color:var(--cyan);margin:0}
+#end-screen.is-win h2{color:var(--gold)}
+.new-best{margin:0;font:800 18px 'Barlow Condensed',sans-serif;letter-spacing:1.5px;color:var(--gold)}
+.end-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:4px 0}
+.end-stats div{padding:9px 4px;border:1px solid var(--line);border-radius:8px;background:#0b1220}
+.end-stats dt{font-size:10px;letter-spacing:1px;color:#a3afc7}
+.end-stats dd{margin:2px 0 0;font:800 21px 'Barlow Condensed',sans-serif;color:var(--text)}
+.end-seed{font-size:10px;color:#a3afc7;letter-spacing:.5px}

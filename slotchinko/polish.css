@@ -277,3 +277,5 @@ html.reduce-motion .path-node,html.reduce-motion .event-icon,html.reduce-motion 
 .collection-card>.btn{flex-shrink:0}
 .event-card h2{text-transform:uppercase;letter-spacing:1px}
 .ng-mods li.ng-older{font-size:11px;color:#9d8fae}.ng-mods li.ng-older b{font-weight:600;color:#d9a6c4}
+.kofi-link{align-self:center;margin-top:2px;padding:6px 10px;font:600 11px 'DM Mono',monospace;letter-spacing:.3px;color:#8d9bb8;text-decoration:none;border-radius:8px}
+.kofi-link:hover,.kofi-link:focus-visible{color:var(--gold);text-decoration:underline}

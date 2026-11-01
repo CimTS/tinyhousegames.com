@@ -28,9 +28,8 @@
       if(!active)return;
       if(e.cancelable)e.preventDefault();
       setAim(e);
-      const shouldStart=startedFromSlot&&game.state.phase==="slot";
       active=false;startedFromSlot=false;
-      if(shouldStart)game.startDrop();
+      game.aimFlow.boardRelease();game.view.render(game);  // releasing only sets the aim; DROP confirms
     });
     const cancel=()=>{active=false;startedFromSlot=false;};
     canvas.addEventListener("pointercancel",cancel);
@@ -46,7 +45,7 @@
       }
       else if(e.key>="1"&&e.key<="5")game.toggleHold(Number(e.key)-1);
       else if(e.key==="d"||e.key==="D")game.spin();
-      else if(e.key==="Enter"&&!onButton)$("drop-button").click();
+      else if((e.key==="Enter"||e.key===" ")&&!onButton){$("drop-button").click();e.preventDefault();}
     });
   }
 
@@ -56,7 +55,7 @@
     const nextSeed=()=>urlSeed()??freshSeed();
     const view=new window.GameView(prefs,overlays);
     const game=new window.SlotchinkoGame({view,seed:nextSeed(),locked:prefs.locked()});
-    window.slotchinko=game;
+    window.slotchinko=game;game.aimFlow=window.SlotchinkoAimFlow.create(game);
     const canvas=$("game-canvas"),board=new window.BoardView(canvas,()=>game.physics,()=>prefs.reducedMotion());
     view.attach(game,board);game.render();
 
@@ -65,7 +64,7 @@
     });
     $("spin-button").addEventListener("click",()=>game.spin());
     $("drop-button").addEventListener("click",()=>{
-      if(game.state.phase==="slot")game.startDrop();
+      if(game.state.phase==="slot"){game.aimFlow.press();game.view.render(game);}
       else overlays.showPath(game);
     });
     $("shop-content").addEventListener("click",e=>{

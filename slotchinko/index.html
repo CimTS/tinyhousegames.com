@@ -85,10 +85,10 @@
     </section>
 
     <section id="plinko-section" class="panel board-panel">
-      <div class="section-heading"><span>02 / THE DROP</span><span class="micro">DRAG TO AIM · RELEASE TO DROP</span></div>
+      <div class="section-heading"><span>02 / THE DROP</span><span class="micro">DRAG TO AIM · PRESS DROP</span></div>
       <div id="plinko-canvas">
         <canvas id="game-canvas"></canvas>
-        <div id="aim-guide"><span>DRAG TO AIM · RELEASE TO DROP</span><i></i></div>
+        <div id="aim-guide"><span>DRAG TO AIM · PRESS DROP</span><i></i></div>
         <div id="board-overlay" class="board-overlay">YOUR BOARD IS WAITING</div>
         <div id="payout-board" class="payout-stack payout-stack-board" aria-hidden="true"></div>
         <div id="target-flash" class="target-flash" aria-hidden="true">TARGET HIT!</div>
@@ -127,7 +127,7 @@
       <h2 id="howto-title">HOW TO PLAY</h2>
       <ol>
         <li><b>Hold and draw.</b> Tap cards to keep them. You get two draws. Better hands drop more balls with more power.</li>
-        <li><b>Drop.</b> Press Drop Hand, or drag on the board to aim and release. Each ball scores by the pocket it lands in.</li>
+        <li><b>Drop.</b> Press Drop Hand, then drag or tap the board to aim (nothing drops yet), then tap Drop to release the balls. Each ball scores by the pocket it lands in.</li>
         <li><b>Beat the blind.</b> Your score carries over. It must reach the blind target after each drop, or the run ends.</li>
         <li><b>Shop.</b> Coins buy Chips, which last the whole run, and one-shot items for your bag. Two different Chips with matching tags form a set.</li>
       </ol>
@@ -135,7 +135,7 @@
       <p><b>Sets:</b> heart + split · diamond + fortune · spade + gravity · club + control · economy + combo · element + synergy.</p>
       <p>From blind 3 the outer pockets are drains that pay nothing. Clear all 16 blinds to win.</p>
       <p><b>Path:</b> after each shop pick a plain blind, an Elite (harder, pays a Rare Chip), an Event or the Lounge. Milestones unlock new decks and items (see Collection). Win to open Ascension.</p>
-      <p class="howto-keys">Keyboard: 1 to 5 hold · D draw · Enter drop · arrows aim.</p>
+      <p class="howto-keys">Keyboard: 1 to 5 hold · D draw · Enter or Space aim, then drop · arrows aim.</p>
       <p class="howto-privacy">Your progress and settings are saved only on this device. The game sends one anonymous visit count the first time you play, nothing else.</p>
       <label class="toggle-row"><input id="motion-toggle" type="checkbox"><span>Reduce motion and vibration</span></label>
       <button id="howto-close" class="btn btn-primary overlay-button" type="button" data-focus>GOT IT</button>
@@ -268,6 +268,7 @@
   <script src="view.js"></script>
   <script src="view-shop.js"></script>
   <script src="overlays.js"></script>
+  <script src="aimflow.js"></script>
   <script src="ui.js"></script>
   <script src="visit.js"></script>
 </body>

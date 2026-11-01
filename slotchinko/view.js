@@ -60,14 +60,16 @@
       const shop=s.phase==="roundEnd"&&s.won;
       $("phase-label").textContent=s.phase==="slot"?"PREPARE YOUR HAND":s.phase==="drop"?"THE DROP IS LIVE":s.victory?"YOU WIN":shop?"BLIND CLEARED":"RUN OVER";
       const need=Math.max(0,s.target-s.score).toLocaleString("en-US");
-      $("status-message").textContent=s.phase==="slot"?(s.score>=s.target?"Target already met. Bank more points for the blinds ahead.":`You need ${need} more points. Tap cards to hold, draw up to twice, then drop.`):s.phase==="drop"?"Watch the balls fall. Drag across the board to aim the next ball.":s.victory?"Every blind beaten.":shop?"Buy Chips and consumables, reroll if needed, then enter the next blind.":"Your score fell short of the blind.";
+      $("status-message").textContent=s.phase==="slot"?(s.score>=s.target?"Target already met. Bank more points: Drop Hand, aim, then tap Drop.":(this.game.aimFlow?.aiming?"Aim: drag or tap the board, then tap DROP to release.":`You need ${need} more points. Tap cards to hold, draw up to twice, press Drop Hand to aim, then tap Drop.`)):s.phase==="drop"?"Watch the balls fall. Drag across the board to aim the next ball.":s.victory?"Every blind beaten.":shop?"Buy Chips and consumables, reroll if needed, then enter the next blind.":"Your score fell short of the blind.";
     }
 
     buttons(s){
       const spin=$("spin-button"),drop=$("drop-button"),shop=s.phase==="roundEnd"&&s.won&&!s.victory;
       spin.disabled=s.phase!=="slot"||s.spins>=s.maxSpins;
       if(this.changed("spin",s.spins))spin.innerHTML=`↻ DRAW <span class="subtle">(${s.maxSpins-s.spins} LEFT)</span>`;
-      if(this.changed("drop",shop))drop.innerHTML=shop?"CHOOSE PATH →":"DROP HAND ↓";
+      const aiming=!!this.game.aimFlow?.aiming;
+      if(this.changed("drop",shop+"|"+aiming))drop.innerHTML=shop?"CHOOSE PATH →":aiming?"DROP ●":"DROP HAND ↓";
+      drop.classList.toggle("drop-confirm",aiming);document.body.classList.toggle("aiming",aiming);
       drop.disabled=!(shop||s.phase==="slot");
     }
 

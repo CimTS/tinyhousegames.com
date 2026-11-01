@@ -3,8 +3,8 @@
    to the network for anything not cached. Never touches other sites and sends nothing anywhere.
    CACHE_VERSION is a hash of the precached files (tools/slotchinko-sw-version.mjs); a new version
    installs a fresh cache and deletes the old one, so updates arrive on the next visit. */
-self.CACHE_VERSION = "0201aa168574";
-self.PRECACHE = ["./","board.js","boardview.js","data.js","favicon.svg","fonts/barlow-condensed-latin-500-normal.woff2","fonts/barlow-condensed-latin-700-normal.woff2","fonts/barlow-condensed-latin-800-normal.woff2","fonts/barlow-condensed-latin-900-normal.woff2","fonts/dm-mono-latin-400-normal.woff2","fonts/dm-mono-latin-500-normal.woff2","fonts/fonts.css","game.js","icon-180.png","icon-192.png","icon-512.png","icon-maskable-512.png","index.html","manifest.webmanifest","music.js","overlays.js","path.js","payouts.js","physics.js","poker.js","polish.css","rng.js","save.js","scoring.js","shop.js","site-bar.css","sound-hooks.js","sound.js","style.css","ui.js","vendor/matter.min.js","vendor/zzfx/zzfx-build.js","vice-voices.js","view-shop.js","view.js","visit.js"];
+self.CACHE_VERSION = "db8cd4dd2a06";
+self.PRECACHE = ["./","aimflow.js","board.js","boardview.js","data.js","favicon.svg","fonts/barlow-condensed-latin-500-normal.woff2","fonts/barlow-condensed-latin-700-normal.woff2","fonts/barlow-condensed-latin-800-normal.woff2","fonts/barlow-condensed-latin-900-normal.woff2","fonts/dm-mono-latin-400-normal.woff2","fonts/dm-mono-latin-500-normal.woff2","fonts/fonts.css","game.js","icon-180.png","icon-192.png","icon-512.png","icon-maskable-512.png","index.html","manifest.webmanifest","music.js","overlays.js","path.js","payouts.js","physics.js","poker.js","polish.css","rng.js","save.js","scoring.js","shop.js","site-bar.css","sound-hooks.js","sound.js","style.css","ui.js","vendor/matter.min.js","vendor/zzfx/zzfx-build.js","vice-voices.js","view-shop.js","view.js","visit.js"];
 const CACHE = "slotchinko-" + self.CACHE_VERSION;
 
 self.addEventListener("install", (event) => {

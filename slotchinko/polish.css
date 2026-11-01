@@ -279,3 +279,12 @@ html.reduce-motion .path-node,html.reduce-motion .event-icon,html.reduce-motion 
 .ng-mods li.ng-older{font-size:11px;color:#9d8fae}.ng-mods li.ng-older b{font-weight:600;color:#d9a6c4}
 .kofi-link{align-self:center;margin-top:2px;padding:6px 10px;font:600 11px 'DM Mono',monospace;letter-spacing:.3px;color:#8d9bb8;text-decoration:none;border-radius:8px}
 .kofi-link:hover,.kofi-link:focus-visible{color:var(--gold);text-decoration:underline}
+
+/* Aim phase: a bright aim line and ghost ball over the board; Drop Hand becomes a big DROP confirm. */
+body.aiming #aim-guide{opacity:1;top:0;color:var(--cyan)}
+body.aiming #aim-guide span{display:block;font-size:10px;font-weight:700;letter-spacing:1.5px;white-space:nowrap}
+body.aiming #aim-guide i{width:2px;height:150px;background:linear-gradient(var(--cyan),rgba(80,240,220,.08))}
+body.aiming #aim-guide::after{content:"";position:absolute;left:50%;top:22px;width:14px;height:14px;margin-left:-7px;border-radius:50%;border:2px dashed var(--cyan);background:rgba(80,240,220,.18);box-shadow:0 0 12px var(--cyan)}
+#drop-button.drop-confirm{font-size:22px;letter-spacing:3px;min-height:64px;background:linear-gradient(135deg,#ffcf5a,#ff8a3d);color:#1a1206;box-shadow:0 0 18px rgba(255,170,60,.55);animation:dropPulse 1.2s ease-in-out infinite}
+@keyframes dropPulse{50%{box-shadow:0 0 30px rgba(255,170,60,.9)}}
+@media (prefers-reduced-motion:reduce){#drop-button.drop-confirm{animation:none}}

@@ -99,7 +99,7 @@
         s.phase="roundEnd";s.won=true;this.generateShop();this.toast("BLIND SKIPPED · SHOP OPEN");
       }
       else if(item.action==="redeal"){
-        s.deck=this._buildDeck();s.discardPile=[];s.cards=Array.from({length:5},()=>this._drawCard());
+        s.deck=this._buildDeck();s.discardPile=[];s.cards=Array.from({length:5},()=>this._drawCard());this._bossDeal();
         s.held=[false,false,false,false,false];s.spins=0;this.toast("REDEALT · BOTH DRAWS BACK");this.view?.dealt?.([0,1,2,3,4]);
       }
       else if(item.action!=="none"){

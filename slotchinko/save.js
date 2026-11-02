@@ -36,7 +36,7 @@
   function restore(game, d) {
     game.timers = []; game.state = d.state; game.rng.importState(d.rng);
     if (game._ngHas) game.physics.drainRound = game._ngHas("hungry-drains") ? 2 : 0;
-    game.physics.setRound(d.state.round);
+    game.physics.setRound(d.state.round);game._bossRestore?.();
     game.render();
     return game;
   }

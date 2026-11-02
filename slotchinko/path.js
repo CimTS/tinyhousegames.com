@@ -6,14 +6,13 @@
   const pick=(list,rnd)=>list[Math.floor(rnd()*list.length)];
 
   window.SlotchinkoPath={
-    _isBossRound(round){return this._ngHas("boss-blinds")&&round%4===0;},
     /* Path choices for the next blind: always a plain blind, plus two different detours. */
     _rollPath(){
       const s=this.state,rnd=this.rng.stream("path"),next=s.round+1;
       const pool=["elite","event","event","rest"],extra=[];
       while(extra.length<2){const t=pick(pool,rnd);if(!extra.includes(t))extra.push(t);}
       const choices=["blind",...extra].map(type=>({type,event:type==="event"?pick(D.EVENTS,rnd).id:type==="rest"?"lounge":null}));
-      s.path={round:s.round,choices,boss:s.bosses?.[next]||null,picked:null};
+      s.path={round:s.round,choices,boss:this._bossFor(next)?.id||null,picked:null};
     },
     /* Picks a path node. Blind and Elite go straight to the next blind; Event and Lounge show their card first. */
     choosePath(index){

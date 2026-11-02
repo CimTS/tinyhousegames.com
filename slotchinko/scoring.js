@@ -27,7 +27,7 @@
         spadeScore:0,spadeDamage:0,diamondScore:0,clubScore:0,splitBonus:0,splitChain:0,reactor:0,
         plating:0,stickPower:0,launchSpread:0,coinsPerBlind:0,pressCoins:0,flushBonus:0,suitDiversity:0,
         fourSuitBonus:0,diamondBonus:0,clubCoins:0,glass:0,drainHalf:false};
-      for(const chip of [...this.state.chips,...(this.state.runBuffs||[])]){
+      for(const chip of [...this._chipsInPlay(),...(this.state.runBuffs||[]),...this._trophyItems()]){
         for(const [key,value] of Object.entries(chip.effect||{})){
           if(key==="scoreMult")totals[key]*=value;
           else if(typeof value==="number")totals[key]=(totals[key]||0)+value;

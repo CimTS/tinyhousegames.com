@@ -41,14 +41,13 @@
         lastEvaluation:null, diamondHits:0, runBuffs:[], deckMods:{aces:0,trim:false,gold:false}, croupierPaid:0, grinBonus:0, coinsEarnedThisBlind:0, activeBoosts:[],
         victory:false, targetHit:false, glassLeft:0, glassBoost:0, finishing:false,
         ng:Math.max(0,Math.min(window.SlotchinkoData.NG.MAX,ng|0)), deckId, itemSerial:0, locked:[...(locked||[])],
-        path:null, event:null, node:"blind", boss:null, bosses:{}, blindPayMult:1, baseSpins:2,
+        path:null, event:null, node:"blind", boss:null, trophies:[], dropFx:null, blindPayMult:1, baseSpins:2,
         stats:{bestHand:null,bestPower:0,bestRank:0,coinsEarned:0,chipPay:{},bestDrop:0,hands:{},maxBag:0,sets:[]}
       };
       const s=this.state;s.target=this._target(1);s.baseSpins=s.maxSpins;
-      if(this._ngHas("boss-blinds")){const rb=this.rng.stream("boss"),B=window.SlotchinkoData.BOSSES;for(const r of [4,8,12,16])s.bosses[r]=B[Math.floor(rb()*B.length)].id;}
       this._applyDeck(deckId);
       this.physics.drainRound=this._ngHas("hungry-drains")?2:0;
-      this.physics.setRound(1);
+      this.physics.setRound(1);this._bossBoard();
       this._startNewHand();
       this.render();
     }
@@ -91,7 +90,7 @@
 
     _startNewHand(){
       const s=this.state;s.deck=this._buildDeck();s.discardPile=[];
-      s.cards=Array.from({length:5},()=>this._drawCard());
+      s.cards=Array.from({length:5},()=>this._drawCard());this._bossDeal();
       s.held=[false,false,false,false,false];s.spins=0;s.lastEvaluation=null;
       this.evaluateHand();
     }
@@ -128,7 +127,6 @@
       s.grinBonus=fx.grinBalls&&(result.name==="High Card"||result.name==="One Pair")?fx.grinBalls:0;
       s.balls=Math.min(BALANCE.MAX_HAND_BALLS,result.balls+fx.extraBalls+s.grinBonus+this._boost(s.pendingBoosts,"balls"));
       if(this._ngHas("thin-hands")&&s.round>=2)s.balls=Math.max(1,s.balls-1);
-      if(s.boss==="weight")s.balls=Math.max(1,s.balls-2);
       s.primarySuit=this._dominantSuit();
       return result;
     }
@@ -146,7 +144,7 @@
       s.activeBoosts=[...s.pendingBoosts];
       s.pendingBoosts=[];
       s.phase="drop";s.ballsLeft=s.balls;s.activeBalls=0;s.finishing=false;
-      s.roundScore=0;s.diamondHits=0;s.croupierPaid=0;
+      s.roundScore=0;s.diamondHits=0;s.croupierPaid=0;this._bossDropStart();
       const st=s.stats;if(st){const rank=Object.keys(window.SlotchinkoData.HANDS).indexOf(s.hand);
         if(rank>st.bestRank||(rank===st.bestRank&&s.power>st.bestPower)||!st.bestHand){st.bestRank=Math.max(st.bestRank,rank);st.bestPower=s.power;st.bestHand=s.hand;}
         st.hands[s.hand]=(st.hands[s.hand]||0)+1;for(const x of this._effects().synergies)if(!st.sets.includes(x))st.sets.push(x);}
@@ -170,12 +168,12 @@
       this.render();this.after(BALL_GAP_STEPS,()=>this._dropNext());
     }
 
-    /* A ball's suits are the hand's main suit, or all four under Wild Current. */
+    /* A ball's suits are the hand's main suit (Sonny's fight: card by card), or all four under Wild Current. */
     _ballOptions(x,fx){
-      const s=this.state,wild=s.activeBoosts.some(b=>b.action==="rainbow");
-      const suits=wild?[...SUITS]:[s.primarySuit],has=suit=>suits.includes(suit);
+      const s=this.state,wild=s.activeBoosts.some(b=>b.action==="rainbow"),suit=this._ballSuit();
+      const suits=wild?[...SUITS]:[suit],has=x=>suits.includes(x);
       return {
-        x,element:s.primarySuit,suits,heavy:has("spade"),fortune:has("diamond"),sticky:has("club"),
+        x,element:suit,suits,heavy:has("spade"),fortune:has("diamond"),sticky:has("club"),
         damage:has("spade")?2+fx.spadeDamage:1,
         splitsLeft:has("heart")?1+fx.reactor:0,splitAt:fx.reactor?1:BALANCE.HEART_SPLIT_HIT,chain:fx.splitChain>0,
         wellPull:1+fx.wellPull+(has("spade")?fx.spadeWell:0),plating:fx.plating,stick:fx.stickPower,
@@ -204,7 +202,7 @@
 
     onBucket(result){
       const s=this.state,fx=this._effects(),ball=result.ball;
-      const gained=this.ballScore(result,fx);
+      const gained=this._bossBall(result,fx);
       s.roundScore+=gained;s.score+=gained;
       s.activeBalls=Math.max(0,s.activeBalls-1);
       const p=ball?ball.plugin:{};
@@ -227,7 +225,7 @@
     /* Pays a cleared blind and pops a payout for each Chip that added to it. */
     _payBlind(){
       const s=this.state,fx=this._effects(),pay=this._blindPay(fx)*(s.blindPayMult||1);s.coins+=pay;if(s.stats)s.stats.coinsEarned+=pay;
-      const n=id=>this._ownedCount(id),coin=(id,icon,name,amount)=>amount>0&&this.payout({id,icon,name,amount,unit:"¢",kind:"coin",fromBlind:true});
+      const n=id=>this._chipsInPlay().filter(c=>c.id===id).length,coin=(id,icon,name,amount)=>amount>0&&this.payout({id,icon,name,amount,unit:"¢",kind:"coin",fromBlind:true});
       coin("pocket-change","¢","POCKET CHANGE",n("pocket-change"));
       coin("golden-touch","✦","GOLDEN TOUCH",5*n("golden-touch"));
       if(fx.synergies.some(x=>x.startsWith("CASH LOOP")))coin("cash-loop","∞","CASH LOOP",1);
@@ -265,7 +263,7 @@
       const s=this.state;if(s.phase!=="drop")return;s.phase="roundEnd";this.physics.setWideCenter?.(false);
       if(s.stats)s.stats.bestDrop=Math.max(s.stats.bestDrop,s.roundScore);
       if(s.score>=s.target){
-        s.won=true;
+        s.won=true;this._bossBeaten();
         if(s.round>=BALANCE.FINAL_BLIND){s.victory=true;s.shopInventory=[];this.toast("FINAL BLIND BEATEN");}
         else{this._payBlind();this._eliteReward();this._shatter();this.generateShop();this.toast("BLIND CLEARED · SHOP OPEN");}
       }else{s.won=false;s.shopInventory=[];this.toast("BLIND FAILED · RUN ENDED");}
@@ -276,13 +274,13 @@
     nextRound(node="blind",extra={}){
       const s=this.state;if(s.phase!=="roundEnd"||!s.won||s.victory)return;
       if(s.event)return; // an event card is waiting for its choice
-      const {climb=1,blindPay=1}=extra,prev=s.target,boss=s.bosses?.[s.round+1]||null,bossDef=window.SlotchinkoData.BOSSES.find(b=>b.id===boss);
-      s.round++;s.node=node;s.boss=boss;s.blindPayMult=blindPay;s.path=null;
-      const step=Math.max(0,this._target(s.round)-prev)*climb*(node==="elite"?1.5:1)*(bossDef?.climb||1);
-      s.target=Math.round(prev+step);s.maxSpins=boss==="fog"?1:s.baseSpins||2;
+      const {climb=1,blindPay=1}=extra,prev=s.target,bossDef=this._bossFor(s.round+1);
+      s.round++;s.node=node;s.boss=bossDef?.id||null;s.blindPayMult=blindPay;s.path=null;
+      const step=Math.max(0,this._target(s.round)-prev)*climb*(node==="elite"?1.5:1)*this._bossClimb(bossDef);
+      s.target=Math.round(prev+step);s.maxSpins=s.baseSpins||2;
       if(bossDef)this.toast(`BOSS BLIND · ${bossDef.name.toUpperCase()}`);else if(node==="elite")this.toast("ELITE BLIND · +6¢ AND A RARE CHIP");
       s.phase="slot";s.won=false;s.shopOpen=false;s.shopInventory=[];s.targetHit=s.score>=s.target;
-      s.coinsEarnedThisBlind=0;s.activeBoosts=[];this.physics.setRound(s.round);
+      s.coinsEarnedThisBlind=0;s.activeBoosts=[];this.physics.setRound(s.round);this._bossBoard();
       this._startNewHand();this.render();
     }
 
@@ -291,7 +289,7 @@
     vibrate(pattern){this.view?.vibrate(pattern);}
   }
 
-  Object.assign(SlotchinkoGame.prototype,window.SlotchinkoScoring,window.SlotchinkoShopLogic,window.SlotchinkoPath);
+  Object.assign(SlotchinkoGame.prototype,window.SlotchinkoScoring,window.SlotchinkoShopLogic,window.SlotchinkoPath,window.SlotchinkoBossRules);
   window.SlotchinkoGame=SlotchinkoGame;
   window.SlotchinkoShop={CHIP_CATALOG:window.SlotchinkoData.CHIP_CATALOG,CONSUMABLE_CATALOG:window.SlotchinkoData.CONSUMABLE_CATALOG};
 })();

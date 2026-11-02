@@ -100,18 +100,12 @@
     { id:"tight-shop", name:"Tight Shop", icon:"¢", desc:"Every shop price +1¢." },
     { id:"hungry-drains", name:"Hungry Drains", icon:"▽", desc:"Drains open from blind 2." },
     { id:"thin-hands", name:"Thin Hands", icon:"•", desc:"From blind 2, every hand drops 1 fewer ball." },
-    { id:"boss-blinds", name:"Boss Blinds", icon:"☠", desc:"Blinds 4, 8, 12 and 16 get a boss rule." },
+    { id:"boss-blinds", name:"Boss Teeth", icon:"☠", desc:"The four bosses play a nastier rule." },
     { id:"lean-purse", name:"Lean Purse", icon:"◌", desc:"Cleared blinds pay 1¢ less." },
     { id:"pricey-rerolls", name:"Pricey Rerolls", icon:"↻", desc:"Rerolls cost 2¢ more." },
-    { id:"short-bag", name:"Short Bag", icon:"▣", desc:"Your Bag holds 1 fewer item." },
+    { id:"short-bag", name:"Short Bag", icon:"▣", desc:"Your Bag holds 1 fewer item, and the bosses play their nastiest rules." },
     { id:"high-stakes", name:"High Stakes", icon:"♛", desc:"Targets climb another 25%." }
   ]};
-  // Boss rules (Ascension 4+). "climb" scales how far this blind's target rises over the last one.
-  const BOSSES=[
-    { id:"wall", name:"The Wall", icon:"▥", desc:"This blind's target climbs 30% further.", climb:1.3 },
-    { id:"fog", name:"The Fog", icon:"☁", desc:"Only one draw this blind." },
-    { id:"weight", name:"The Weight", icon:"⚓", desc:"Every hand drops 2 fewer balls this blind." }
-  ];
   // Starting decks: House is open; the rest unlock from milestones (UNLOCKS).
   const DECKS=[
     { id:"house", name:"House Deck", icon:"♠", desc:"The standard 52. No tricks." },
@@ -179,5 +173,5 @@
     { id:"chaos", name:"Chaos", icon:"⚡", tags:["balls","risk","glass","echo"] }
   ];
 
-  window.SlotchinkoData={NG,DECKS,BOSSES,NODES,EVENTS,LOUNGE,UNLOCKS,FAMILIES,BALANCE,SUITS,SUIT_GLYPHS,SUIT_NAMES,RANKS,HANDS,CHIP_CATALOG,CARD_CATALOG,BUFF_CATALOG,CONSUMABLE_CATALOG,RARITY_WEIGHT,RARITY_ORDER};
+  window.SlotchinkoData={NG,DECKS,NODES,EVENTS,LOUNGE,UNLOCKS,FAMILIES,BALANCE,SUITS,SUIT_GLYPHS,SUIT_NAMES,RANKS,HANDS,CHIP_CATALOG,CARD_CATALOG,BUFF_CATALOG,CONSUMABLE_CATALOG,RARITY_WEIGHT,RARITY_ORDER};
 })();

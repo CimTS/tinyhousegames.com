@@ -122,9 +122,9 @@
     showPath(game){
       const s=game.state,D=window.SlotchinkoData;if(!s.path)return;
       if(s.event)return this.showEvent(game);
-      const next=s.round+1,boss=D.BOSSES.find(b=>b.id===s.path.boss);
+      const next=s.round+1;
       $("path-sub").textContent=`Blind ${next} of ${D.BALANCE.FINAL_BLIND}`;
-      $("path-boss").hidden=!boss;if(boss)$("path-boss").innerHTML=`<span>${boss.icon}</span><b>BOSS · ${boss.name}</b> ${boss.desc}`;
+      window.SlotchinkoBossView.pathPreview(game);
       const ev=id=>id&&game.eventDef(id);
       $("path-list").innerHTML=s.path.choices.map((c,i)=>{const n=D.NODES[c.type],e=c.type==="event"?ev(c.event):null;
         return `<button type="button" class="path-node is-${c.type}" data-path="${i}" ${i===0?"data-focus":""}><span class="path-icon">${n.icon}</span><span class="path-copy"><b>${n.name}</b><small>${e?`${e.name}. ${n.desc}`:n.desc}</small></span><i aria-hidden="true">›</i></button>`;}).join("");
@@ -163,7 +163,7 @@
       $("end-blinds").textContent=`${cleared}/${D.BALANCE.FINAL_BLIND}`;
       $("end-best").textContent=num(d.best);
       $("end-new-best").hidden=!best;
-      $("end-seed").textContent=`SEED ${game.rng.seed}`;
+      $("end-seed").textContent=`SEED ${game.rng.seed}`;window.SlotchinkoBossView.endScreen(s,game);
       this.show("end-screen");
     }
   }

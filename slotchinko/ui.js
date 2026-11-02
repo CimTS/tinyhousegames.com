@@ -45,7 +45,7 @@
     const game=new window.SlotchinkoGame({view,seed:nextSeed(),locked:prefs.locked()});
     window.slotchinko=game;game.aimFlow=window.SlotchinkoAimFlow.create(game);
     const canvas=$("game-canvas"),board=new window.BoardView(canvas,()=>game.physics,()=>prefs.reducedMotion());
-    view.attach(game,board);game.render();
+    view.attach(game,board);game.render();window.SlotchinkoBossView.bind(view,game);
 
     document.querySelectorAll(".reel").forEach(reel=>{
       reel.addEventListener("click",()=>game.toggleHold(Number(reel.dataset.index)));

@@ -28,6 +28,7 @@
   <link rel="stylesheet" href="polish.css">
   <link rel="stylesheet" href="site-bar.css">
   <link rel="stylesheet" href="desktop.css">
+  <link rel="stylesheet" href="bosses.css">
 </head>
 <body>
   <main id="app">
@@ -73,6 +74,10 @@
       <div class="section-heading"><span>LOADOUT</span><span class="micro">TAP A CHIP FOR DETAILS</span></div>
       <div id="owned-chips" class="owned-chips"></div>
       <div id="synergy-line" class="synergy-line"></div>
+      <div id="trophy-slot" class="trophy-slot" hidden>
+        <div class="consumable-heading"><span>TROPHIES</span><small id="trophy-count">0/4</small></div>
+        <div id="trophy-list" class="trophy-list"></div>
+      </div>
       <div class="consumable-row">
         <div class="consumable-heading"><span>BAG</span><small id="consumable-count">0/3</small></div>
         <div id="consumable-bag" class="consumable-bag"></div>
@@ -87,6 +92,7 @@
 
     <section id="plinko-section" class="panel board-panel">
       <div class="section-heading"><span>02 / THE DROP</span><span class="micro">DRAG TO AIM · PRESS DROP</span></div>
+      <div id="boss-panel" class="boss-panel" hidden></div>
       <div id="plinko-canvas">
         <canvas id="game-canvas"></canvas>
         <div id="aim-guide"><span>DRAG TO AIM · PRESS DROP</span><i></i></div>
@@ -99,6 +105,7 @@
 
     <section id="shop-ui" class="panel shop-panel">
       <div class="section-heading"><span>03 / CHIP SHOP</span><span class="micro">PASSIVE SYNERGIES</span></div>
+      <p id="boss-beaten" class="boss-beaten" hidden></p>
       <div id="shop-content" class="shop-content">
         <p class="shop-hint">Beat the blind to earn coins and unlock the shop.</p>
       </div>
@@ -134,6 +141,7 @@
       </ol>
       <p><b>Your most common suit sets the ball type:</b> ♥ splits · ♠ heavy, breaks pegs · ♦ bonus bucket value · ♣ sticky.</p>
       <p><b>Sets:</b> heart + split · diamond + fortune · spade + gravity · club + control · economy + combo · element + synergy.</p>
+      <p><b>Bosses:</b> blinds 4, 8, 12 and 16 have a boss with its own rule, shown on the path. Beat one to keep its trophy for the run. Trophies take no Chip slot.</p>
       <p>From blind 3 the outer pockets are drains that pay nothing. Clear all 16 blinds to win.</p>
       <p><b>Path:</b> after each shop pick a plain blind, an Elite (harder, pays a Rare Chip), an Event or the Lounge. Milestones unlock new decks and items (see Collection). Win to open Ascension.</p>
       <p class="howto-keys">Keyboard: 1 to 5 hold · D draw · Space or Enter aim, then drop · arrows aim · shop 1 to 9 buy, R reroll · Esc pause or back.</p>
@@ -226,6 +234,8 @@
     <div class="overlay-card">
       <h2 id="end-title">RUN OVER</h2>
       <p class="overlay-lead" id="end-message"></p>
+      <p class="end-boss-line" id="end-boss-line" hidden></p>
+      <div class="end-trophies" id="end-trophies" hidden></div>
       <p class="new-best" id="end-new-best" hidden>NEW BEST SCORE</p>
       <p class="end-ng" id="end-ng" hidden></p>
       <dl class="end-stats">
@@ -251,12 +261,14 @@
   <script src="vendor/matter.min.js"></script>
   <script src="rng.js"></script>
   <script src="data.js"></script>
+  <script src="bosses-data.js"></script>
   <script src="poker.js"></script>
   <script src="scoring.js"></script>
   <script src="shop.js"></script>
   <script src="physics.js"></script>
   <script src="board.js"></script>
   <script src="path.js"></script>
+  <script src="boss-rules.js"></script>
   <script src="game.js"></script>
   <script src="save.js"></script>
   <script src="vice-voices.js"></script>
@@ -269,6 +281,8 @@
   <script src="desktop-copy.js"></script>
   <script src="view.js"></script>
   <script src="view-shop.js"></script>
+  <script src="boss-art.js"></script>
+  <script src="boss-view.js"></script>
   <script src="overlays.js"></script>
   <script src="aimflow.js"></script>
   <script src="keys.js"></script>

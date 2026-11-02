@@ -1,0 +1,40 @@
+/* Slotchinko boss panel, path preview and trophy slot. Art glow lives here, outside the SVG. */
+.boss-art{display:inline-block;flex:none;width:44px;height:44px;padding:3px;border-radius:9px;background:#000;filter:drop-shadow(0 0 3px #36f5e580) drop-shadow(0 0 7px #ff4fa340);line-height:0}
+.boss-art svg{width:100%;height:100%;display:block}
+.boss-copy{display:flex;flex-direction:column;gap:2px;min-width:0}
+.boss-copy b{font:800 15px/1.1 'Barlow Condensed',sans-serif;letter-spacing:.8px;color:#fff}
+.boss-copy small{font:500 10.5px/1.25 'DM Mono',monospace;color:#ffb3d4}
+.boss-copy em{font:500 10.5px/1.25 'DM Mono',monospace;color:#9fb0cf}
+.boss-copy .boss-live{color:#ffd166}
+.boss-panel{display:flex;align-items:center;gap:10px;margin:0 0 8px;padding:6px 9px;border:1px solid #ff4fa366;border-radius:10px;background:#120a14}
+.boss-panel[hidden],.boss-beaten[hidden],.trophy-slot[hidden],.end-trophies[hidden],.end-boss-line[hidden]{display:none}
+.boss-panel.is-beaten{border-color:#ffd16677;background:#15120a}
+.boss-panel.is-beaten small{color:#ffe2a1}
+.path-boss{display:flex;align-items:center;gap:11px}
+.path-boss .boss-art{width:64px;height:64px}
+.path-boss .boss-copy b{color:#ff8cb8;margin:0}
+.path-boss .boss-copy small{color:#f0c4d6}
+.boss-beaten{display:flex;align-items:center;gap:10px;margin:0 0 10px;padding:8px 10px;border:1px solid #ffd16677;border-radius:10px;background:#15120a}
+.boss-beaten span:last-child{display:flex;flex-direction:column;gap:2px;min-width:0}
+.boss-beaten b{font:700 15px/1.15 'Barlow Condensed',sans-serif;color:#fff}
+.boss-beaten small{font:500 10.5px/1.3 'DM Mono',monospace;color:#ffe2a1}
+.trophy-slot{margin-top:7px;padding-top:6px;border-top:1px solid #2b3750}
+.trophy-list{display:flex;flex-wrap:wrap;gap:6px}
+.trophy{display:inline-flex;align-items:center;gap:6px;padding:3px 9px 3px 3px;border:1px solid #ffd16655;border-radius:9px;background:#15120a;color:#ffe2a1;font:700 12px/1 'Barlow Condensed',sans-serif;letter-spacing:.4px;cursor:pointer;touch-action:manipulation}
+.trophy .boss-art{width:28px;height:28px;padding:2px;border-radius:6px}
+.trophy:focus-visible{outline:2px solid var(--cyan);outline-offset:1px}
+#toast{max-width:calc(100vw - 24px);white-space:normal;text-align:center}
+.end-boss-line{margin:0;font:600 15px/1.3 'Barlow Condensed',sans-serif;color:#ffb3d4;text-align:center}
+.end-trophies{display:flex;justify-content:center;gap:8px;margin:6px 0}
+@media(min-width:1000px) and (min-height:600px){
+  /* The panel sits over the board, so the board gives up its height. */
+  body.boss-fight{--board-h:calc(100dvh/var(--ui) - 232px);--board-w:calc(var(--board-h)*340/270)}
+  /* The loadout column is full on a big build: trophies shrink to one row of icons (names on hover and tap). */
+  .trophy-slot{display:flex;align-items:center;gap:8px;margin-top:3px;padding-top:3px}
+  .trophy-slot .consumable-heading{flex:none;gap:6px;margin:0}
+  .trophy{padding:2px}.trophy>span:last-child{display:none}
+  .trophy .boss-art{width:22px;height:22px}
+  .boss-rule-note{display:none}
+  .shop-active .boss-panel{flex-wrap:wrap}
+  .shop-active .boss-beaten{display:none}
+}

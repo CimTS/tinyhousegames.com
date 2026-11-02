@@ -96,7 +96,7 @@
     }
     dropStarted(){this.scrollTo($("plinko-section"),"center");}
     ballScored(result,gained){
-      if(this.board)this.board.score(result.index,gained>0?`+${gained.toLocaleString("en-US")}`:"DRAINED",gained>0);
+      if(this.board)this.board.score(result.index,gained>0?`+${gained.toLocaleString("en-US")}`:result.note||"DRAINED",gained>0);
     }
     targetHit(){
       const el=$("target-flash");el.classList.remove("show");void el.offsetWidth;el.classList.add("show");

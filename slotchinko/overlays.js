@@ -86,7 +86,7 @@
           <b>${open?k.name:"Locked"}</b><small>${open?k.desc:hint(k.id)}</small></button>`;}).join("");
       const n=this.ngPick,mods=D.NG.MODS.slice(0,n),pct=Math.round(((1+D.NG.TARGET_STEP*n)*(n>=8?1.25:1)-1)*100);
       $("ng-level").textContent=n?`ASCENSION ${n}`:"STANDARD";
-      $("ng-detail").textContent=n?`Targets +${pct}% · ${n} rule${n===1?"":"s"}`:(d.ngUnlocked?"Tap + to raise the stakes.":"Win a run to open Ascension 1.");
+      $("ng-detail").textContent=n?`Targets +${pct}% · ${n} rule${n===1?"":"s"}`:(d.ngUnlocked?"Press + to raise the stakes.":"Win a run to open Ascension 1.");
       // Newest rule in full; earlier ones as a compact row.
       const last=mods[n-1],older=mods.slice(0,-1);
       $("ng-mods").innerHTML=(last?`<li class="is-new"><span>${last.icon}</span><b>${last.name}</b> ${last.desc}</li>`:"")+(older.length?`<li class="ng-older">Also: ${older.map(m=>`<b>${m.icon} ${m.name}</b>`).join(" · ")}</li>`:"");

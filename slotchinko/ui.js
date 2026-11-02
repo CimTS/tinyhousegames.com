@@ -20,7 +20,8 @@
       setAim(e);
     });
     canvas.addEventListener("pointermove",e=>{
-      if(!active)return;
+      const hover=e.pointerType==="mouse"&&(game.aimFlow.aiming||game.state.phase==="drop");  // a mouse aims without a button held
+      if(!active&&!hover)return;
       if(e.cancelable)e.preventDefault();
       setAim(e);
     });
@@ -34,19 +35,6 @@
     const cancel=()=>{active=false;startedFromSlot=false;};
     canvas.addEventListener("pointercancel",cancel);
     canvas.addEventListener("lostpointercapture",cancel);
-  }
-
-  function bindKeys(game,overlays){
-    window.addEventListener("keydown",e=>{
-      if(overlays.open){if(e.key==="Escape"&&overlays.open==="howto-screen")overlays.closeHowTo();if(e.key==="Escape"&&overlays.open==="settings-screen")overlays.closeSettings();return;}
-      const s=game.state,onButton=e.target.closest?.("button");
-      if(e.key==="ArrowLeft"||e.key==="ArrowRight"){
-        s.aim=Math.max(0,Math.min(1,s.aim+(e.key==="ArrowLeft"?-.05:.05)));game.view.renderAim();e.preventDefault();
-      }
-      else if(e.key>="1"&&e.key<="5")game.toggleHold(Number(e.key)-1);
-      else if(e.key==="d"||e.key==="D")game.spin();
-      else if((e.key==="Enter"||e.key===" ")&&!onButton){$("drop-button").click();e.preventDefault();}
-    });
   }
 
   window.addEventListener("DOMContentLoaded",()=>{
@@ -126,7 +114,7 @@
     $("pause-resume").addEventListener("click",()=>overlays.hide());
     $("motion-toggle").addEventListener("change",e=>prefs.setReduced(e.target.checked));
     document.addEventListener("contextmenu",e=>e.preventDefault());
-    bindAim(game,canvas);bindKeys(game,overlays);
+    bindAim(game,canvas);window.SlotchinkoKeys.bind(game,overlays);window.SlotchinkoCopy.apply();
 
     // The sim only ticks while visible and with no overlay up, so a hidden tab holds still.
     document.addEventListener("visibilitychange",()=>{

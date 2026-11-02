@@ -1,0 +1,90 @@
+/* Slotchinko desktop layer. Loads last; every rule sits behind a media query so phones are untouched.
+   Wide screens get two columns (hand, board) and the shop as a third while it is open.
+   --ui scales the whole 1280x720 layout up in steps, so 1080p and 1440p fill the screen. */
+@media(min-width:1000px) and (min-height:600px){
+  :root{--ui:1;--side:clamp(330px,calc(30vw/var(--ui)),390px);--board-h:calc(100dvh/var(--ui) - 172px);--board-w:calc(var(--board-h)*340/270)}
+  body{background:radial-gradient(ellipse at 50% 0,#141d33,#090b14 70%)}
+  #app{width:100%;max-width:none;height:calc(100dvh/var(--ui));display:grid;grid-template-columns:var(--side) minmax(0,var(--board-w));grid-template-rows:auto auto auto auto auto auto minmax(0,1fr);gap:9px 14px;justify-content:center;align-content:start}
+  .site-bar{grid-column:1/-1;grid-row:1}
+  .topbar{grid-column:1/-1;grid-row:2}
+  .phase-banner{grid-column:1;grid-row:3}
+  #slot-machine{grid-column:1;grid-row:4}
+  #inventory{grid-column:1;grid-row:5}
+  #hand-management{grid-column:1;grid-row:6}
+  #plinko-section{grid-column:2;grid-row:3/-1;align-self:start;min-height:0}
+  #plinko-canvas{width:100%;max-width:none;height:auto}
+  body.aiming #aim-guide i{height:calc(var(--board-h)*.8)}
+  footer{display:none}
+  #shop-ui{display:none}
+  /* A full loadout has to fit beside the board too. */
+  .inventory-panel{padding:8px 10px}
+  .synergy-line{margin-top:5px;padding:4px 8px}
+  .consumable-row{margin-top:5px;padding-top:5px}
+  .consumable-heading{margin-bottom:3px}
+  #drop-button.drop-confirm{min-height:0}
+
+  /* Shop open: the board shrinks in place and the market takes the room beside it. */
+  .shop-active #app{grid-template-columns:var(--side) 270px minmax(0,780px)}
+  .shop-active #shop-ui{display:block;grid-column:3;grid-row:3/-1;min-height:0;margin-bottom:10px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#3a4965 transparent}
+  .shop-active #hand-management,.shop-active #plinko-section .micro{display:none}
+  .shop-grid{grid-template-columns:repeat(auto-fill,minmax(205px,1fr))}
+  .shop-next{position:sticky;bottom:0}
+
+  /* Overlays use the extra width where they have lists to show. */
+  .overlay-card{flex-shrink:0}
+  .howto-card{width:min(100%,640px)}
+  .deck-card-wrap{width:min(100%,640px)}
+  .deck-list{grid-template-columns:repeat(3,1fr)}
+  .collection-card{width:min(100%,960px);max-height:calc((100dvh - 32px)/var(--ui))}
+  .col-grid{grid-template-columns:repeat(3,1fr)}
+  .col-sets{grid-template-columns:repeat(4,1fr)}
+  .path-card{width:min(100%,860px)}
+  .path-list{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
+  .path-node{grid-template-columns:1fr;justify-items:center;align-content:start;text-align:center}
+  .path-node>i{display:none}
+  .event-card{width:min(100%,520px)}
+
+  .payout-stack-hud{transform:scale(var(--ui));transform-origin:top right}
+  @supports (zoom:1.5){
+    #app,.overlay-card,#toast{zoom:var(--ui)}
+  }
+}
+@media(min-width:1600px) and (min-height:800px){@supports (zoom:1.5){:root{--ui:1.25}}}
+@media(min-width:1900px) and (min-height:900px){@supports (zoom:1.5){:root{--ui:1.5}}}
+@media(min-width:2500px) and (min-height:1250px){@supports (zoom:1.5){:root{--ui:2}}}
+@media(min-width:3500px) and (min-height:1800px){@supports (zoom:1.5){:root{--ui:3}}}
+
+/* Mouse: hover states, pointer cursors and quiet key hints. */
+@media(hover:hover) and (pointer:fine){
+  a,label{cursor:pointer}
+  .shop-active #game-canvas{cursor:default}
+  .btn,.reel,.shop-tab,.buy-chip,.reroll-button,.owned-chip,.consumable-item,.help-button,.ng-step,.deck-card,.event-option,.path-node{transition:transform .12s,border-color .12s,filter .12s,box-shadow .12s}
+  .reel:not(:disabled):hover{border-color:var(--cyan);transform:translateY(-3px);box-shadow:0 5px 12px #0006}
+  .reel.held:not(:disabled):hover{border-color:var(--gold)}
+  .btn:not(:disabled):hover{filter:brightness(1.15);transform:translateY(-1px)}
+  .help-button:hover,.ng-step:not(:disabled):hover{border-color:var(--cyan);filter:brightness(1.3)}
+  .buy-chip:not(:disabled):hover,.reroll-button:not(:disabled):hover,.consumable-item:not(:disabled):hover{filter:brightness(1.25);transform:translateY(-1px)}
+  .shop-item:hover{transform:translateY(-2px);box-shadow:0 8px 18px #0006}
+  .owned-chip:hover,.shop-tab:not(.is-active):hover,.deck-card:not(.is-locked):hover,.event-option:not(:disabled):hover{border-color:var(--cyan)}
+  .path-node:hover,.deck-card:not(.is-locked):hover,.event-option:not(:disabled):hover{transform:translateY(-2px)}
+  .vol-row input[type=range]:hover::-webkit-slider-thumb{filter:brightness(1.1)}
+
+  #reels{counter-reset:hint}
+  #path-list,#event-options,#deck-list{counter-reset:pick}
+  #shop-content{counter-reset:buy}
+  .path-node,.event-option,.deck-card,.reroll-button{position:relative}
+  .reel::before,.path-node::before,.event-option::before,.deck-card::before{position:absolute;top:4px;left:6px;font:500 10px/1 'DM Mono',monospace;color:#7f8fb0}
+  .reel::before{counter-increment:hint;content:counter(hint)}
+  .path-node::before,.event-option::before,.deck-card::before{counter-increment:pick;content:counter(pick)}
+  .deck-card::before{top:auto;bottom:5px;left:auto;right:7px}
+  .event-option::before{left:auto;right:9px;top:7px}
+  .buy-chip::before{counter-increment:buy;content:counter(buy);font:500 10px/1 'DM Mono',monospace;opacity:.65}
+  #spin-button::after,#drop-button::after,.reroll-button::after{font:500 10px/1 'DM Mono',monospace;letter-spacing:.5px;opacity:.6}
+  #spin-button::after{content:"D";margin-left:6px}
+  #drop-button::after{content:"SPACE";margin-left:8px}
+  .reroll-button::after{content:"R";position:absolute;top:4px;right:5px}
+  .board-footer::after{content:"ESC PAUSE · ← → AIM";order:1;color:#6f7f9e}
+  #round-earned{order:2}
+  .shop-active .board-footer::after{display:none}
+}
+@media(hover:none){.howto-keys{display:none}}

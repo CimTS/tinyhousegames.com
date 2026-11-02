@@ -27,6 +27,7 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="polish.css">
   <link rel="stylesheet" href="site-bar.css">
+  <link rel="stylesheet" href="desktop.css">
 </head>
 <body>
   <main id="app">
@@ -135,7 +136,7 @@
       <p><b>Sets:</b> heart + split · diamond + fortune · spade + gravity · club + control · economy + combo · element + synergy.</p>
       <p>From blind 3 the outer pockets are drains that pay nothing. Clear all 16 blinds to win.</p>
       <p><b>Path:</b> after each shop pick a plain blind, an Elite (harder, pays a Rare Chip), an Event or the Lounge. Milestones unlock new decks and items (see Collection). Win to open Ascension.</p>
-      <p class="howto-keys">Keyboard: 1 to 5 hold · D draw · Enter or Space aim, then drop · arrows aim.</p>
+      <p class="howto-keys">Keyboard: 1 to 5 hold · D draw · Space or Enter aim, then drop · arrows aim · shop 1 to 9 buy, R reroll · Esc pause or back.</p>
       <p class="howto-privacy">Your progress and settings are saved only on this device. The game sends one anonymous visit count the first time you play, nothing else.</p>
       <label class="toggle-row"><input id="motion-toggle" type="checkbox"><span>Reduce motion and vibration</span></label>
       <button id="howto-close" class="btn btn-primary overlay-button" type="button" data-focus>GOT IT</button>
@@ -216,7 +217,7 @@
   <div id="pause-screen" class="overlay" role="dialog" aria-labelledby="pause-title" hidden>
     <div class="overlay-card">
       <h2 id="pause-title">PAUSED</h2>
-      <p class="overlay-lead">The drop is on hold.</p>
+      <p class="overlay-lead">The game is on hold.</p>
       <button id="pause-resume" class="btn btn-primary overlay-button" type="button" data-focus>RESUME</button>
     </div>
   </div>
@@ -265,10 +266,12 @@
   <script src="sound-hooks.js"></script>
   <script src="boardview.js"></script>
   <script src="payouts.js"></script>
+  <script src="desktop-copy.js"></script>
   <script src="view.js"></script>
   <script src="view-shop.js"></script>
   <script src="overlays.js"></script>
   <script src="aimflow.js"></script>
+  <script src="keys.js"></script>
   <script src="ui.js"></script>
   <script src="visit.js"></script>
 </body>

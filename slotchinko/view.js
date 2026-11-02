@@ -19,6 +19,7 @@
         // Sit just under the top bar (below the coin counter, never over it); top of the screen once it scrolls away.
         const bar=document.querySelector(".topbar"),y=bar?bar.getBoundingClientRect().bottom:0;
         $("payout-layer").style.top=`${Math.max(10,Math.round(y)+8)}px`;
+        if(bar&&bar.offsetWidth>560)$("payout-layer").style.right=`${Math.round(window.innerWidth-bar.getBoundingClientRect().right)}px`;  // the wide layout's bar ends at the board, not at 560px
         this.payoutLayers.hud.show(e);
       }else this.payoutLayers.board.show(e);
     }
@@ -60,7 +61,7 @@
       const shop=s.phase==="roundEnd"&&s.won;
       $("phase-label").textContent=s.phase==="slot"?"PREPARE YOUR HAND":s.phase==="drop"?"THE DROP IS LIVE":s.victory?"YOU WIN":shop?"BLIND CLEARED":"RUN OVER";
       const need=Math.max(0,s.target-s.score).toLocaleString("en-US");
-      $("status-message").textContent=s.phase==="slot"?(s.score>=s.target?"Target already met. Bank more points: Drop Hand, aim, then tap Drop.":(this.game.aimFlow?.aiming?"Aim: drag or tap the board, then tap DROP to release.":`You need ${need} more points. Tap cards to hold, draw up to twice, press Drop Hand to aim, then tap Drop.`)):s.phase==="drop"?"Watch the balls fall. Drag across the board to aim the next ball.":s.victory?"Every blind beaten.":shop?"Buy Chips and consumables, reroll if needed, then enter the next blind.":"Your score fell short of the blind.";
+      $("status-message").textContent=window.SlotchinkoCopy.words(s.phase==="slot"?(s.score>=s.target?"Target already met. Bank more points: Drop Hand, aim, then tap Drop.":(this.game.aimFlow?.aiming?"Aim: drag or tap the board, then tap DROP to release.":`You need ${need} more points. Tap cards to hold, draw up to twice, press Drop Hand to aim, then tap Drop.`)):s.phase==="drop"?"Watch the balls fall. Drag across the board to aim the next ball.":s.victory?"Every blind beaten.":shop?"Buy Chips and consumables, reroll if needed, then enter the next blind.":"Your score fell short of the blind.");
     }
 
     buttons(s){

@@ -11,9 +11,9 @@
     const stacks=new Map();s.chips.forEach(c=>stacks.set(c.id,{chip:c,n:(stacks.get(c.id)?.n||0)+1}));
     $("inventory").hidden=!s.chips.length&&!s.consumables.length;
     (s.runBuffs||[]).forEach(c=>stacks.set(c.id,{chip:c,n:1}));
-    $("owned-chips").innerHTML=[...stacks.values()].map(({chip:c,n})=>`<button type="button" class="owned-chip rarity-${c.rarity}" data-info="${c.id}">${c.icon} ${c.name}${n>1?` ×${n}`:""}</button>`).join("")||'<span class="empty-inventory">No Chips yet.</span>';
+    $("owned-chips").innerHTML=[...stacks.values()].map(({chip:c,n})=>`<button type="button" class="owned-chip rarity-${c.rarity}" data-info="${c.id}" title="${c.desc}">${c.icon} ${c.name}${n>1?` ×${n}`:""}</button>`).join("")||'<span class="empty-inventory">No Chips yet.</span>';
     const live=s.phase==="slot"||(s.phase==="roundEnd"&&s.won&&!s.victory);
-    $("consumable-bag").innerHTML=s.consumables.map(c=>`<button type="button" class="consumable-item rarity-${c.rarity}" data-use="${c.instanceId}" ${live?"":"disabled"} aria-label="Use ${c.name}: ${c.desc}"><span>${c.icon}</span><b>${c.name}</b><small>USE</small></button>`).join("")||'<span class="empty-inventory">Consumables appear here.</span>';
+    $("consumable-bag").innerHTML=s.consumables.map(c=>`<button type="button" class="consumable-item rarity-${c.rarity}" data-use="${c.instanceId}" title="${c.desc}" ${live?"":"disabled"} aria-label="Use ${c.name}: ${c.desc}"><span>${c.icon}</span><b>${c.name}</b><small>USE</small></button>`).join("")||'<span class="empty-inventory">Consumables appear here.</span>';
     $("consumable-count").textContent=`${s.consumables.length}/${this.game._bagMax()}`;
     const fx=this.game._effects();
     $("synergy-line").textContent=fx.synergies.length?fx.synergies.join("  ·  "):"No sets yet. Pair two different Chips with matching tags.";

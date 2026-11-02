@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self';">
+  <meta name="theme-color" content="#070b10">
+  <meta name="description" content="Dronesweeper: read the sensor numbers, steer your drone squad through a fogged salvage site and stack upgrades floor by floor. A free minesweeper-meets-tactics browser game from Tiny House Games for phone and desktop.">
+  <meta property="og:site_name" content="Tiny House Games">
+  <meta property="og:title" content="Dronesweeper: play free in your browser">
+  <meta property="og:description" content="Minesweeper meets drone tactics. Read the noise, clear the site, stack the run.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://tinyhousegames.com/dronesweeper/">
+  <meta property="og:image" content="https://tinyhousegames.com/dronesweeper/og.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Dronesweeper title over a neon grid with scout and heavy drones">
+  <meta name="twitter:card" content="summary_large_image">
+  <title>Dronesweeper · Tiny House Games</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" href="./css/base.css">
+  <link rel="stylesheet" href="./css/layout.css">
+  <link rel="stylesheet" href="./css/board.css">
+  <link rel="stylesheet" href="./css/panels.css">
+  <link rel="stylesheet" href="./css/overlays.css">
+  <link rel="stylesheet" href="./css/audio.css">
+  <link rel="stylesheet" href="./site-bar.css">
+  <script type="module" src="./js/main.js"></script>
+</head>
+<body>
+  <div class="danger-vignette" aria-hidden="true"></div>
+
+  <header class="hud" aria-label="Run status">
+    <button class="brand" id="menuBtn" type="button" aria-label="Open main menu" title="Main menu">
+      <span class="brand-mark" aria-hidden="true">DS</span><span class="brand-name">Dronesweeper</span>
+    </button>
+    <dl class="hud-stats">
+      <div class="hud-stat"><dt>Floor</dt><dd><span id="hudFloor">01</span><small>/<span id="hudFinal">10</span></small></dd></div>
+      <div class="hud-stat"><dt>Turn</dt><dd><span id="hudTurn">1</span><small>/<span id="hudMaxTurn">30</span></small></dd></div>
+      <div class="hud-stat threat-stat"><dt>Threats</dt><dd id="hudThreats">0</dd></div>
+      <div class="hud-stat hide-sm"><dt>Squad</dt><dd id="hudSquad">8/8</dd></div>
+      <div class="hud-stat hide-sm beacon-stat"><dt>Beacon</dt><dd id="hudBeacon">Unknown</dd></div>
+    </dl>
+    <div class="hud-actions">
+      <span id="modeBadge" class="mode-badge" hidden>Daily</span>
+      <button id="soundBtn" class="icon-btn" type="button" title="Sound settings (M mutes)" aria-label="Sound settings" aria-haspopup="dialog"></button>
+      <button id="undoBtn" class="icon-btn" type="button" title="Undo last command (U)" aria-label="Undo last command"></button>
+      <button id="helpBtn" class="icon-btn" type="button" title="Field guide (?)" aria-label="Open field guide"></button>
+    </div>
+  </header>
+
+  <main class="stage">
+    <section class="field" aria-label="Site map">
+      <div class="squad-strip" id="squadStrip" aria-label="Your drones"></div>
+      <p class="comms" id="comms" aria-live="polite"></p>
+      <div class="board-area">
+        <div id="board" class="board" role="grid" aria-label="Tactical map"></div>
+      </div>
+      <p class="bar-help" id="barHelp"></p>
+    </section>
+
+    <aside class="rail" aria-label="Command console">
+      <section class="rail-block">
+        <h2 class="rail-title">Squad <span class="rail-hint">Tab</span></h2>
+        <div class="squad" id="squad"></div>
+      </section>
+      <section class="rail-block">
+        <h2 class="rail-title">Commands <span class="rail-hint" id="commandOwner">Scout</span></h2>
+        <div class="commands" id="commands"></div>
+        <p class="command-help" id="commandHelp"></p>
+      </section>
+      <section class="rail-block" id="loadout" hidden>
+        <h2 class="rail-title">Loadout</h2>
+        <div class="loadout" id="loadoutList"></div>
+      </section>
+      <button id="endTurnBtn" class="end-turn" type="button">
+        <span>End turn</span><kbd>E</kbd>
+      </button>
+      <p class="key-legend">
+        <kbd>←↑↓→</kbd> aim <kbd>1–9</kbd> command <kbd>Enter</kbd> confirm <kbd>U</kbd> undo <kbd>?</kbd> help
+      </p>
+    </aside>
+  </main>
+
+  <nav class="action-bar" id="actionBar" aria-label="Commands"></nav>
+
+  <!-- Overlays -->
+  <div id="titleScreen" class="overlay title-screen" role="dialog" aria-modal="true" aria-labelledby="titleHeading">
+    <div class="title-card">
+      <nav class="site-bar" aria-label="Tiny House Games"><a href="../" class="site-bar__home"><span aria-hidden="true">🏠</span> Tiny House Games</a><a href="../#games" class="site-bar__more">more games</a></nav>
+      <div class="title-emblem" id="titleEmblem" aria-hidden="true"></div>
+      <p class="kicker">Salvage operations · recovery division</p>
+      <h1 id="titleHeading" class="title-heading">Dronesweeper</h1>
+      <p class="title-tag">Read the noise. Clear the site. Stack the run.</p>
+      <div class="title-buttons">
+        <button id="resumeBtn" class="btn primary" type="button" hidden>Resume run</button>
+        <button id="newRunBtn" class="btn primary" type="button">New run</button>
+        <button id="dailyBtn" class="btn" type="button">Daily survey</button>
+        <button id="guideBtn" class="btn ghost" type="button">Field guide</button>
+        <button id="titleSoundBtn" class="btn ghost" type="button">Sound</button>
+      </div>
+      <p class="title-meta" id="titleMeta"></p>
+      <a class="kofi-link" href="https://ko-fi.com/nathonlo" target="_blank" rel="noopener">☕ Enjoying it? Buy us a coffee on Ko-fi</a>
+    </div>
+  </div>
+
+  <div id="guide" class="overlay" role="dialog" aria-modal="true" aria-labelledby="guideTitle" hidden>
+    <div class="sheet guide-sheet">
+      <p class="kicker">Field guide <span id="guideStep">1 / 5</span></p>
+      <h2 id="guideTitle"></h2>
+      <div id="guideBody" class="guide-body"></div>
+      <div class="sheet-actions">
+        <button id="guideSkip" class="btn ghost" type="button">Close</button>
+        <span class="spacer"></span>
+        <button id="guidePrev" class="btn" type="button">Back</button>
+        <button id="guideNext" class="btn primary" type="button">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="draft" class="overlay" role="dialog" aria-modal="true" aria-labelledby="draftTitle" hidden>
+    <div class="sheet draft-sheet">
+      <p class="kicker" id="draftKicker">Floor cleared</p>
+      <h2 id="draftTitle">Choose an upgrade</h2>
+      <div id="draftChoices" class="draft-choices"></div>
+      <div id="draftOwned" class="draft-owned"></div>
+    </div>
+  </div>
+
+  <div id="audioPanel" class="overlay" role="dialog" aria-modal="true" aria-labelledby="audioTitle" hidden>
+    <div class="sheet audio-sheet">
+      <p class="kicker">Comms · audio</p>
+      <h2 id="audioTitle">Sound</h2>
+      <div class="audio-row">
+        <label for="musicVolume">Music</label>
+        <input id="musicVolume" class="slider" type="range" min="0" max="100" step="5">
+        <output id="musicVolumeValue" for="musicVolume">100%</output>
+      </div>
+      <div class="audio-row">
+        <label for="sfxVolume">Effects</label>
+        <input id="sfxVolume" class="slider" type="range" min="0" max="100" step="5">
+        <output id="sfxVolumeValue" for="sfxVolume">100%</output>
+      </div>
+      <label class="switch-row" for="muteToggle">
+        <span>Mute everything <kbd>M</kbd></span>
+        <input id="muteToggle" class="switch" type="checkbox" role="switch">
+      </label>
+      <p class="audio-note">All sound is synthesised live in your browser. No audio files, nothing downloaded.</p>
+      <div class="sheet-actions"><span class="spacer"></span><button id="audioClose" class="btn primary" type="button">Done</button></div>
+    </div>
+  </div>
+
+  <div id="result" class="overlay" role="dialog" aria-modal="true" aria-labelledby="resultTitle" hidden>
+    <div class="sheet result-sheet">
+      <p class="kicker" id="resultKicker">Mission report</p>
+      <h2 id="resultTitle"></h2>
+      <p id="resultText" class="result-text"></p>
+      <div id="resultStats" class="result-stats"></div>
+      <div id="resultLoadout" class="draft-owned"></div>
+      <p id="resultRecord" class="result-record"></p>
+      <a class="kofi-link" href="https://ko-fi.com/nathonlo" target="_blank" rel="noopener">☕ Buy us a coffee on Ko-fi</a>
+      <div class="sheet-actions">
+        <button id="resultMenu" class="btn ghost" type="button">Main menu</button>
+        <span class="spacer"></span>
+        <button id="resultContinue" class="btn primary" type="button">Continue</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

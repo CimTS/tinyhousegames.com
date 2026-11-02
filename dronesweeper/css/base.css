@@ -1,0 +1,111 @@
+/* Tokens, reset and shared controls. Dark salvage-site theme with neon accents. */
+:root {
+  color-scheme: dark;
+  --bg: #060a0f;
+  --bg-2: #0a1118;
+  --surface: #0e1720;
+  --surface-2: #132029;
+  --surface-3: #1a2a35;
+  --line: #1f303c;
+  --line-2: #2c4352;
+  --text: #e4eef1;
+  --muted: #8ba2ad;
+  --dim: #56707c;
+
+  --cyan: #3ef0d8;
+  --cyan-soft: #3ef0d822;
+  --amber: #ffb547;
+  --red: #ff5d6c;
+  --violet: #b98cff;
+  --magenta: #ff5fd2;
+  --blue: #5cb8ff;
+  --green: #6dfa9a;
+  --lime: #c6f25b;
+  --orange: #ff8a45;
+
+  /* Sensor danger ramp: 1 → 6+ */
+  --s1: #5cb8ff; --s2: #3ef0d8; --s3: #c6f25b; --s4: #ffb547; --s5: #ff8a45; --s6: #ff5d6c;
+
+  /* Unit identity colours */
+  --u-scout: #3ef0d8; --u-heavy: #ffb547; --u-medic: #6dfa9a; --u-engineer: #b98cff;
+
+  --radius: 10px;
+  --radius-sm: 6px;
+  --mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --hud-h: 56px;
+  --ease-out: cubic-bezier(.2, .8, .2, 1);
+  --danger: 0;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--bg); -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; min-height: 100dvh; color: var(--text);
+  font: 14px/1.45 var(--sans);
+  background:
+    radial-gradient(1200px 600px at 50% -10%, #0f2a33aa, transparent 70%),
+    radial-gradient(800px 500px at 100% 100%, #1b0f2a55, transparent 70%),
+    var(--bg);
+  overflow-x: hidden;
+}
+h1, h2, h3, p { margin: 0; }
+[hidden] { display: none !important; }
+
+button {
+  font: inherit; color: inherit; cursor: pointer; background: none; border: 0; padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+button:disabled { cursor: not-allowed; }
+:focus { outline: none; }
+:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; border-radius: 6px; }
+
+kbd {
+  display: inline-grid; place-items: center; min-width: 1.6em; height: 1.6em; padding: 0 .35em;
+  font: 600 10px/1 var(--mono); color: var(--muted);
+  border: 1px solid var(--line-2); border-bottom-width: 2px; border-radius: 4px; background: var(--bg-2);
+}
+
+.icon { display: block; flex: none; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 44px; padding: 0 18px; border-radius: var(--radius);
+  border: 1px solid var(--line-2); background: var(--surface-2);
+  font-weight: 650; letter-spacing: .01em;
+  transition: background .15s, border-color .15s, transform .1s, box-shadow .15s;
+}
+.btn:hover:not(:disabled) { border-color: var(--cyan); background: var(--surface-3); }
+.btn:active:not(:disabled) { transform: translateY(1px); }
+.btn.primary {
+  background: var(--cyan); color: #04211d; border-color: var(--cyan);
+  box-shadow: 0 0 0 1px #3ef0d855, 0 6px 24px -6px #3ef0d899;
+}
+.btn.primary:hover:not(:disabled) { background: #7ff7e8; }
+.btn.ghost { background: transparent; border-color: transparent; color: var(--muted); }
+.btn.ghost:hover:not(:disabled) { color: var(--text); border-color: var(--line-2); background: var(--surface); }
+.btn:disabled { opacity: .4; }
+
+.icon-btn {
+  display: grid; place-items: center; width: 40px; height: 40px; border-radius: 9px;
+  color: var(--muted); border: 1px solid transparent; transition: color .15s, border-color .15s, background .15s;
+}
+.icon-btn:hover:not(:disabled) { color: var(--cyan); border-color: var(--line-2); background: var(--surface); }
+.icon-btn:disabled { opacity: .3; }
+
+.kicker {
+  font: 700 10px/1.2 var(--mono); letter-spacing: .2em; text-transform: uppercase; color: var(--cyan);
+}
+
+.danger-vignette {
+  position: fixed; inset: 0; pointer-events: none; z-index: 1;
+  box-shadow: inset 0 0 calc(40px + 120px * var(--danger)) calc(-10px + 30px * var(--danger)) rgba(255, 60, 80, calc(.45 * var(--danger)));
+  transition: box-shadow .6s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important; animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important; transition-duration: 1ms !important;
+  }
+}

@@ -1,0 +1,103 @@
+/* Squad cards, command buttons, end turn, phone strip and bottom bar. */
+
+/* ---------- Squad cards (rail) ---------- */
+.squad { display: flex; flex-direction: column; gap: 8px; }
+.unit-card {
+  --u: var(--u-scout);
+  display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: 12px;
+  width: 100%; padding: 10px 12px; text-align: left; border-radius: var(--radius);
+  border: 1px solid var(--line); background: var(--surface);
+  transition: border-color .15s, background .15s, transform .12s;
+}
+.unit-card:hover:not(:disabled) { border-color: var(--line-2); background: var(--surface-2); }
+.unit-card.active { border-color: color-mix(in srgb, var(--u) 70%, transparent); background: linear-gradient(90deg, color-mix(in srgb, var(--u) 12%, var(--surface)), var(--surface)); box-shadow: inset 3px 0 0 var(--u); }
+.unit-card.offline { opacity: .4; }
+.unit-card.fx-hit { animation: card-hit .45s ease-out; }
+.u-heavy { --u: var(--u-heavy); } .u-medic { --u: var(--u-medic); } .u-engineer { --u: var(--u-engineer); }
+.unit-badge {
+  display: grid; place-items: center; width: 40px; height: 40px; border-radius: 10px;
+  color: var(--u); background: color-mix(in srgb, var(--u) 10%, var(--bg-2)); border: 1px solid color-mix(in srgb, var(--u) 35%, transparent);
+}
+.unit-meta { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.unit-name { font-weight: 700; display: flex; gap: 8px; align-items: baseline; }
+.unit-name small { font-weight: 500; color: var(--dim); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pips { display: flex; gap: 3px; flex-wrap: wrap; }
+.pip { width: 12px; height: 5px; border-radius: 2px; background: #22323c; }
+.pip.on { background: var(--green); box-shadow: 0 0 6px #6dfa9a55; }
+.pips.low .pip.on { background: var(--red); box-shadow: 0 0 6px #ff5d6c66; }
+.pip.armor { background: var(--blue); box-shadow: 0 0 6px #5cb8ff55; }
+.budget { display: flex; gap: 5px; }
+.budget span {
+  display: grid; place-items: center; min-width: 38px; height: 22px; padding: 0 6px; border-radius: 6px;
+  font: 700 9.5px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase;
+  color: var(--u); border: 1px solid color-mix(in srgb, var(--u) 40%, transparent);
+}
+.budget span.used { color: var(--dim); border-color: var(--line); opacity: .5; text-decoration: line-through; }
+
+/* ---------- Commands (rail) ---------- */
+.commands { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.cmd {
+  position: relative; display: flex; align-items: center; gap: 9px; min-height: 44px; padding: 0 10px;
+  border-radius: 9px; border: 1px solid var(--line); background: var(--surface);
+  font-weight: 600; font-size: 13px; text-align: left;
+  transition: border-color .15s, background .15s, color .15s;
+}
+.cmd .icon { width: 18px; height: 18px; color: var(--muted); }
+.cmd kbd { margin-left: auto; }
+.cmd:hover:not(:disabled) { border-color: var(--line-2); background: var(--surface-2); }
+.cmd:hover:not(:disabled) .icon { color: var(--text); }
+.cmd.selected { border-color: var(--cyan); background: #0e2a2c; color: var(--cyan); }
+.cmd.selected .icon { color: var(--cyan); }
+.cmd:disabled { opacity: .35; }
+.command-help { min-height: 3em; color: var(--muted); font-size: 12px; line-height: 1.5; }
+
+.end-turn {
+  display: flex; align-items: center; justify-content: space-between; min-height: 52px; padding: 0 16px;
+  border-radius: var(--radius); font-weight: 800; font-size: 15px; letter-spacing: .02em;
+  color: #04211d; background: var(--cyan); box-shadow: 0 8px 28px -10px #3ef0d8;
+  transition: background .15s, transform .1s, box-shadow .15s;
+}
+.end-turn kbd { color: #04211d; background: #ffffff55; border-color: #04211d33; }
+.end-turn:hover:not(:disabled) { background: #7ff7e8; box-shadow: 0 10px 34px -8px #3ef0d8; }
+.end-turn:active:not(:disabled) { transform: translateY(1px); }
+.end-turn:disabled { opacity: .35; box-shadow: none; }
+.end-turn.nudge { animation: nudge 1.6s ease-in-out infinite; }
+
+/* ---------- Phone squad strip ---------- */
+.chip {
+  --u: var(--u-scout);
+  display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 6px 8px; min-width: 0;
+  border-radius: 10px; border: 1px solid var(--line); background: var(--surface); text-align: left;
+}
+.chip.active { border-color: color-mix(in srgb, var(--u) 75%, transparent); box-shadow: inset 0 -2px 0 var(--u); background: color-mix(in srgb, var(--u) 9%, var(--surface)); }
+.chip.offline { opacity: .4; }
+.chip.fx-hit { animation: card-hit .45s ease-out; }
+.chip .unit-badge { width: 32px; height: 32px; border-radius: 8px; flex: none; }
+.chip .unit-badge .icon { width: 20px; height: 20px; }
+.chip-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
+.chip-name { font-size: 12px; font-weight: 700; display: flex; justify-content: space-between; gap: 4px; }
+.chip-name .dots { display: flex; gap: 3px; }
+.chip-name .dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--u); }
+.chip-name .dots i.used { background: #2a3a44; }
+.chip .pip { width: 9px; height: 4px; }
+
+/* ---------- Phone action bar ---------- */
+.bar-btn {
+  flex: 1 1 0; min-width: 44px; min-height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  border-radius: 10px; border: 1px solid var(--line); background: var(--surface);
+  font-size: 10.5px; font-weight: 650; color: var(--muted);
+}
+.bar-btn .icon { width: 20px; height: 20px; }
+.bar-btn.selected { color: var(--cyan); border-color: var(--cyan); background: #0e2a2c; }
+.bar-btn:disabled { opacity: .35; }
+.bar-btn.end { flex: 1.35 1 0; color: #04211d; background: var(--cyan); border-color: var(--cyan); font-weight: 800; }
+.bar-btn.end.nudge { animation: nudge 1.6s ease-in-out infinite; }
+.bar-btn.end:disabled { opacity: .35; }
+
+@keyframes card-hit { 0%, 100% { transform: none; } 25% { transform: translateX(-5px); border-color: var(--red); } 50% { transform: translateX(4px); } 75% { transform: translateX(-2px); } }
+@keyframes nudge { 0%, 100% { box-shadow: 0 0 0 0 #3ef0d866; } 50% { box-shadow: 0 0 0 6px #3ef0d800; } }
+
+.bar-help { display: none; }
+@media (max-width: 899px) {
+  .bar-help { display: block; text-align: center; color: var(--dim); font-size: 12px; line-height: 1.45; padding: 4px 6px 0; }
+}

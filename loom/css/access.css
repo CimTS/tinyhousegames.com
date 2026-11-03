@@ -1,0 +1,34 @@
+/* Accessibility modes. These come last so they win. */
+
+/* High contrast: darker text, solid strong edges, thicker focus. */
+.high-contrast {
+  --ink: #000; --muted: #2B2520; --line: #6E6253; --line-strong: #3B332A;
+  --surface: #FFFFFF; --paper: #FBF8F2; --focus: #0B3D91; --accent: #234239;
+}
+.high-contrast[data-theme="dark"] {
+  --ink: #FFFFFF; --muted: #E9E1D4; --line: #A99C88; --line-strong: #E9E1D4;
+  --surface: #1A1916; --paper: #12110F; --focus: #FFD866; --accent: #9FD3BF; --accent-ink: #000;
+}
+.high-contrast .cell { border: 2px solid rgba(40, 30, 20, .6); border-style: solid; }
+.high-contrast[data-theme="dark"] .cell { border-color: rgba(255,255,255,.55); }
+.high-contrast .cell.filled { border-color: transparent; }
+.high-contrast .cell svg { filter: none; }
+.high-contrast .tile > rect:last-of-type { stroke-opacity: .9; }
+.high-contrast :focus-visible, .high-contrast .cell:focus-visible { outline-width: 5px; }
+.high-contrast .panel, .high-contrast .menu-button, .high-contrast .level, .high-contrast .dye { border-width: 2px; border-color: var(--line-strong); }
+
+/* Large text: the whole interface scales from the root font size. */
+.large-text { --text-scale: 1.25; }
+@media (max-width: 899px) {
+}
+
+/* Calm mode and system reduced motion: no movement at all. */
+.calm *, .calm *::before, .calm *::after { animation: none !important; transition: none !important; }
+.calm .cell.selected svg { transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+@media (max-width: 899px) {
+  .large-text .queue-later { display: none; }
+  .large-text .queue-next svg { width: 52px; height: 52px; }
+}

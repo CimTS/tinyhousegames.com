@@ -1,0 +1,115 @@
+/* The loom: a wooden frame around a woven bed, with warp strings showing
+   through empty cells. */
+.loom-frame {
+  aspect-ratio: 1; padding: clamp(8px, 1.6%, 14px); border-radius: 18px;
+  background: linear-gradient(160deg, var(--frame), var(--frame-dark));
+  box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,.35), inset 0 -2px 0 rgba(0,0,0,.15);
+}
+.board {
+  width: 100%; height: 100%; display: grid; gap: clamp(4px, 1%, 7px);
+  grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(5, 1fr);
+  padding: clamp(4px, 1%, 7px); border-radius: 11px;
+  background-color: var(--bed);
+  /* warp strings: two per column */
+  background-image: repeating-linear-gradient(90deg,
+    transparent 0 calc(5% - 1px), rgba(90, 70, 45, .16) calc(5% - 1px) 5%, transparent 5% 10%);
+  box-shadow: inset 0 2px 6px rgba(0,0,0,.18);
+}
+.cell {
+  position: relative; min-width: 0; min-height: 0; padding: 0;
+  border: 1.5px dashed rgba(90, 70, 45, .22); border-radius: 12px;
+  background: rgba(255, 252, 246, .38); display: grid; place-items: center;
+}
+:root[data-theme="dark"] .cell { background: rgba(255,255,255,.04); border-color: rgba(241,234,221,.16); }
+.cell.filled { border-color: transparent; background: transparent; }
+.cell svg { width: 100%; height: 100%; display: block; filter: drop-shadow(0 2px 2px rgba(40, 28, 15, .25)); }
+.cell:hover:not(.filled) { background: rgba(255, 252, 246, .7); }
+:root[data-theme="dark"] .cell:hover:not(.filled) { background: rgba(255,255,255,.09); }
+.cell:focus-visible { outline: 4px solid var(--focus); outline-offset: 1px; z-index: 2; }
+.cell.selected { z-index: 2; }
+.cell.selected svg { transform: translateY(-3px) scale(1.04); filter: drop-shadow(0 6px 6px rgba(40, 28, 15, .3)); }
+.cell.selected::after {
+  content: ""; position: absolute; inset: -4px; border-radius: 15px;
+  border: 4px solid var(--accent); pointer-events: none;
+}
+/* Merge partners for the selected thread get a gentle dotted ring. */
+.cell.can-merge::after {
+  content: ""; position: absolute; inset: -3px; border-radius: 14px;
+  border: 3px dotted var(--accent); pointer-events: none;
+}
+
+.head-button {
+  font: inherit; color: inherit; background: none; border: 0; padding: 0; min-height: var(--tap);
+  display: inline-flex; align-items: center; gap: 8px; cursor: pointer; text-align: left;
+}
+.help-dot {
+  display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%;
+  font: 700 .82rem var(--sans); background: var(--accent); color: var(--accent-ink);
+}
+.cards-hint { color: var(--muted); font-size: .86rem; margin: -6px 0 8px; }
+
+/* Dock: next threads and undo. */
+.dock { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.queue { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.queue-next { display: flex; align-items: center; gap: 12px; }
+.queue-next svg { width: 64px; height: 64px; }
+.queue-next .q-label { display: flex; flex-direction: column; line-height: 1.2; }
+.queue-next .q-label small { color: var(--muted); font-size: .76rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.queue-next .q-label span { font-weight: 650; font-size: 1rem; }
+.queue-later { display: flex; gap: 6px; align-items: center; padding-left: 12px; border-left: 1px solid var(--line); }
+.queue-later svg { width: 34px; height: 34px; opacity: .85; }
+.undo-button {
+  flex: 0 0 auto; border: 1.5px solid var(--line-strong); background: var(--surface);
+  padding: 0 18px; font-weight: 650; font-size: .95rem;
+}
+
+/* Pattern cards */
+.cards-list { display: grid; gap: 6px; }
+.pattern-card {
+  width: 100%; text-align: left; background: var(--surface); cursor: pointer; min-height: var(--tap);
+  display: grid; grid-template-columns: 34px 1fr auto auto; gap: 10px; align-items: center;
+  padding: 8px 10px; border-radius: 12px; border: 1.5px solid var(--line);
+}
+.pattern-card::after { content: "›"; color: var(--muted); font-size: 1.4rem; line-height: 1; }
+.pattern-icon svg { width: 30px; height: 30px; fill: none; stroke: var(--muted); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.pattern-name { display: block; font-weight: 650; font-size: .95rem; }
+.pattern-desc { display: block; color: var(--muted); font-size: .82rem; line-height: 1.3; }
+.pattern-progress { color: var(--muted); font-size: .88rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pattern-card:hover { background: var(--paper-2); }
+.pattern-card.done { background: var(--accent-soft); border-color: var(--accent); }
+.pattern-card.done .pattern-icon svg { stroke: var(--accent); }
+.pattern-card.done .pattern-progress { color: var(--accent); font-weight: 700; }
+
+@media (max-width: 899px) {
+  .queue-next svg { width: 56px; height: 56px; }
+  .queue-later svg { width: 30px; height: 30px; }
+  .cards-list { grid-template-columns: 1fr; gap: 6px; }
+  .pattern-card { grid-template-columns: 26px 1fr auto auto; gap: 10px; padding: 8px 12px; min-height: 52px; }
+  .pattern-icon svg { width: 24px; height: 24px; }
+  .pattern-name { font-size: .88rem; }
+  .pattern-desc { display: none; }
+}
+@media (max-width: 360px) {
+  .queue-later { display: none; }
+}
+
+/* Motion. All of it is decorative and is removed by Calm mode and by the
+   system reduced-motion preference (see access.css). */
+@keyframes settle { from { transform: scale(.78) rotate(-4deg); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes merge-pop { 0% { transform: scale(.86); } 55% { transform: scale(1.07); } 100% { transform: none; } }
+@keyframes ring-out { from { opacity: .8; transform: scale(.85); } to { opacity: 0; transform: scale(1.3); } }
+@keyframes card-done { 0% { background-color: transparent; } 40% { background-color: var(--glow); } 100% { background-color: var(--accent-soft); } }
+@keyframes icon-pop { 50% { transform: scale(1.25); } }
+.cell.just-placed svg { animation: settle .38s cubic-bezier(.2, .8, .3, 1.1) both; }
+.cell.just-merged svg { animation: merge-pop .5s cubic-bezier(.3, .7, .3, 1.2) both; }
+.cell.just-merged::before {
+  content: ""; position: absolute; inset: 0; border-radius: 14px; pointer-events: none;
+  box-shadow: 0 0 0 4px var(--gold); animation: ring-out .7s ease-out both;
+}
+.pattern-card.just-done { animation: card-done 1.1s ease-out both; }
+.pattern-card.just-done .pattern-icon { animation: icon-pop .6s ease-out; }
+.cell svg, .cell::after { transition: transform .18s ease, filter .18s ease; }
+
+/* Color symbols are opt-in. */
+.color-mark { display: none; }
+.marks .color-mark { display: inline; }

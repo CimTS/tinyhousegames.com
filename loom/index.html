@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#F6F1E7">
+  <meta name="description" content="Loom: a calm thread-weaving pattern puzzle. Place threads, merge matching neighbors and weave patterns, with no clock and no wrong turn. A free browser game from Tiny House Games for phone and desktop.">
+  <meta property="og:site_name" content="Tiny House Games">
+  <meta property="og:title" content="Loom: play free in your browser">
+  <meta property="og:description" content="A calm weaving puzzle. Bring matching threads together and see what patterns appear.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://tinyhousegames.com/loom/">
+  <meta property="og:image" content="https://tinyhousegames.com/loom/og.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Loom title beside a wooden loom of woven thread squares">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'none'; connect-src 'self'; object-src 'none'; base-uri 'none'">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+  <title>Loom · Tiny House Games</title>
+  <link rel="stylesheet" href="./css/base.css">
+  <link rel="stylesheet" href="./css/layout.css">
+  <link rel="stylesheet" href="./css/board.css">
+  <link rel="stylesheet" href="./css/sheets.css">
+  <link rel="stylesheet" href="./css/access.css">
+  <link rel="stylesheet" href="./site-bar.css">
+  <script type="module" src="./js/main.js"></script>
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <header class="hud" id="hud">
+      <span class="wordmark"><span class="loom-mark" aria-hidden="true"></span>Loom</span>
+      <div class="hud-actions">
+        <button id="menu-open" class="quiet-button hud-menu" type="button">Menu</button>
+        <button id="sound-toggle" class="icon-button" type="button" aria-label="Sound is on. Turn sound off" aria-pressed="true">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10v4h4l5 4V6l-5 4H4Z"/><path class="sound-wave" d="M16 9a5 5 0 0 1 0 6M18.5 6.5a8.5 8.5 0 0 1 0 11"/><path class="sound-x" d="m16.5 9.5 5 5m0-5-5 5"/></svg>
+        </button>
+        <button id="settings-open" class="icon-button" type="button" aria-label="Settings">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="main-layout" id="main">
+      <section class="board-column" aria-labelledby="piece-title">
+        <div class="board-heading">
+          <p class="eyebrow" id="piece-eyebrow">TODAY'S PIECE</p>
+          <h1 id="piece-title">A little room to weave</h1>
+          <p id="piece-note" class="piece-note hidden"></p>
+        </div>
+
+        <div id="tutorial-banner" class="tutorial-banner hidden" role="region" aria-label="How to play">
+          <p class="tutorial-step" id="tutorial-step">Step 1 of 6</p>
+          <p id="tutorial-text" class="tutorial-text" aria-live="polite"></p>
+          <div class="tutorial-actions">
+            <button id="tutorial-next" class="tutorial-next hidden" type="button">Next <span aria-hidden="true">→</span></button>
+            <button id="tutorial-skip" class="link-button" type="button">Skip the lesson</button>
+          </div>
+        </div>
+
+        <div class="loom-frame">
+          <div id="board" class="board" role="group" aria-label="Five by five loom" aria-describedby="guidance"></div>
+        </div>
+        <p id="guidance" class="guidance">Tap an empty square to place the next thread.</p>
+      </section>
+
+      <section class="dock panel" aria-label="Next threads">
+        <div class="queue" id="queue"></div>
+        <button id="undo-button" class="undo-button" type="button" disabled><span aria-hidden="true">↶</span> Undo</button>
+      </section>
+
+      <section class="cards-panel panel" aria-labelledby="cards-title">
+        <div class="section-head">
+          <h2 id="cards-title"><button id="cards-help" class="head-button" type="button">Patterns to weave <span class="help-dot" aria-hidden="true">?</span></button></h2>
+          <span id="card-count" class="count">0 of 4</span>
+        </div>
+        <p class="cards-hint">Tap a pattern to see how to make it.</p>
+        <div id="cards" class="cards-list"></div>
+      </section>
+
+      <section class="rail-foot">
+        <div class="score" aria-live="off"><strong id="score">0</strong><span id="score-unit">points</span><span id="stars" class="stars" role="img" aria-label="1 of 3 stars">★☆☆</span></div>
+      </section>
+    </main>
+
+    <div id="live-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  </div>
+
+  <section id="welcome" class="overlay" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
+    <div class="welcome-card">
+      <nav class="site-bar" aria-label="Tiny House Games"><a href="../" class="site-bar__home"><span aria-hidden="true">🏠</span> Tiny House Games</a><a href="../#games" class="site-bar__more">more games</a></nav>
+      <span class="welcome-mark" aria-hidden="true"></span>
+      <h2 id="welcome-title">Come sit at the loom</h2>
+      <p class="welcome-copy">Place threads, bring matching neighbors together, and see what patterns appear. There's no clock and no wrong turn.</p>
+      <div class="menu-list">
+        <button id="continue-button" class="primary-button hidden" type="button">Continue my piece</button>
+        <button id="begin-button" class="primary-button" type="button">Today's piece</button>
+        <button id="campaign-button" class="menu-button" type="button"><span>Campaign</span><small id="campaign-progress">12 gentle lessons</small></button>
+        <button id="zen-button" class="menu-button" type="button"><span>Zen weaving</span><small>A fresh piece, any time</small></button>
+        <button id="gallery-open" class="menu-button" type="button"><span>Gallery</span><small id="gallery-count">Your finished pieces</small></button>
+        <button id="tutorial-button" class="menu-button" type="button"><span>How to play</span><small>A short, step-by-step lesson</small></button>
+        <button id="welcome-close" class="link-button hidden" type="button">Back to my piece</button>
+      </div>
+      <p id="welcome-error" class="welcome-error" role="status"></p>
+      <p class="welcome-note">Sound begins only after you choose.</p>
+    </div>
+  </section>
+
+  <section id="campaign-sheet" class="sheet-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="campaign-title">
+    <div class="sheet">
+      <div class="sheet-title"><h2 id="campaign-title">Campaign</h2><button class="icon-button close-sheet" type="button" aria-label="Close">×</button></div>
+      <p class="sheet-copy">Each level adds one small idea. Clear a level to open the next.</p>
+      <ol id="level-list" class="level-list"></ol>
+    </div>
+  </section>
+
+  <section id="pattern-sheet" class="sheet-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="pattern-title">
+    <div class="sheet">
+      <div class="sheet-title"><h2 id="pattern-title">How to weave it</h2><button class="icon-button close-sheet" type="button" aria-label="Close">×</button></div>
+      <div id="pattern-help" class="pattern-help"></div>
+      <button id="pattern-ok" class="primary-button wide-button" type="button">Got it</button>
+    </div>
+  </section>
+
+  <section id="settings-sheet" class="sheet-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+    <div class="sheet">
+      <div class="sheet-title"><h2 id="settings-title">Settings</h2><button class="icon-button close-sheet" type="button" aria-label="Close settings">×</button></div>
+      <h3 class="setting-group">Seeing</h3>
+      <label class="setting-row"><span><strong>Appearance</strong><small>Light or dark studio</small></span><select id="setting-theme"><option value="system">Match device</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
+      <label class="setting-row"><span><strong>Large text</strong><small>Bigger words everywhere</small></span><input id="setting-large" type="checkbox" class="switch"></label>
+      <label class="setting-row"><span><strong>High contrast</strong><small>Stronger edges and darker text</small></span><input id="setting-contrast" type="checkbox" class="switch"></label>
+      <label class="setting-row"><span><strong>Color symbols</strong><small>A small shape on each color</small></span><input id="setting-marks" type="checkbox" class="switch"></label>
+      <label class="setting-row"><span><strong>Calm mode</strong><small>No movement or animation</small></span><input id="setting-calm" type="checkbox" class="switch"></label>
+      <h3 class="setting-group">Hearing and touch</h3>
+      <label class="setting-row"><span><strong>Sound</strong><small>Soft tones as you weave</small></span><input id="setting-sound" type="checkbox" class="switch"></label>
+      <label class="setting-row"><span><strong>Volume</strong></span><input id="setting-volume" type="range" min="0" max="70" step="1" aria-label="Volume"></label>
+      <label class="setting-row"><span><strong>Background hum</strong><small>A slow, quiet drone</small></span><input id="setting-ambient" type="checkbox" class="switch"></label>
+      <label class="setting-row"><span><strong>Vibration</strong><small>A small buzz on a merge</small></span><input id="setting-haptics" type="checkbox" class="switch"></label>
+      <h3 class="setting-group">Dyes</h3>
+      <div id="dye-list" class="dye-list" role="radiogroup" aria-label="Dye palette"></div>
+      <button id="reset-progress" class="danger-button" type="button">Erase all progress on this device</button>
+      <p class="version" id="version-label">Loom</p>
+    </div>
+  </section>
+
+  <section id="gallery-sheet" class="sheet-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="gallery-title">
+    <div class="sheet wide">
+      <div class="sheet-title"><h2 id="gallery-title">Gallery</h2><button class="icon-button close-sheet" type="button" aria-label="Close gallery">×</button></div>
+      <dl id="lifetime-stats" class="stat-grid"></dl>
+      <div id="gallery-items" class="gallery-items"></div>
+    </div>
+  </section>
+
+  <section id="finish-sheet" class="sheet-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="finish-title">
+    <div class="sheet finish-sheet">
+      <p class="eyebrow" id="finish-eyebrow">PIECE COMPLETE</p>
+      <h2 id="finish-title">A pattern, made by you</h2>
+      <div id="finish-art" class="finish-art"></div>
+      <p class="finish-score"><strong id="finish-score">0</strong> <span id="finish-unit">points</span> <span id="finish-stars" class="stars">★☆☆</span></p>
+      <dl id="finish-stats" class="stat-grid"></dl>
+      <p id="finish-unlock" class="unlock-note hidden"></p>
+      <div class="finish-actions">
+        <button id="finish-next" class="primary-button" type="button">Weave another</button>
+        <button id="finish-share" class="quiet-button" type="button">Share</button>
+        <button id="finish-menu" class="quiet-button" type="button">Menu</button>
+      </div>
+    </div>
+  </section>
+</body>
+</html>

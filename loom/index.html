@@ -24,6 +24,7 @@
   <link rel="stylesheet" href="./css/layout.css">
   <link rel="stylesheet" href="./css/board.css">
   <link rel="stylesheet" href="./css/sheets.css">
+  <link rel="stylesheet" href="./css/studio.css">
   <link rel="stylesheet" href="./css/access.css">
   <link rel="stylesheet" href="./site-bar.css">
   <script type="module" src="./js/main.js"></script>
@@ -67,6 +68,16 @@
       </section>
 
       <section class="dock panel" aria-label="Next threads">
+        <div class="studio-panel" role="group" aria-label="Studio threads">
+          <div class="section-head"><h2>Your threads</h2><span id="studio-brush" class="count">Terracotta · tier 1</span></div>
+          <div id="studio-palette" class="studio-palette"></div>
+          <div class="studio-tools">
+            <button id="studio-eraser" class="quiet-button" type="button" aria-pressed="false">Eraser</button>
+            <button id="studio-save" class="quiet-button" type="button">Save to gallery</button>
+            <button id="studio-new" class="quiet-button" type="button">New canvas</button>
+            <button id="studio-share" class="quiet-button" type="button">Share</button>
+          </div>
+        </div>
         <div class="queue" id="queue"></div>
         <button id="undo-button" class="undo-button" type="button" disabled><span aria-hidden="true">↶</span> Undo</button>
       </section>
@@ -99,6 +110,7 @@
         <button id="begin-button" class="primary-button" type="button">Today's piece</button>
         <button id="campaign-button" class="menu-button" type="button"><span>Campaign</span><small id="campaign-progress">12 gentle lessons</small></button>
         <button id="zen-button" class="menu-button" type="button"><span>Zen weaving</span><small>A fresh piece, any time</small></button>
+        <button id="studio-button" class="menu-button" type="button"><span>Studio</span><small>Weave any thread anywhere</small></button>
         <button id="gallery-open" class="menu-button" type="button"><span>Gallery</span><small id="gallery-count">Your finished pieces</small></button>
         <button id="tutorial-button" class="menu-button" type="button"><span>How to play</span><small>A short, step-by-step lesson</small></button>
         <button id="welcome-close" class="link-button hidden" type="button">Back to my piece</button>

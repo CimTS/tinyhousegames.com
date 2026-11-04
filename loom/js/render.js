@@ -42,7 +42,8 @@ export class Renderer {
   render() {
     if (!this.state) return;
     const d = this.state.data;
-    const partners = this.selected === null ? [] :
+    const studio = d.mode === "studio";   // free placement: no merge hints
+    const partners = this.selected === null || studio ? [] :
       neighbors(this.selected).filter(j => canMerge(d.cells, this.selected, j));
     d.cells.forEach((tile, i) => {
       const b = this.cells[i], { row, col } = coords(i);
@@ -75,6 +76,9 @@ export class Renderer {
 
   guidance(partners) {
     if (this.state.data.finished) return "This piece is complete.";
+    if (this.state.data.mode === "studio") return this.selected === null
+      ? "Tap a square to weave your thread. Drag threads anywhere; off the loom lifts them."
+      : "Tap any square to move it there, or tap it again to put it down.";
     if (this.selected === null) return "Tap an empty square to place the next thread.";
     if (!partners.length) return "No match beside it yet. Tap it again to put it down.";
     return "Tap a ringed neighbor to weave them together.";

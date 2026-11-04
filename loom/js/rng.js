@@ -32,8 +32,18 @@ export function encodeShare(seed, moves) {
     : m.type === "merge" ? `m${m.from}.${m.to}` : "u").join(",");
   return `#s=${encodeURIComponent(seed)}&m=${encodeURIComponent(packed)}`;
 }
+// Studio pieces have no move list, so their links carry the grid itself:
+// 25 characters, "-" for empty or base-36 (color * 3 + tier - 1).
+export function encodeStudio(cells) {
+  return `#g=${cells.map(x => x ? (x.c * 3 + x.t - 1).toString(36) : "-").join("")}`;
+}
 export function decodeShare(hash) {
   const params = new URLSearchParams((hash || "").replace(/^#/, ""));
+  const grid = params.get("g");
+  if (grid !== null) {
+    if (!/^[0-9a-e-]{25}$/.test(grid)) return null;
+    return { studio: true, cells: [...grid].map(ch => ch === "-" ? null : { c: Math.floor(parseInt(ch, 36) / 3), t: parseInt(ch, 36) % 3 + 1 }) };
+  }
   const seed = params.get("s");
   const raw = params.get("m");
   if (!seed || raw === null) return null;

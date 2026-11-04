@@ -1,0 +1,47 @@
+/* Studio (free placement). Everything is scoped to `.studio` on #app,
+   which studio.js sets while the current piece is a studio canvas. The
+   palette sits in the dock in place of the thread queue. */
+.studio-panel { display: none; }
+.studio .studio-panel { display: block; flex: 1 1 100%; min-width: 0; }
+.studio .dock { flex-wrap: wrap; }
+.studio .dock .queue { display: none; }
+.studio .dock .undo-button { flex: 1 1 100%; }
+.studio .cards-hint { display: none; }
+
+.studio-palette { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.swatch {
+  aspect-ratio: 1; min-height: 40px; padding: 3px; border-radius: 10px;
+  border: 1.5px solid var(--line); background: var(--paper);
+  display: grid; place-items: center; cursor: grab; touch-action: none;
+}
+.swatch svg { width: 100%; height: 100%; display: block; pointer-events: none; }
+.swatch.active { outline: 3px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+
+.studio-tools { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.studio-tools .quiet-button { flex: 1 1 auto; min-height: 40px; padding: 0 12px; font-size: .85rem; }
+.studio-tools .quiet-button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+
+/* The board while in the studio: drag instead of scroll or text select. */
+.studio .board { user-select: none; -webkit-user-select: none; }
+.studio .cell { touch-action: none; -webkit-touch-callout: none; }
+.studio .cell.filled { cursor: grab; }
+.studio .cell svg { pointer-events: none; }
+.cell.drag-origin { opacity: .3; }
+.cell.drop-target { outline: 3px dashed var(--accent); outline-offset: -3px; }
+
+.drag-ghost {
+  position: fixed; left: 0; top: 0; z-index: 50; pointer-events: none;
+  border-radius: 10px; box-shadow: 0 12px 28px rgba(43, 35, 27, .32); opacity: .95;
+}
+.drag-ghost svg { width: 100%; height: 100%; display: block; }
+.drag-ghost.will-remove { opacity: .45; filter: grayscale(.7); }
+body.is-dragging, body.is-dragging * { cursor: grabbing !important; }
+
+.gallery-open-studio { width: 100%; min-height: 36px; margin-top: 8px; padding: 0 10px; font-size: .78rem; }
+
+@media (max-width: 899px) {
+  .studio-palette { gap: 4px; }
+  .swatch { min-height: 34px; padding: 2px; border-radius: 8px; }
+  .studio-tools { gap: 4px; margin-top: 8px; }
+  .studio-tools .quiet-button { min-height: 38px; padding: 0 8px; font-size: .8rem; }
+}

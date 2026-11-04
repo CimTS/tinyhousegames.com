@@ -21,6 +21,7 @@ export class GameState {
   // after a reload; daily pieces are additionally kept per date.
   persist() {
     if (this.silent || this.data.mode === "tutorial") return;
+    if (this.data.mode === "studio") { storage.saveStudio(this.data); return; }
     if (this.data.finished) return;
     storage.saveRun(this.data);
     if (this.data.mode === "daily") storage.saveDaily(this.data.seed, this.data);
@@ -45,11 +46,12 @@ export class GameState {
   recompute() {
     this.progress = this.data.cards.map(card => ({ card, ...evaluate(card, this.data.cells) }));
     this.result = scorePiece(this.data.cards, this.data.cells);
-    this.complete = isPieceComplete(this.data.cells);
+    // A studio canvas is never "complete": the artist decides when to save.
+    this.complete = this.data.mode !== "studio" && isPieceComplete(this.data.cells);
   }
 
   place(index) {
-    if (this.data.finished || index < 0 || index >= 25 || this.data.cells[index]) return false;
+    if (this.data.finished || this.data.mode === "studio" || index < 0 || index >= 25 || this.data.cells[index]) return false;
     const before = {
       cells: this.data.cells.map(x => x ? { ...x } : null),
       queue: this.data.queue.map(x => ({ ...x })),
@@ -69,7 +71,7 @@ export class GameState {
   }
 
   merge(from, to) {
-    if (this.data.finished || !canMerge(this.data.cells, from, to)) return false;
+    if (this.data.finished || this.data.mode === "studio" || !canMerge(this.data.cells, from, to)) return false;
     const before = {
       cells: this.data.cells.map(x => x ? { ...x } : null),
       queue: this.data.queue.map(x => ({ ...x })),
@@ -98,7 +100,7 @@ export class GameState {
   }
 
   finish() {
-    if (this.data.finished) return;
+    if (this.data.finished || this.data.mode === "studio") return;
     this.data.finished = true;
     this.recompute();
     if (!this.silent && this.data.mode !== "tutorial") {

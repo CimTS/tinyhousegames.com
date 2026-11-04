@@ -1,5 +1,5 @@
 // Bump this whenever any shipped file changes so returning players get it.
-const CACHE_VERSION = "loom-v15";
+const CACHE_VERSION = "loom-v16";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -15,6 +15,7 @@ const APP_SHELL = [
   "./css/board.css",
   "./css/layout.css",
   "./css/sheets.css",
+  "./css/studio.css",
   "./js/art.js",
   "./js/audio.js",
   "./js/board.js",
@@ -30,6 +31,8 @@ const APP_SHELL = [
   "./js/settings.js",
   "./js/state.js",
   "./js/storage.js",
+  "./js/studio-state.js",
+  "./js/studio.js",
   "./js/tutorial.js",
   "./js/ui.js",
   "./js/version.js"

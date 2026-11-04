@@ -93,7 +93,7 @@ export function renderDyes(progress, onPick) {
   $("dye-list").replaceChildren(...items);
 }
 
-export function renderGallery(progress, items) {
+export function renderGallery(progress, items, onOpenStudio = null) {
   const s = progress.stats;
   $("lifetime-stats").replaceChildren(
     stat("Pieces woven", s.pieces), stat("Threads woven", s.threads),
@@ -117,6 +117,12 @@ export function renderGallery(progress, items) {
     const m = document.createElement("small");
     m.textContent = `${item.score} points · ${"★".repeat(item.stars)}${"☆".repeat(3 - item.stars)}`;
     box.append(t, m);
+    if (item.studio && onOpenStudio) {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "quiet-button gallery-open-studio"; b.textContent = "Open in studio";
+      b.addEventListener("click", () => onOpenStudio(item));
+      box.append(b);
+    }
     return box;
   }));
 }

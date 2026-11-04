@@ -19,6 +19,9 @@ export const storage = {
   saveSettings(v) { write("settings", v); },
   getDaily(seed) { return read("daily." + seed, null); },
   saveDaily(seed, state) { write("daily." + seed, state); },
+  // The one in-progress studio canvas, kept apart from the puzzle run.
+  getStudio() { return read("studio", null); },
+  saveStudio(state) { write("studio", state); },
   getGallery() { return read("gallery", []); },
   // Deduplicate by seed so replaying a shared piece or re-saving a daily
   // never creates duplicate cards (and preserves user-visible ordering).

@@ -5,7 +5,7 @@ import { LoomAudio } from "./audio.js";
 import { Settings } from "./settings.js";
 import { storage } from "./storage.js";
 import { Tutorial } from "./tutorial.js";
-import { dailySeed, encodeShare, decodeShare } from "./rng.js";
+import { dailySeed, encodeShare, encodeStudio, decodeShare } from "./rng.js";
 import { canMerge } from "./rules.js";
 import { moveCursor, keyAction } from "./keys.js";
 import { installDefs, setPalette, colorName } from "./art.js";
@@ -14,6 +14,8 @@ import { paletteById, isPaletteUnlocked } from "./palettes.js";
 import { defaultProgress, recordFinish } from "./progress.js";
 import * as ui from "./ui.js";
 import { VERSION } from "./version.js";
+import { Studio } from "./studio.js";
+import { studioPiece } from "./studio-state.js";
 
 const $ = id => document.getElementById(id);
 const today = dailySeed();
@@ -35,13 +37,14 @@ const renderer = new Renderer();
 const game = {
   state: null, renderer, finishedShown: false, replaying: false,
 
-  start(piece, { replay = false } = {}) {
+  start(piece, { replay = false, silent = false } = {}) {
     if (this.tutorial.active && piece.mode !== "tutorial") this.tutorial.stop();
-    this.state = new GameState(piece.seed, piece, { silent: replay || piece.mode === "tutorial" });
+    this.state = new GameState(piece.seed, piece, { silent: replay || silent || piece.mode === "tutorial" });
     this.replaying = replay;
     this.finishedShown = false;
     this.state.subscribe(() => this.afterChange());
     renderer.attach(this.state);
+    this.studio.sync();
     this.heading();
     this.state.persist();
     ui.closeSheets();
@@ -55,6 +58,7 @@ const game = {
       const i = LEVELS.findIndex(l => l.id === d.level), l = LEVELS[i];
       renderer.setHeading(`Campaign · Level ${i + 1} of ${LEVELS.length}`, l.title, "Campaign", l.note);
     } else if (d.mode === "daily") renderer.setHeading("Today's piece", "A little room to weave", "Today's piece");
+    else if (d.mode === "studio") renderer.setHeading("Studio", "Weave anything", "Studio");
     else if (d.mode === "tutorial") renderer.setHeading("How to play", "Learning the loom", "How to play");
     else renderer.setHeading("Zen weaving", "No goal but the cloth", "Zen weaving");
   },
@@ -103,6 +107,7 @@ const game = {
   handleCell(index) {
     if (!this.state || this.replaying || this.state.data.finished) return;
     if (this.tutorial.active) { this.tutorial.handleCell(index); return; }
+    if (this.studio.active()) { this.studio.handleCell(index); return; }
     const sel = renderer.selected, tile = this.state.data.cells[index];
     if (!tile) { this.placeAt(index); return; }
     if (sel === index) { renderer.setSelected(null); announce("Put down."); return; }
@@ -154,6 +159,7 @@ const game = {
   finishTutorial() { this.start(dailyPiece()); }
 };
 game.tutorial = new Tutorial(game);
+game.studio = new Studio(game, { announce, buzz: () => settings.value.haptics && navigator.vibrate?.(12) });
 renderer.onCell = i => game.handleCell(i);
 renderer.onCard = card => {
   if (!game.state) return;
@@ -181,7 +187,7 @@ function unlockAudio() {
 
 function refreshMenus() {
   ui.renderLevels(progress, level => game.start(levelPiece(level)));
-  ui.renderDyes(progress, id => { progress.palette = id; saveProgress(); applyPalette(); refreshMenus(); if (game.state) renderer.attach(game.state); });
+  ui.renderDyes(progress, id => { progress.palette = id; saveProgress(); applyPalette(); refreshMenus(); if (game.state) { renderer.attach(game.state); game.studio.sync(); } });
   const run = storage.getRun();
   $("continue-button").classList.toggle("hidden", !(run && !run.finished));
   // First visit: put the lesson right under the main button.
@@ -203,7 +209,8 @@ function share() {
   const d = game.state?.data;
   if (!d) return;
   if (d.mode === "campaign" || d.mode === "tutorial") { announce("Sharing works for daily and Zen pieces."); return; }
-  const url = `${location.href.split("#")[0]}${encodeShare(d.seed, d.moves)}`;
+  const hash = d.mode === "studio" ? encodeStudio(d.cells) : encodeShare(d.seed, d.moves);
+  const url = `${location.href.split("#")[0]}${hash}`;
   if (navigator.share) navigator.share({ title: "My Loom piece", url }).catch(() => {});
   else navigator.clipboard?.writeText(url).then(() => announce("Link copied.")).catch(() => {});
 }
@@ -218,9 +225,11 @@ const guard = fn => () => {
 $("begin-button").addEventListener("click", guard(() => game.start(dailyPiece())));
 $("continue-button").addEventListener("click", guard(() => game.start(storage.getRun())));
 $("zen-button").addEventListener("click", guard(() => game.start(newZen())));
+$("studio-button").addEventListener("click", guard(() => game.studio.open()));
+$("studio-share").addEventListener("click", share);
 $("tutorial-button").addEventListener("click", guard(() => { game.start(tutorialPiece()); game.tutorial.start(); }));
 $("campaign-button").addEventListener("click", () => { refreshMenus(); ui.openSheet("campaign-sheet"); });
-$("gallery-open").addEventListener("click", () => { ui.renderGallery(progress, storage.getGallery()); ui.openSheet("gallery-sheet"); });
+$("gallery-open").addEventListener("click", () => { ui.renderGallery(progress, storage.getGallery(), item => game.studio.openPiece(item)); ui.openSheet("gallery-sheet"); });
 $("welcome-close").addEventListener("click", ui.closeSheets);
 $("pattern-ok").addEventListener("click", ui.closeSheets);
 $("menu-open").addEventListener("click", openMenu);
@@ -273,7 +282,9 @@ document.addEventListener("keydown", e => {
 // Opening a share link shows that finished piece without touching progress.
 const shared = decodeShare(location.hash);
 refreshMenus();
-if (shared) {
+// A shared studio grid opens as a canvas to remix; it never replaces your own.
+if (shared?.studio) game.start(studioPiece(shared.cells), { silent: true });
+else if (shared) {
   const s = new GameState(shared.seed, null, { silent: true });
   for (const m of shared.moves) m.type === "place" ? s.place(m.index) : s.merge(m.from, m.to);
   s.data.undo = [];

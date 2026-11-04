@@ -8,13 +8,18 @@ export const PATTERNS = ["dots", "diagonal stripes", "chevrons", "waves", "cross
 // `options` lets curated content (campaign levels) override the cards,
 // starting threads and mode while keeping the seeded queue deterministic.
 // With no options the output is identical to the original generator.
+// Seeds starting "studio-" give a blank free-placement canvas.
+export function isStudioSeed(seed) { return String(seed).startsWith("studio-"); }
 export function makePiece(seed, options = {}) {
+  const studio = isStudioSeed(seed);
   const rng = mulberry32(hashSeed(seed));
   const cells = Array(25).fill(null);
   const spots = shuffle([...Array(25).keys()], rng).slice(0, 3);
   spots.forEach((index, i) => { cells[index] = { c: Math.floor(rng() * 5), t: 1 + (i === 2 && rng() > .55 ? 1 : 0) }; });
-  if (options.prefill) {
+  if (options.prefill || studio) {
     cells.fill(null);
+  }
+  if (options.prefill) {
     for (const { i, c, t } of options.prefill) cells[i] = { c, t };
   }
   const focus = options.focus ?? null;
@@ -23,7 +28,7 @@ export function makePiece(seed, options = {}) {
   const piece = {
     seed, cells, queue, cards: options.cards ? [...options.cards] : cardPool,
     rngState: Math.floor(rng() * 0xFFFFFFFF) >>> 0, moves: [], undo: [], finished: false,
-    mode: options.mode || (seed.length === 10 ? "daily" : "free")
+    mode: options.mode || (studio ? "studio" : seed.length === 10 ? "daily" : "free")
   };
   if (options.level) piece.level = options.level;
   if (focus !== null) piece.focus = focus;

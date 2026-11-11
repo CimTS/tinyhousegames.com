@@ -9,7 +9,23 @@ const write = (key, value) => {
 };
 const prefersReducedMotion = () => globalThis.window?.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
 
+// Whether to ask "Would you like sound?". `saved` is the stored settings, or null.
+// A new player is asked until they answer. Someone who already has Loom data
+// from before the question existed keeps their setting and is never asked.
+export function soundChoicePending(saved, hasData) {
+  if (saved?.soundAsked === false) return true;        // asked before, not answered yet
+  if (saved?.soundAsked === true) return false;
+  return !hasData;                                      // never asked: only brand-new players
+}
+
 export const storage = {
+  // The settings exactly as stored, or null if none were ever saved.
+  getSavedSettings() { return read("settings", null); },
+  // True if Loom has stored anything at all on this device.
+  hasAny() {
+    try { return Object.keys(localStorage).some(k => k.startsWith(PREFIX)); }
+    catch { return false; }
+  },
   getSettings() {
     return read("settings", {
       sound: true, volume: 30, ambient: false, haptics: true,

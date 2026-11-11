@@ -104,8 +104,17 @@
       <nav class="site-bar" aria-label="Tiny House Games"><a href="../" class="site-bar__home"><span aria-hidden="true">🏠</span> Tiny House Games</a><a href="../#games" class="site-bar__more">more games</a></nav>
       <span class="welcome-mark" aria-hidden="true"></span>
       <h2 id="welcome-title">Come sit at the loom</h2>
-      <p class="welcome-copy">Place threads, bring matching neighbors together, and see what patterns appear. There's no clock and no wrong turn.</p>
-      <div class="menu-list">
+      <p id="welcome-copy" class="welcome-copy">Place threads, bring matching neighbors together, and see what patterns appear. There's no clock and no wrong turn.</p>
+      <div id="sound-choice" class="sound-choice hidden" role="group" aria-labelledby="sound-choice-title">
+        <h3 id="sound-choice-title">Would you like sound?</h3>
+        <p>Soft notes play as you weave.</p>
+        <div class="sound-choice__buttons">
+          <button id="sound-yes" class="quiet-button hidden" type="button">Sound on</button>
+          <button id="sound-no" class="quiet-button hidden" type="button">Sound off</button>
+        </div>
+        <p class="welcome-note">You can change this any time with the speaker button.</p>
+      </div>
+      <div id="menu-list" class="menu-list">
         <button id="continue-button" class="primary-button hidden" type="button">Continue my piece</button>
         <button id="begin-button" class="primary-button" type="button">Today's piece</button>
         <button id="campaign-button" class="menu-button" type="button"><span>Campaign</span><small id="campaign-progress">12 gentle lessons</small></button>
@@ -116,7 +125,7 @@
         <button id="welcome-close" class="link-button hidden" type="button">Back to my piece</button>
       </div>
       <p id="welcome-error" class="welcome-error" role="status"></p>
-      <p class="welcome-note">Sound begins only after you choose.</p>
+      <p id="welcome-note" class="welcome-note">Sound begins only after you choose.</p>
     </div>
   </section>
 
@@ -148,7 +157,7 @@
       <h3 class="setting-group">Hearing and touch</h3>
       <label class="setting-row"><span><strong>Sound</strong><small>Soft tones as you weave</small></span><input id="setting-sound" type="checkbox" class="switch"></label>
       <label class="setting-row"><span><strong>Volume</strong></span><input id="setting-volume" type="range" min="0" max="70" step="1" aria-label="Volume"></label>
-      <label class="setting-row"><span><strong>Background hum</strong><small>A slow, quiet drone</small></span><input id="setting-ambient" type="checkbox" class="switch"></label>
+      <label class="setting-row"><span><strong>Cloth hum</strong><small>Soft notes from the colors on your cloth</small></span><input id="setting-ambient" type="checkbox" class="switch"></label>
       <label class="setting-row"><span><strong>Vibration</strong><small>A small buzz on a merge</small></span><input id="setting-haptics" type="checkbox" class="switch"></label>
       <h3 class="setting-group">Dyes</h3>
       <div id="dye-list" class="dye-list" role="radiogroup" aria-label="Dye palette"></div>

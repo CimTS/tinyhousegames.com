@@ -13,6 +13,13 @@
 .welcome-card h2 { font-size: clamp(1.8rem, 6vw, 2.3rem); margin-bottom: 12px; }
 .welcome-copy { color: var(--muted); font-size: 1rem; line-height: 1.6; margin: 0 auto 24px; max-width: 34ch; }
 .menu-list { display: grid; gap: 10px; }
+/* First visit: "Would you like sound?" Two buttons of equal weight, so neither answer is pushed. */
+.sound-choice { margin-top: 8px; }
+.sound-choice h3 { font-size: 1.35rem; margin-bottom: 6px; }
+.sound-choice p { color: var(--muted); font-size: 1rem; line-height: 1.5; margin: 0 0 18px; }
+.sound-choice__buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.sound-choice__buttons .quiet-button { min-height: 56px; font-size: 1.05rem; padding: 0 10px; }
+.sound-choice .welcome-note { font-size: .9rem; margin: 0; }
 .menu-list .primary-button { min-height: 56px; font-size: 1.05rem; }
 .menu-button {
   display: flex; align-items: center; justify-content: space-between; gap: 12px; text-align: left;

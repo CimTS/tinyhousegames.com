@@ -10,6 +10,18 @@ export function defaultProgress() {
   };
 }
 
+// Saved progress with every value checked. Anything missing, damaged or of the
+// wrong kind falls back to its starting value, so the menus can always be drawn.
+export function cleanProgress(saved) {
+  const out = defaultProgress(), s = saved && typeof saved === "object" && !Array.isArray(saved) ? saved : {};
+  const stats = s.stats && typeof s.stats === "object" ? s.stats : {};
+  for (const key of Object.keys(out.stats)) out.stats[key] = Number.isFinite(stats[key]) && stats[key] >= 0 ? Math.floor(stats[key]) : 0;
+  if (Array.isArray(s.dailies)) out.dailies = [...new Set(s.dailies.filter(x => typeof x === "string"))];
+  if (Array.isArray(s.campaign?.cleared)) out.campaign.cleared = [...new Set(s.campaign.cleared.filter(x => typeof x === "string"))];
+  if (PALETTES.some(p => p.id === s.palette)) out.palette = s.palette;
+  return out;
+}
+
 // summary: { mode, seed, levelId, cleared, stats: GameState#stats() }
 // Returns a new progress object and the ids of any palettes newly unlocked.
 export function recordFinish(progress, summary) {

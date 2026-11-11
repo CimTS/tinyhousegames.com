@@ -153,7 +153,9 @@ export function cardIcon(type) {
 
 // The finished piece: one continuous cloth on a wooden dowel, with fringe
 // tied from the bottom row's warp. Cells abut so it reads as a single weave.
-export function patternSvg(cells, { animate = false } = {}) {
+// With `lights`, each woven square also gets a soft light that the finish screen
+// turns on while that square's note is sounding.
+export function patternSvg(cells, { animate = false, lights = false } = {}) {
   const svg = svgEl("svg", { viewBox: "-14 -26 278 318", class: "tapestry" + (animate ? " weaving" : ""), role: "img", "aria-label": "Finished five by five woven tapestry" });
   // hanging cord
   svg.append(svgEl("path", { d: "M14 -14 125 -24 236 -14", fill: "none", stroke: "#8A6A4A", "stroke-width": 2, "stroke-linecap": "round" }));
@@ -164,6 +166,12 @@ export function patternSvg(cells, { animate = false } = {}) {
     if (tile) weave(g, tile, (i % 5) * 50, row * 50, 50, true);
     else g.append(svgEl("rect", { x: (i % 5) * 50, y: row * 50, width: 50, height: 50, fill: "#E8DCC8" }));
     svg.append(g);
+  });
+  if (lights) cells.forEach((tile, i) => {
+    if (tile) svg.append(svgEl("rect", {
+      class: "tune-light", "data-index": i, x: (i % 5) * 50 + 2.5, y: Math.floor(i / 5) * 50 + 2.5, width: 45, height: 45, rx: 6,
+      fill: "#FFF6DC", "fill-opacity": .22, stroke: "#FFF6DC", "stroke-width": 3
+    }));
   });
   // selvedge shadow along the sides and a soft hem at the top
   svg.append(svgEl("rect", { x: 0, y: 0, width: 250, height: 250, fill: "none", stroke: "#000", "stroke-opacity": .25, "stroke-width": 2 }));

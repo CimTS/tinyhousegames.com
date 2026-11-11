@@ -37,7 +37,6 @@
 .drag-ghost.will-remove { opacity: .45; filter: grayscale(.7); }
 body.is-dragging, body.is-dragging * { cursor: grabbing !important; }
 
-.gallery-open-studio { width: 100%; min-height: 36px; margin-top: 8px; padding: 0 10px; font-size: .78rem; }
 
 @media (max-width: 899px) {
   .studio-palette { gap: 4px; }

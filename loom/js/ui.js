@@ -8,7 +8,7 @@ import { GameState } from "./state.js";
 import { squareAt } from "./audio.js";
 
 const $ = id => document.getElementById(id);
-const OVERLAYS = ["welcome", "campaign-sheet", "settings-sheet", "gallery-sheet", "finish-sheet", "pattern-sheet"];
+const OVERLAYS = ["welcome", "campaign-sheet", "settings-sheet", "gallery-sheet", "viewer-sheet", "finish-sheet", "pattern-sheet"];
 let opener = null;
 
 export const isOpen = id => !$(id).classList.contains("hidden");
@@ -32,6 +32,8 @@ export function closeSheets() {
   syncInert();
   if (opener && document.contains(opener)) opener.focus({ preventScroll: true });
   opener = null;
+  // Lets the game react when the last sheet closes (stop a tune, or reopen the menu).
+  document.dispatchEvent(new CustomEvent("loom:sheets-closed"));
 }
 
 export function bindSheetDismissal() {
@@ -94,7 +96,8 @@ export function renderDyes(progress, onPick) {
   $("dye-list").replaceChildren(...items);
 }
 
-export function renderGallery(progress, items, onOpenStudio = null) {
+// `onView(item, title, cells)` is called when a piece is chosen to look at and listen to.
+export function renderGallery(progress, items, onView = null) {
   const s = progress.stats;
   $("lifetime-stats").replaceChildren(
     stat("Pieces woven", s.pieces), stat("Threads woven", s.threads),
@@ -112,20 +115,36 @@ export function renderGallery(progress, items, onOpenStudio = null) {
     const box = document.createElement("figure");
     box.className = "gallery-item"; box.style.margin = "0";
     const cells = item.cells || replayCells(item);
+    const title = item.title || `Piece ${items.length - i}`;
     box.append(patternSvg(cells));
     const t = document.createElement("strong");
-    t.textContent = item.title || `Piece ${items.length - i}`;
+    t.textContent = title;
     const m = document.createElement("small");
-    m.textContent = `${item.score} points · ${"★".repeat(item.stars)}${"☆".repeat(3 - item.stars)}`;
+    m.textContent = `${item.score} ${item.score === 1 ? "point" : "points"} · ${"★".repeat(item.stars)}${"☆".repeat(3 - item.stars)}`;
     box.append(t, m);
-    if (item.studio && onOpenStudio) {
+    if (onView) {
       const b = document.createElement("button");
-      b.type = "button"; b.className = "quiet-button gallery-open-studio"; b.textContent = "Open in studio";
-      b.addEventListener("click", () => onOpenStudio(item));
+      b.type = "button"; b.className = "quiet-button gallery-view"; b.textContent = "View and listen";
+      b.setAttribute("aria-label", `View and listen to ${title}`);
+      b.addEventListener("click", () => onView(item, title, cells));
       box.append(b);
     }
     return box;
   }));
+}
+
+// One gallery piece, shown large. The game plays its tune and lights the cloth.
+// `quiet` shows a line explaining that sound is off.
+export function renderPiece({ title, cells, score, stars, studio, quiet }) {
+  $("viewer-title").textContent = title;
+  $("viewer-art").replaceChildren(patternSvg(cells, { lights: true }));
+  $("viewer-score").textContent = String(score);
+  $("viewer-unit").textContent = score === 1 ? "point" : "points";
+  $("viewer-stars").textContent = "★".repeat(stars) + "☆".repeat(3 - stars);
+  $("viewer-stars").setAttribute("aria-label", `${stars} of 3 stars`);
+  $("viewer-quiet").classList.toggle("hidden", !quiet);
+  $("viewer-studio").classList.toggle("hidden", !studio);
+  openSheet("viewer-sheet");
 }
 
 // Older gallery entries stored only moves; rebuild their cells by replay.
@@ -164,9 +183,9 @@ export function stopTuneLights() {
   cancelAnimationFrame(lightsFrame);
   document.querySelectorAll(".tune-light.lit").forEach(el => el.classList.remove("lit"));
 }
-export function lightTune(tune, clock) {
+export function lightTune(tune, clock, host = "finish-art") {
   stopTuneLights();
-  const svg = $("finish-art").querySelector("svg");
+  const svg = $(host).querySelector("svg");
   if (!tune || !svg) return;
   const lights = new Map([...svg.querySelectorAll(".tune-light")].map(el => [Number(el.dataset.index), el]));
   let lit = null;

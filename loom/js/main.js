@@ -223,6 +223,27 @@ function answerSound(on) {
   $("welcome").querySelector("#menu-list button:not(.hidden)")?.focus({ preventScroll: true });
 }
 
+// A gallery piece, looked at and listened to. Opening it plays its tune, and the
+// cloth lights each square as it sounds, exactly as when the piece was finished.
+let viewing = null;
+function viewPiece(item, title, cells) {
+  viewing = { item, cells };
+  ui.renderPiece({ title, cells, score: item.score, stars: item.stars, studio: Boolean(item.studio), quiet: !settings.value.sound });
+  playPiece();
+}
+function playPiece() {
+  if (!viewing) return;
+  unlockAudio();                      // the tap that opened the piece is the gesture browsers need
+  audio.hush(); ui.stopTuneLights();  // "Play its tune" starts over; it never layers a second tune
+  const tune = audio.finish(viewing.cells);
+  const calm = settings.value.calm || matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!calm) ui.lightTune(tune, () => audio.ctx.currentTime, "viewer-art");
+}
+function stopPiece() {
+  viewing = null;
+  audio.hush(); ui.stopTuneLights();
+}
+
 function openMenu() {
   refreshMenus();
   showSoundChoice();
@@ -255,7 +276,15 @@ $("studio-button").addEventListener("click", guard(() => game.studio.open()));
 $("studio-share").addEventListener("click", share);
 $("tutorial-button").addEventListener("click", guard(() => { game.start(tutorialPiece()); game.tutorial.start(); }));
 $("campaign-button").addEventListener("click", () => { refreshMenus(); ui.openSheet("campaign-sheet"); });
-$("gallery-open").addEventListener("click", () => { ui.renderGallery(progress, storage.getGallery(), item => game.studio.openPiece(item)); ui.openSheet("gallery-sheet"); });
+const openGallery = () => { ui.renderGallery(progress, storage.getGallery(), viewPiece); ui.openSheet("gallery-sheet"); };
+$("gallery-open").addEventListener("click", openGallery);
+$("viewer-play").addEventListener("click", () => playPiece());
+$("viewer-back").addEventListener("click", () => { stopPiece(); openGallery(); });
+$("viewer-studio").addEventListener("click", () => { const item = viewing?.item; stopPiece(); if (item) game.studio.openPiece(item); });
+document.addEventListener("loom:sheets-closed", () => {
+  if (viewing) stopPiece();          // closing the viewer any other way also ends its tune
+  if (!game.state) openMenu();       // with no piece on the loom, closing a sheet returns to the menu
+});
 $("welcome-close").addEventListener("click", ui.closeSheets);
 $("sound-yes").addEventListener("click", () => answerSound(true));
 $("sound-no").addEventListener("click", () => answerSound(false));

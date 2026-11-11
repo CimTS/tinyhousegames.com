@@ -45,6 +45,7 @@
       $("balls-preview").textContent=`${SUIT_GLYPHS[s.primarySuit]} ${plural(s.balls)}`;
       $("balls-left").textContent=`BALLS: ${s.ballsLeft+s.activeBalls}`;
       $("round-earned").textContent=`THIS DROP: ${s.roundScore.toLocaleString("en-US")}`;
+      const hn=BALANCE.HANDS_PER_BLIND;$("hand-count").textContent=window.SlotchinkoCopy.words(`HAND ${Math.min(hn,hn-(s.handsLeft||hn)+1)} OF ${hn} · TAP CARDS TO HOLD`);
       this.phaseText(s);
       this.buttons(s);
       this.cards(s);
@@ -54,14 +55,15 @@
       this.renderShop(s);this.renderInventory(s);this.renderAim();
       const next=`${s.phase}:${s.won}:${s.round}`;
       if(this.changed("flow",next)&&s.phase==="roundEnd"&&s.won&&!s.victory)this.scrollTo($("shop-ui"));
-      if(s.phase==="slot"&&this.changed("hand",`${s.round}:${s.score}`))this.scrollTop();
+      if(s.phase==="slot"&&this.changed("hand",`${s.round}:${s.handsLeft}`))this.scrollTop();
     }
 
     phaseText(s){
       const shop=s.phase==="roundEnd"&&s.won;
-      $("phase-label").textContent=s.phase==="slot"?"PREPARE YOUR HAND":s.phase==="drop"?"THE DROP IS LIVE":s.victory?"YOU WIN":shop?"BLIND CLEARED":"RUN OVER";
-      const need=Math.max(0,s.target-s.score).toLocaleString("en-US");
-      $("status-message").textContent=window.SlotchinkoCopy.words(s.phase==="slot"?(s.score>=s.target?"Target already met. Bank more points: Drop Hand, aim, then tap Drop.":(this.game.aimFlow?.aiming?"Aim: drag or tap the board, then tap DROP to release.":`You need ${need} more points. Tap cards to hold, draw up to twice, press Drop Hand to aim, then tap Drop.`)):s.phase==="drop"?"Watch the balls fall. Drag across the board to aim the next ball.":s.victory?"Every blind beaten.":shop?"Buy Chips and consumables, reroll if needed, then enter the next blind.":"Your score fell short of the blind.");
+      const need=Math.max(0,s.target-s.score).toLocaleString("en-US"),n=BALANCE.HANDS_PER_BLIND,at=n-(s.handsLeft||n)+1;
+      const hands=at>=n?"Last hand.":`Hand ${at} of ${n}.`;
+      $("phase-label").textContent=s.phase==="slot"?`PREPARE YOUR HAND · ${at}/${n}`:s.phase==="drop"?"THE DROP IS LIVE":s.victory?"YOU WIN":shop?"BLIND CLEARED":"RUN OVER";
+      $("status-message").textContent=window.SlotchinkoCopy.words(s.phase==="slot"?(this.game.aimFlow?.aiming?"Aim: drag or tap the board, then tap DROP to release.":`${hands} You need ${need} more points. Tap cards to hold, draw up to twice, press Drop Hand to aim, then tap Drop.`):s.phase==="drop"?"Watch the balls fall. Drag across the board to aim the next ball.":s.victory?"Every blind beaten.":shop?"Buy Chips and consumables, reroll if needed, then enter the next blind.":"Your score fell short of the blind.");
     }
 
     buttons(s){

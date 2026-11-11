@@ -271,6 +271,7 @@
     });
     wrap(G, "finishRound", function () { return this.state.phase; }, function (ph) {
       if (ph !== "drop") return;
+      if (this.state.phase === "slot") { if (music) { music.accent("reset"); mood(this); } return; } // short, with a hand left: no fail sting
       if (this.state.won) { setTimeout(S.win, 300); if (music) music.accent("win"); }
       else { setTimeout(S.fail, 300); if (music) music.accent("fail"); }
     });

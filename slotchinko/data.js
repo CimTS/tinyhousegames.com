@@ -85,26 +85,27 @@
   const RARITY_WEIGHT = { common:58, uncommon:27, rare:12, legendary:3 };
   const RARITY_ORDER = ["common","uncommon","rare","legendary"];
 
-  // Blind score targets: the one table to tune. Score carries over, so each is a running total.
-  // Blinds 1-8 are the original curve; 9-16 ask each drop for more (checked with tools/slotchinko-sim.mjs).
-  const BLIND_TARGETS=[45,170,420,850,1500,2700,4800,8500, 12400,16500,20900,25600,30600,35900,41500,47500];
+  // Blind score targets: the one table to tune. Every blind starts from zero, so each number is what
+  // that blind alone asks for, across up to HANDS_PER_BLIND hands (checked with tools/slotchinko-sim.mjs).
+  const BLIND_TARGETS=[320,700,850,1300,1600,1800,2000,2200, 2400,2700,3100,3400,4200,5300,5600,6500];
   const BALANCE={
     FINAL_BLIND:BLIND_TARGETS.length, BLIND_TARGETS,
-    START_COINS:7, BLIND_PAY:3, BASE_BALL_SCORE:25, HEART_SPLIT_HIT:3, DRAIN_ROUND:3,
+    HANDS_PER_BLIND:3, SPARE_HAND_PAY:1, ELITE_CLIMB:1.5, START_COINS:7, BLIND_PAY:3, BASE_BALL_SCORE:25, HEART_SPLIT_HIT:3, DRAIN_ROUND:3,
     REROLL_BASE:2, SHOP_SLOTS:{chip:3,card:2,consumable:2,buff:2}, CROUPIER_CAP:3, FUNNEL_MULT:1.25, GOLD_POWER:0.25, MAX_CHIPS:12, MAX_BAG:3, MAX_HAND_BALLS:24,
     PRESS_STEP:500, PRESS_CAP:3, CLUB_COIN_HITS:5, DIAMOND_BONUS:35, GLASS_MULT:1.5
   };
 
   // Ascension (New Game+): win at a level to open the next. Each level raises targets and adds the next rule; rules stack.
-  const NG={ MAX:8, TARGET_STEP:0.12, MODS:[
-    { id:"tight-shop", name:"Tight Shop", icon:"¢", desc:"Every shop price +1¢." },
+  // The numbers were fitted with tools/slotchinko-bot.mjs so each level is a step, not a cliff (docs/slotchinko/BLINDS.md).
+  const NG={ MAX:8, TARGET_STEP:0, TIGHT_MIN_COST:7, THIN_FROM:5, LEAN_FROM:5, REROLL_ADD:1, HIGH_STAKES:1.08, MODS:[
+    { id:"tight-shop", name:"Tight Shop", icon:"¢", desc:"Anything priced 7¢ or more costs 1¢ extra." },
     { id:"hungry-drains", name:"Hungry Drains", icon:"▽", desc:"Drains open from blind 2." },
-    { id:"thin-hands", name:"Thin Hands", icon:"•", desc:"From blind 2, every hand drops 1 fewer ball." },
+    { id:"thin-hands", name:"Thin Hands", icon:"•", desc:"From blind 5, the first hand of each blind drops 1 fewer ball." },
     { id:"boss-blinds", name:"Boss Teeth", icon:"☠", desc:"The four bosses play a nastier rule." },
-    { id:"lean-purse", name:"Lean Purse", icon:"◌", desc:"Cleared blinds pay 1¢ less." },
-    { id:"pricey-rerolls", name:"Pricey Rerolls", icon:"↻", desc:"Rerolls cost 2¢ more." },
+    { id:"lean-purse", name:"Lean Purse", icon:"◌", desc:"From blind 5, cleared blinds pay 1¢ less." },
+    { id:"pricey-rerolls", name:"Pricey Rerolls", icon:"↻", desc:"Rerolls cost 1¢ more." },
     { id:"short-bag", name:"Short Bag", icon:"▣", desc:"Your Bag holds 1 fewer item, and the bosses play their nastiest rules." },
-    { id:"high-stakes", name:"High Stakes", icon:"♛", desc:"Targets climb another 25%." }
+    { id:"high-stakes", name:"High Stakes", icon:"♛", desc:"Every target is 8% higher." }
   ]};
   // Starting decks: House is open; the rest unlock from milestones (UNLOCKS).
   const DECKS=[
@@ -120,7 +121,7 @@
   // The path between blinds (chosen after the shop).
   const NODES={
     blind:{ name:"Blind", icon:"●", desc:"The next blind, straight up." },
-    elite:{ name:"Elite Blind", icon:"♛", desc:"Target climbs 50% further. Clear it for +6¢ and a free Rare Chip." },
+    elite:{ name:"Elite Blind", icon:"♛", desc:"Target is 50% higher. Clear it for +6¢ and a free Rare Chip." },
     event:{ name:"Event", icon:"?", desc:"Someone at the table has an offer." },
     rest:{ name:"Lounge", icon:"☕", desc:"Catch your breath before the blind." }
   };

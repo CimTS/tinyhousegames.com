@@ -1,7 +1,7 @@
 /* Slotchinko shop: stock generation, purchase, reroll and consumables. */
 (() => {
   "use strict";
-  const {CHIP_CATALOG,CARD_CATALOG,BUFF_CATALOG,CONSUMABLE_CATALOG,RARITY_WEIGHT,BALANCE}=window.SlotchinkoData;
+  const {CHIP_CATALOG,CARD_CATALOG,BUFF_CATALOG,CONSUMABLE_CATALOG,RARITY_WEIGHT,BALANCE,NG}=window.SlotchinkoData;
   let serial=0;
 
   function weightedPick(items,random) {
@@ -28,7 +28,7 @@
       for(const kind of ["chip","card","consumable","buff"]){
         const pool=[...pools[kind]];
         for(let i=0;i<slots[kind]&&pool.length;i++){
-          const pick=weightedPick(pool,rnd);inventory.push(cloneItem(pick,s,this._ngHas("tight-shop")?1:0));
+          const pick=weightedPick(pool,rnd);inventory.push(cloneItem(pick,s,this._ngHas("tight-shop")&&pick.cost>=NG.TIGHT_MIN_COST?1:0));
           pool.splice(pool.findIndex(item=>item.id===pick.id),1);
         }
       }
@@ -68,7 +68,7 @@
       this.toast(`${item.name.toUpperCase()}${note}`);this.render();
     },
 
-    _rerollCost(){return BALANCE.REROLL_BASE+this.state.shopRerolls+(this._ngHas("pricey-rerolls")?2:0);},
+    _rerollCost(){return BALANCE.REROLL_BASE+this.state.shopRerolls+(this._ngHas("pricey-rerolls")?NG.REROLL_ADD:0);},
     rerollShop(){
       const s=this.state;if(s.phase!=="roundEnd"||!s.won||s.victory)return;
       const cost=this._rerollCost();

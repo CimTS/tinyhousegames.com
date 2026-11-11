@@ -9,7 +9,7 @@ const STEPS = [
   { text: "Now tap its neighbor. The thread you tap second is where they join.", wait: "merge", cell: 13 },
   { text: "They became a twill, a finer weave. Two twills make a tapestry thread.", wait: "next", cell: 13 },
   { text: "Weaving these patterns earns points. Tap any pattern to see how to make it.", wait: "next", focus: ".cards-panel" },
-  { text: "Your next threads wait here. Undo takes back one move if you change your mind.", wait: "next", focus: ".dock", last: true }
+  { text: "Your next threads wait here. Undo takes back your last move. Tap it again to go back further.", wait: "next", focus: ".dock", last: true }
 ];
 
 export class Tutorial {

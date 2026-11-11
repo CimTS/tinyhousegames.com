@@ -13,6 +13,11 @@
 .welcome-card h2 { font-size: clamp(1.8rem, 6vw, 2.3rem); margin-bottom: 12px; }
 .welcome-copy { color: var(--muted); font-size: 1rem; line-height: 1.6; margin: 0 auto 24px; max-width: 34ch; }
 .menu-list { display: grid; gap: 10px; }
+/* The first screen shows a few choices; the rest open under "More ways to play". */
+.more-button[aria-expanded="true"] { background: var(--paper-2); }
+.more-button .more-mark { font-size: 1.1rem; transition: transform .15s ease; }
+.more-button[aria-expanded="true"] .more-mark { transform: rotate(180deg); }
+.more-list { padding-left: 12px; border-left: 3px solid var(--line); }
 /* First visit: "Would you like sound?" Two buttons of equal weight, so neither answer is pushed. */
 .sound-choice { margin-top: 8px; }
 .sound-choice h3 { font-size: 1.35rem; margin-bottom: 6px; }
@@ -25,7 +30,7 @@
   display: flex; align-items: center; justify-content: space-between; gap: 12px; text-align: left;
   min-height: 56px; border: 1.5px solid var(--line); border-radius: 14px; background: var(--surface); padding: 8px 18px;
 }
-.menu-button span { font-weight: 650; }
+.menu-button span { font-weight: 650; flex: 0 0 auto; }
 .menu-button small { color: var(--muted); font-size: .82rem; text-align: right; }
 .welcome-error { min-height: 1.2em; margin-top: 10px; color: #A44735; font-size: .9rem; }
 .welcome-note { color: var(--muted); font-size: .8rem; margin-top: 6px; }

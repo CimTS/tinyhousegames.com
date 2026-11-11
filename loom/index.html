@@ -114,14 +114,26 @@
         </div>
         <p class="welcome-note">You can change this any time with the speaker button.</p>
       </div>
+      <div id="hum-choice" class="sound-choice hidden" role="group" aria-labelledby="hum-choice-title">
+        <h3 id="hum-choice-title">Would you like the cloth to hum?</h3>
+        <p>A soft background made from the colors you weave.</p>
+        <div class="sound-choice__buttons">
+          <button id="hum-yes" class="quiet-button hidden" type="button">Hum on</button>
+          <button id="hum-no" class="quiet-button hidden" type="button">Hum off</button>
+        </div>
+        <p class="welcome-note">You can change this any time in Settings.</p>
+      </div>
       <div id="menu-list" class="menu-list">
         <button id="continue-button" class="primary-button hidden" type="button">Continue my piece</button>
         <button id="begin-button" class="primary-button" type="button">Today's piece</button>
-        <button id="campaign-button" class="menu-button" type="button"><span>Campaign</span><small id="campaign-progress">12 gentle lessons</small></button>
-        <button id="zen-button" class="menu-button" type="button"><span>Zen weaving</span><small>A fresh piece, any time</small></button>
-        <button id="studio-button" class="menu-button" type="button"><span>Studio</span><small>Weave any thread anywhere</small></button>
         <button id="gallery-open" class="menu-button" type="button"><span>Gallery</span><small id="gallery-count">Your finished pieces</small></button>
-        <button id="tutorial-button" class="menu-button" type="button"><span>How to play</span><small>A short, step-by-step lesson</small></button>
+        <button id="more-button" class="menu-button more-button" type="button" aria-expanded="false" aria-controls="more-list"><span>More ways to play</span><small class="more-mark" aria-hidden="true">▾</small></button>
+        <div id="more-list" class="menu-list more-list hidden">
+          <button id="campaign-button" class="menu-button" type="button"><span>Campaign</span><small id="campaign-progress">12 gentle lessons</small></button>
+          <button id="zen-button" class="menu-button" type="button"><span>Zen weaving</span><small>A fresh piece, any time</small></button>
+          <button id="studio-button" class="menu-button" type="button"><span>Studio</span><small>Weave any thread anywhere</small></button>
+          <button id="tutorial-button" class="menu-button" type="button"><span>How to play</span><small>A short, step-by-step lesson</small></button>
+        </div>
         <button id="welcome-close" class="link-button hidden" type="button">Back to my piece</button>
       </div>
       <p id="welcome-error" class="welcome-error" role="status"></p>

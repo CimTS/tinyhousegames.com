@@ -9,6 +9,12 @@ const write = (key, value) => {
 };
 const prefersReducedMotion = () => globalThis.window?.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
 
+// Whether to ask "Would you like the cloth to hum?". It is asked once, of anyone
+// who has sound on and has not already answered or turned the hum on themselves.
+export function humChoicePending(settings) {
+  return Boolean(settings?.sound) && settings.humAsked !== true && !settings.ambient;
+}
+
 // Whether to ask "Would you like sound?". `saved` is the stored settings, or null.
 // A new player is asked until they answer. Someone who already has Loom data
 // from before the question existed keeps their setting and is never asked.
@@ -43,7 +49,7 @@ const DEFAULT_SETTINGS = () => ({
 export function cleanSettings(saved) {
   const out = DEFAULT_SETTINGS();
   if (!saved || typeof saved !== "object" || Array.isArray(saved)) return out;
-  for (const key of ["sound", "ambient", "haptics", "large", "contrast", "calm", "marks", "soundAsked"]) {
+  for (const key of ["sound", "ambient", "haptics", "large", "contrast", "calm", "marks", "soundAsked", "humAsked"]) {
     if (typeof saved[key] === "boolean") out[key] = saved[key];
   }
   if (Number.isFinite(saved.volume)) out.volume = Math.min(100, Math.max(0, saved.volume));

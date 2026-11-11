@@ -34,7 +34,7 @@
 .rail-foot { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 0 4px; }
 .score { display: flex; align-items: baseline; gap: 6px; color: var(--muted); font-size: .9rem; }
 .score strong { font: 500 2rem var(--serif); color: var(--ink); font-variant-numeric: tabular-nums; }
-.stars { color: var(--gold); letter-spacing: .1em; margin-left: 6px; }
+.stars { color: var(--star); letter-spacing: .1em; margin-left: 6px; }
 
 /* Desktop and tablet landscape: board centered, rail on the right. */
 @media (min-width: 900px) {
@@ -78,7 +78,7 @@
     padding: 12px 12px 20px; max-width: 560px;
   }
   .board-heading { margin-bottom: 10px; }
-  .board-heading .eyebrow { font-size: .66rem; }
+  .board-heading .eyebrow { font-size: .8rem; }
   .board-heading h1 { font-size: 1.25rem; }
   .loom-frame { width: 100%; }
   .guidance { margin-top: 10px; font-size: .92rem; }

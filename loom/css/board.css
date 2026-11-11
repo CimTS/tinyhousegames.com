@@ -49,17 +49,19 @@
 .cards-hint { color: var(--muted); font-size: .86rem; margin: -6px 0 8px; }
 
 /* Dock: next threads and undo. */
-.dock { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+/* Undo sits at the right. If the threads and Undo cannot share a row, Undo moves
+   to its own row below; it never covers them. */
+.dock { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 14px; }
 .queue { display: flex; align-items: center; gap: 14px; min-width: 0; }
 .queue-next { display: flex; align-items: center; gap: 12px; }
 .queue-next svg { width: 64px; height: 64px; }
 .queue-next .q-label { display: flex; flex-direction: column; line-height: 1.2; }
-.queue-next .q-label small { color: var(--muted); font-size: .76rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.queue-next .q-label small { color: var(--muted); font-size: .82rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
 .queue-next .q-label span { font-weight: 650; font-size: 1rem; }
 .queue-later { display: flex; gap: 6px; align-items: center; padding-left: 12px; border-left: 1px solid var(--line); }
 .queue-later svg { width: 34px; height: 34px; opacity: .85; }
 .undo-button {
-  flex: 0 0 auto; border: 1.5px solid var(--line-strong); background: var(--surface);
+  flex: 0 0 auto; margin-left: auto; border: 1.5px solid var(--line-strong); background: var(--surface);
   padding: 0 18px; font-weight: 650; font-size: .95rem;
 }
 
@@ -88,6 +90,10 @@
   .pattern-icon svg { width: 24px; height: 24px; }
   .pattern-name { font-size: .88rem; }
   .pattern-desc { display: none; }
+}
+/* Narrow screens: one upcoming thread is shown, so the row still fits beside Undo. */
+@media (max-width: 480px) {
+  .queue-later svg:nth-child(n+2) { display: none; }
 }
 @media (max-width: 360px) {
   .queue-later { display: none; }

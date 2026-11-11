@@ -1,9 +1,9 @@
 // Wires the game together: starting pieces, input, sound, saving and menus.
 import { GameState } from "./state.js";
 import { Renderer } from "./render.js";
-import { LoomAudio } from "./audio.js";
+import { LoomAudio, tunePlan } from "./audio.js";
 import { Settings } from "./settings.js";
-import { storage, soundChoicePending } from "./storage.js";
+import { storage, soundChoicePending, humChoicePending } from "./storage.js";
 import { Tutorial } from "./tutorial.js";
 import { dailySeed, encodeShare, encodeStudio, decodeShare } from "./rng.js";
 import { canMerge } from "./rules.js";
@@ -24,6 +24,8 @@ const audio = new LoomAudio({});
 let askSound = soundChoicePending(storage.getSavedSettings(), storage.hasAny());
 const settings = new Settings(audio);
 if (askSound) { settings.value.sound = false; settings.value.soundAsked = false; settings.apply(); }
+// Anyone with sound on is asked once whether the cloth should hum as well.
+let askHum = !askSound && humChoicePending(settings.value);
 const announce = text => { $("live-region").textContent = ""; requestAnimationFrame(() => { $("live-region").textContent = text; }); };
 const where = i => `row ${Math.floor(i / 5) + 1}, column ${i % 5 + 1}`;
 
@@ -158,11 +160,11 @@ const game = {
       refreshMenus();
     }
     if (this.replaying) { eyebrow = "A shared piece"; title = "Woven by a friend"; next = "Weave my own"; this.nextAction = () => { history.replaceState(null, "", location.pathname); this.start(dailyPiece()); }; }
-    const tune = audio.finish(d.cells);   // the finished cloth is played back as a tune
+    const { tune, clock } = playTune(d.cells);   // the finished cloth is played back as a tune
     ui.renderFinish({ cells: d.cells, result: s.result, stats, title, eyebrow, unlockedNames, nextLabel: next, animate });
     // Each square lights as its note sounds. Calm mode means no movement, so the lights stay off.
     const calm = settings.value.calm || matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (!calm) ui.lightTune(tune, () => audio.ctx.currentTime);
+    if (!calm) ui.lightTune(tune, clock);
     announce(`${title}. ${s.result.score} points. ${stats.cardsDone} of ${stats.cardCount} patterns.`);
   },
 
@@ -203,24 +205,58 @@ function refreshMenus() {
   // First visit: put the lesson right under the main button.
   const first = progress.stats.pieces === 0 && !run;
   if (first) $("begin-button").after($("tutorial-button"));
-  else $("gallery-open").after($("tutorial-button"));
+  else $("more-list").append($("tutorial-button"));
   const n = storage.getGallery().length;
+  // The gallery is on the first screen once there is something in it.
+  if (n) $("more-button").before($("gallery-open"));
+  else $("more-list").prepend($("gallery-open"));
+  showMore();
   $("gallery-count").textContent = n ? `${n} finished ${n === 1 ? "piece" : "pieces"}` : "Your finished pieces";
 }
 
-// The welcome screen shows either the sound question or the menu, never both.
+// The first screen keeps a few choices in view; the rest open under "More ways to play".
+let moreOpen = false;
+function showMore() {
+  $("more-list").classList.toggle("hidden", !moreOpen);
+  $("more-button").setAttribute("aria-expanded", String(moreOpen));
+}
+
+// The welcome screen shows one thing at a time: the sound question, then the hum
+// question, then the menu.
 function showSoundChoice() {
+  const hum = !askSound && askHum, asking = askSound || hum;
   $("sound-choice").classList.toggle("hidden", !askSound);
   for (const id of ["sound-yes", "sound-no"]) $(id).classList.toggle("hidden", !askSound);
+  $("hum-choice").classList.toggle("hidden", !hum);
+  for (const id of ["hum-yes", "hum-no"]) $(id).classList.toggle("hidden", !hum);
   // The introduction waits with the menu, so the question is the only thing to read.
-  for (const id of ["welcome-copy", "menu-list", "welcome-note"]) $(id).classList.toggle("hidden", askSound);
+  for (const id of ["welcome-copy", "menu-list", "welcome-note"]) $(id).classList.toggle("hidden", asking);
 }
+const focusWelcome = () => $("welcome").querySelector(askHum ? "#hum-yes" : "#menu-list button:not(.hidden)")?.focus({ preventScroll: true });
 function answerSound(on) {
   settings.value.sound = on;
+  askHum = on && humChoicePending(settings.value);   // sound on leads to the hum question
   settings.save("sound");            // the change listener below records that the question was answered
   if (on) unlockAudio();              // this tap is the gesture browsers need before any sound
   announce(on ? "Sound is on." : "Sound is off.");
-  $("welcome").querySelector("#menu-list button:not(.hidden)")?.focus({ preventScroll: true });
+  focusWelcome();
+}
+function answerHum(on) {
+  if (on) unlockAudio();
+  settings.value.ambient = on;
+  settings.save("ambient");          // the change listener records the answer and starts or stops the hum
+  announce(on ? "The cloth will hum as you weave." : "No hum.");
+  focusWelcome();
+}
+
+// Plays a cloth's tune and says which clock the lights should follow. With sound off
+// there is nothing to hear, but the cloth is still read: the same plan runs on the
+// page's own clock, so the lights cross the cloth in silence.
+function playTune(cells) {
+  const tune = audio.finish(cells);
+  if (tune) return { tune, clock: () => audio.ctx.currentTime };
+  const now = () => performance.now() / 1000;
+  return { tune: { start: now(), ...tunePlan(cells) }, clock: now };
 }
 
 // A gallery piece, looked at and listened to. Opening it plays its tune, and the
@@ -235,9 +271,9 @@ function playPiece() {
   if (!viewing) return;
   unlockAudio();                      // the tap that opened the piece is the gesture browsers need
   audio.hush(); ui.stopTuneLights();  // "Play its tune" starts over; it never layers a second tune
-  const tune = audio.finish(viewing.cells);
+  const { tune, clock } = playTune(viewing.cells);
   const calm = settings.value.calm || matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (!calm) ui.lightTune(tune, () => audio.ctx.currentTime, "viewer-art");
+  if (!calm) ui.lightTune(tune, clock, "viewer-art");
 }
 function stopPiece() {
   viewing = null;
@@ -288,6 +324,12 @@ document.addEventListener("loom:sheets-closed", () => {
 $("welcome-close").addEventListener("click", ui.closeSheets);
 $("sound-yes").addEventListener("click", () => answerSound(true));
 $("sound-no").addEventListener("click", () => answerSound(false));
+$("hum-yes").addEventListener("click", () => answerHum(true));
+$("hum-no").addEventListener("click", () => answerHum(false));
+$("more-button").addEventListener("click", () => {
+  moreOpen = !moreOpen; showMore();
+  if (moreOpen) $("more-list").scrollIntoView({ block: "nearest" });
+});
 $("pattern-ok").addEventListener("click", ui.closeSheets);
 $("menu-open").addEventListener("click", openMenu);
 $("finish-menu").addEventListener("click", openMenu);
@@ -315,6 +357,13 @@ settings.onChange((key, value) => {
   if (key === "sound" && askSound) {
     askSound = false;
     settings.value.soundAsked = true;
+    storage.saveSettings(settings.value);
+    showSoundChoice();
+  }
+  // Choosing the hum by any route answers the hum question: its two buttons or the Settings switch.
+  if (key === "ambient" && settings.value.humAsked !== true) {
+    askHum = false;
+    settings.value.humAsked = true;
     storage.saveSettings(settings.value);
     showSoundChoice();
   }

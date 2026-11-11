@@ -3,7 +3,7 @@ import { GameState } from "./state.js";
 import { Renderer } from "./render.js";
 import { LoomAudio } from "./audio.js";
 import { Settings } from "./settings.js";
-import { storage } from "./storage.js";
+import { storage, soundChoicePending } from "./storage.js";
 import { Tutorial } from "./tutorial.js";
 import { dailySeed, encodeShare, encodeStudio, decodeShare } from "./rng.js";
 import { canMerge } from "./rules.js";
@@ -20,7 +20,10 @@ import { studioPiece } from "./studio-state.js";
 const $ = id => document.getElementById(id);
 const today = dailySeed();
 const audio = new LoomAudio({});
+// A new player is asked whether they want sound. Until they answer, sound is off.
+let askSound = soundChoicePending(storage.getSavedSettings(), storage.hasAny());
 const settings = new Settings(audio);
+if (askSound) { settings.value.sound = false; settings.value.soundAsked = false; settings.apply(); }
 const announce = text => { $("live-region").textContent = ""; requestAnimationFrame(() => { $("live-region").textContent = text; }); };
 const where = i => `row ${Math.floor(i / 5) + 1}, column ${i % 5 + 1}`;
 
@@ -39,11 +42,13 @@ const game = {
 
   start(piece, { replay = false, silent = false } = {}) {
     if (this.tutorial.active && piece.mode !== "tutorial") this.tutorial.stop();
+    audio.hush();   // a tune from the last piece does not carry into this one
     this.state = new GameState(piece.seed, piece, { silent: replay || silent || piece.mode === "tutorial" });
     this.replaying = replay;
     this.finishedShown = false;
     this.state.subscribe(() => this.afterChange());
     renderer.attach(this.state);
+    audio.setCloth(this.state.data.cells);
     this.studio.sync();
     this.heading();
     this.state.persist();
@@ -65,6 +70,7 @@ const game = {
 
   afterChange() {
     renderer.render();
+    audio.setCloth(this.state.data.cells);   // the hum follows what is on the cloth
     if (renderer.newlyDone?.length) { audio.card(); announce(`Pattern complete: ${renderer.newlyDone.join(", ")}.`); }
     if (this.state.data.finished && !this.finishedShown && this.state.data.mode !== "tutorial") {
       this.finishedShown = true;
@@ -151,7 +157,7 @@ const game = {
       refreshMenus();
     }
     if (this.replaying) { eyebrow = "A shared piece"; title = "Woven by a friend"; next = "Weave my own"; this.nextAction = () => { history.replaceState(null, "", location.pathname); this.start(dailyPiece()); }; }
-    audio.finish();
+    audio.finish(d.cells);   // the finished cloth is played back as a tune
     ui.renderFinish({ cells: d.cells, result: s.result, stats, title, eyebrow, unlockedNames, nextLabel: next, animate });
     announce(`${title}. ${s.result.score} points. ${stats.cardsDone} of ${stats.cardCount} patterns.`);
   },
@@ -198,8 +204,24 @@ function refreshMenus() {
   $("gallery-count").textContent = n ? `${n} finished ${n === 1 ? "piece" : "pieces"}` : "Your finished pieces";
 }
 
+// The welcome screen shows either the sound question or the menu, never both.
+function showSoundChoice() {
+  $("sound-choice").classList.toggle("hidden", !askSound);
+  for (const id of ["sound-yes", "sound-no"]) $(id).classList.toggle("hidden", !askSound);
+  // The introduction waits with the menu, so the question is the only thing to read.
+  for (const id of ["welcome-copy", "menu-list", "welcome-note"]) $(id).classList.toggle("hidden", askSound);
+}
+function answerSound(on) {
+  settings.value.sound = on;
+  settings.save("sound");            // the change listener below records that the question was answered
+  if (on) unlockAudio();              // this tap is the gesture browsers need before any sound
+  announce(on ? "Sound is on." : "Sound is off.");
+  $("welcome").querySelector("#menu-list button:not(.hidden)")?.focus({ preventScroll: true });
+}
+
 function openMenu() {
   refreshMenus();
+  showSoundChoice();
   $("welcome-close").classList.toggle("hidden", !game.state);
   $("welcome-title").textContent = game.state ? "Menu" : "Come sit at the loom";
   ui.openSheet("welcome");
@@ -231,6 +253,8 @@ $("tutorial-button").addEventListener("click", guard(() => { game.start(tutorial
 $("campaign-button").addEventListener("click", () => { refreshMenus(); ui.openSheet("campaign-sheet"); });
 $("gallery-open").addEventListener("click", () => { ui.renderGallery(progress, storage.getGallery(), item => game.studio.openPiece(item)); ui.openSheet("gallery-sheet"); });
 $("welcome-close").addEventListener("click", ui.closeSheets);
+$("sound-yes").addEventListener("click", () => answerSound(true));
+$("sound-no").addEventListener("click", () => answerSound(false));
 $("pattern-ok").addEventListener("click", ui.closeSheets);
 $("menu-open").addEventListener("click", openMenu);
 $("finish-menu").addEventListener("click", openMenu);
@@ -254,6 +278,13 @@ const syncSoundButton = () => {
 };
 $("sound-toggle").addEventListener("click", () => { settings.value.sound = !settings.value.sound; settings.save("sound"); });
 settings.onChange((key, value) => {
+  // Any way of choosing sound answers the question: its two buttons, the speaker button or Settings.
+  if (key === "sound" && askSound) {
+    askSound = false;
+    settings.value.soundAsked = true;
+    storage.saveSettings(settings.value);
+    showSoundChoice();
+  }
   if (key === "sound") { syncSoundButton(); audio.mute(!value); if (value && settings.value.ambient) audio.startAmbient(); }
   if (key === "ambient") value ? audio.startAmbient() : audio.stopAmbient();
 });
@@ -282,6 +313,7 @@ document.addEventListener("keydown", e => {
 // Opening a share link shows that finished piece without touching progress.
 const shared = decodeShare(location.hash);
 refreshMenus();
+showSoundChoice();
 // A shared studio grid opens as a canvas to remix; it never replaces your own.
 if (shared?.studio) game.start(studioPiece(shared.cells), { silent: true });
 else if (shared) {

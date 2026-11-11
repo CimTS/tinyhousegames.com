@@ -28,8 +28,8 @@
     deckOpen(id){return id==="house"||this.data.found.includes(id);}
     /* Records a finished run: best score, wins, Ascension, sets found and new unlocks. */
     recordRun(s,game){
-      const d=this.data,isBest=s.score>d.best;
-      if(isBest)d.best=s.score;
+      const d=this.data,isBest=s.total>d.best;
+      if(isBest)d.best=s.total;
       d.bestRound=Math.max(d.bestRound,s.victory?s.round:s.round-1);
       let ascended=false;
       if(s.victory){
@@ -58,7 +58,7 @@
       const d=this.prefs.data;
       $("title-best").textContent=d.best?`BEST ${num(d.best)} · ${d.wins} WIN${d.wins===1?"":"S"}${d.ngUnlocked?` · ASCENSION ${d.ngUnlocked}`:""}`:"NO RUNS YET";
       const saved=window.SlotchinkoSave?.read(),c=$("continue-button");
-      if(c){c.hidden=!saved;if(saved){const st=saved.state;$("continue-detail").textContent=`BLIND ${st.round}/${window.SlotchinkoData.BALANCE.FINAL_BLIND} · ${num(st.score)} PTS${st.ng?` · ASC ${st.ng}`:""}`;}}
+      if(c){c.hidden=!saved;if(saved){const st=saved.state;$("continue-detail").textContent=`BLIND ${st.round}/${window.SlotchinkoData.BALANCE.FINAL_BLIND} · ${num(st.total||0)} PTS${st.ng?` · ASC ${st.ng}`:""}`;}}
       $("play-button").setAttribute("data-focus","");if(saved)$("play-button").removeAttribute("data-focus");if(c)c.toggleAttribute("data-focus",!!saved);
       this.show("title-screen");
     }
@@ -84,9 +84,9 @@
         return `<button type="button" class="deck-card ${picked?"is-picked":""} ${open?"":"is-locked"}" data-deck="${k.id}" ${open?"":"disabled"} aria-pressed="${picked}">
           <span class="deck-head"><span class="deck-icon">${open?k.icon:"?"}</span>${best!=null?`<span class="deck-best" title="Best Ascension won">★ ${best}</span>`:""}</span>
           <b>${open?k.name:"Locked"}</b><small>${open?k.desc:hint(k.id)}</small></button>`;}).join("");
-      const n=this.ngPick,mods=D.NG.MODS.slice(0,n),pct=Math.round(((1+D.NG.TARGET_STEP*n)*(n>=8?1.25:1)-1)*100);
+      const n=this.ngPick,mods=D.NG.MODS.slice(0,n),pct=Math.round(((1+D.NG.TARGET_STEP*n)*(n>=8?D.NG.HIGH_STAKES:1)-1)*100);
       $("ng-level").textContent=n?`ASCENSION ${n}`:"STANDARD";
-      $("ng-detail").textContent=n?`Targets +${pct}% · ${n} rule${n===1?"":"s"}`:(d.ngUnlocked?"Press + to raise the stakes.":"Win a run to open Ascension 1.");
+      $("ng-detail").textContent=n?`${pct?`Targets +${pct}% · `:""}${n} rule${n===1?"":"s"}`:(d.ngUnlocked?"Press + to raise the stakes.":"Win a run to open Ascension 1.");
       // Newest rule in full; earlier ones as a compact row.
       const last=mods[n-1],older=mods.slice(0,-1);
       $("ng-mods").innerHTML=(last?`<li class="is-new"><span>${last.icon}</span><b>${last.name}</b> ${last.desc}</li>`:"")+(older.length?`<li class="ng-older">Also: ${older.map(m=>`<b>${m.icon} ${m.name}</b>`).join(" · ")}</li>`:"");
@@ -159,7 +159,7 @@
       $("end-title").textContent=s.victory?"YOU BEAT THE HOUSE":"RUN OVER";
       $("end-screen").classList.toggle("is-win",!!s.victory);
       $("end-message").textContent=s.victory?(canNg?`Every blind cleared. Ascension ${(s.ng||0)+1} awaits.`:"Every blind cleared. The table is yours."):`Blind ${s.round} wanted ${num(s.target)}. You had ${num(s.score)}.`;
-      $("end-score").textContent=num(s.score);
+      $("end-score").textContent=num(s.total);
       $("end-blinds").textContent=`${cleared}/${D.BALANCE.FINAL_BLIND}`;
       $("end-best").textContent=num(d.best);
       $("end-new-best").hidden=!best;

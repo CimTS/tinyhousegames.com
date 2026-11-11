@@ -21,7 +21,9 @@
     if(!this.changed("inv",sig))return;
     const stacks=new Map();s.chips.forEach(c=>stacks.set(c.id,{chip:c,n:(stacks.get(c.id)?.n||0)+1}));
     $("inventory").hidden=!s.chips.length&&!s.consumables.length;
-    $("loadout-count").textContent=`${s.chips.length}/${window.SlotchinkoData.BALANCE.MAX_CHIPS}`;
+    // Whole-run buffs sit in the row too but take no Chip slot, so they are counted apart.
+    const buffs=(s.runBuffs||[]).length;
+    $("loadout-count").textContent=`${s.chips.length}/${window.SlotchinkoData.BALANCE.MAX_CHIPS}${buffs?` · ${buffs} BUFF${buffs===1?"":"S"}`:""}`;
     (s.runBuffs||[]).forEach(c=>stacks.set(c.id,{chip:c,n:1}));
     $("owned-chips").innerHTML=[...stacks.values()].map(({chip:c,n})=>`<button type="button" class="owned-chip rarity-${c.rarity}${this.chipOpen===c.id?" is-open":""}" data-info="${c.id}" title="${c.desc}" aria-expanded="${this.chipOpen===c.id}" aria-controls="chip-detail" aria-label="${c.name}${n>1?`, ${n} copies`:""}"><span class="owned-icon">${c.icon}</span><span class="owned-name">${c.name}</span>${n>1?`<i>×${n}</i>`:""}</button>`).join("")||'<span class="empty-inventory">No Chips yet.</span>';
     this.renderChipDetail(s,stacks);

@@ -1,5 +1,5 @@
 // Bump this whenever any shipped file changes so returning players get it.
-const CACHE_VERSION = "loom-v18";
+const CACHE_VERSION = "loom-v19";
 const APP_SHELL = [
   "./",
   "./index.html",

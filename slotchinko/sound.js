@@ -276,6 +276,7 @@
       else { setTimeout(S.fail, 300); if (music) music.accent("fail"); }
     });
     wrap(G, "purchase", function () { return this.state.coins; }, function (c) { if (this.state.coins < c) S.buy(); });
+    wrap(G, "sellChip", function () { return this.state.coins; }, function (c) { if (this.state.coins > c) S.buy(); });
     wrap(G, "rerollShop", function () { return this.state.coins; }, function (c) { if (this.state.coins < c) S.reroll(); });
     wrap(G, "useConsumable", null, function () { S.buy(); });
     wrap(G, "nextRound", null, function () { if (music) { music.accent("reset"); mood(this); } });

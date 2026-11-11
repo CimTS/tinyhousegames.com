@@ -68,8 +68,17 @@
     });
     $("owned-chips").addEventListener("click",e=>{
       const info=e.target.closest("[data-info]");
-      const chip=info&&game.state.chips.find(c=>c.id===info.dataset.info);
-      if(chip)view.toast(`${chip.name}: ${chip.desc}`);
+      if(info)view.toggleChip(info.dataset.info);
+    });
+    $("loadout-open").addEventListener("click",()=>overlays.showLoadout(game));
+    $("loadout-close").addEventListener("click",()=>overlays.closeLoadout());
+    $("loadout-body").addEventListener("click",e=>{
+      const sell=e.target.closest("[data-sell]");if(!sell)return;
+      const body=$("loadout-body"),top=body.scrollTop;game.sellChip(sell.dataset.sell);overlays.showLoadout(game);body.scrollTop=top;
+    });
+    $("chip-detail").addEventListener("click",e=>{
+      const sell=e.target.closest("[data-sell]");
+      if(sell)game.sellChip(sell.dataset.sell);
     });
     game.autosave=true;
     const save=window.SlotchinkoSave;

@@ -18,6 +18,16 @@
   #shop-ui{display:none}
   /* A full loadout has to fit beside the board too. */
   .inventory-panel{padding:8px 10px}
+  /* Beside the board there is one screen of height: smaller tiles, and the suit note steps aside while a Chip is open. */
+  .owned-chips{gap:3px}
+  .owned-chip{min-height:32px;min-width:26px;padding:3px 5px}
+  .owned-chip .owned-icon{font-size:13px}
+  .loadout-open{min-height:24px;padding:2px 9px}
+  .collection-card.loadout-card{width:min(100%,560px)}
+  .loadout-card .col-grid{grid-template-columns:1fr}
+  body.chip-open #hand-management{display:none}
+  .chip-detail{margin-top:5px;padding:6px 8px}
+  .sell-chip{min-height:40px}
   .synergy-line{margin-top:5px;padding:4px 8px}
   .consumable-row{margin-top:5px;padding-top:5px}
   .consumable-heading{margin-bottom:3px}

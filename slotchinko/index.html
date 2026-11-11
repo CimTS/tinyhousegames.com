@@ -72,8 +72,9 @@
     </section>
 
     <section id="inventory" class="panel inventory-panel" hidden>
-      <div class="section-heading"><span>LOADOUT</span><span class="micro">TAP A CHIP FOR DETAILS</span></div>
+      <div class="section-heading"><span>LOADOUT <small id="loadout-count" class="loadout-count">0/12</small></span><button id="loadout-open" class="loadout-open" type="button" aria-haspopup="dialog">VIEW ALL ›</button></div>
       <div id="owned-chips" class="owned-chips"></div>
+      <div id="chip-detail" class="chip-detail" hidden></div>
       <div id="synergy-line" class="synergy-line"></div>
       <div id="trophy-slot" class="trophy-slot" hidden>
         <div class="consumable-heading"><span>TROPHIES</span><small id="trophy-count">0/4</small></div>
@@ -138,7 +139,7 @@
         <li><b>Hold and draw.</b> Tap cards to keep them. You get two draws. Better hands drop more balls with more power.</li>
         <li><b>Drop.</b> Press Drop Hand, then drag or tap the board to aim (nothing drops yet), then tap Drop to release the balls. Each ball scores by the pocket it lands in.</li>
         <li><b>Beat the blind.</b> Every blind starts from zero and gives you three hands to reach its target. Each hand you don't need pays 1¢. Miss with your last hand and the run ends.</li>
-        <li><b>Shop.</b> Coins buy Chips, which last the whole run, and one-shot items for your bag. Two different Chips with matching tags form a set.</li>
+        <li><b>Shop.</b> Coins buy Chips, which last the whole run, and one-shot items for your bag. Tap a Chip you own, or View All, to see what it does or sell it for half its price. Two different Chips with matching tags form a set.</li>
       </ol>
       <p><b>Your most common suit sets the ball type:</b> ♥ splits · ♠ heavy, breaks pegs · ♦ bonus bucket value · ♣ sticky.</p>
       <p><b>Sets:</b> heart + split · diamond + fortune · spade + gravity · club + control · economy + combo · element + synergy.</p>
@@ -199,6 +200,14 @@
       <div class="sheet-head is-stacked"><h2 id="collection-title">COLLECTION</h2><small id="collection-count"></small></div>
       <div id="collection-body" class="collection-body"></div>
       <button id="collection-close" class="btn btn-primary overlay-button" type="button" data-focus>DONE</button>
+    </div>
+  </div>
+
+  <div id="loadout-screen" class="overlay" role="dialog" aria-labelledby="loadout-title" hidden>
+    <div class="overlay-card collection-card loadout-card">
+      <div class="sheet-head"><h2 id="loadout-title">LOADOUT</h2><small id="loadout-sheet-count"></small></div>
+      <div id="loadout-body" class="collection-body"></div>
+      <button id="loadout-close" class="btn btn-primary overlay-button" type="button" data-focus>DONE</button>
     </div>
   </div>
 

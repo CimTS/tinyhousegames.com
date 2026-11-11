@@ -2,7 +2,7 @@
 (() => {
   "use strict";
   const $=id=>document.getElementById(id);
-  const BACK={"howto-screen":"howto-close","settings-screen":"settings-close","pause-screen":"pause-resume","collection-screen":"collection-close","deck-screen":"deck-back","path-screen":"path-back"};
+  const BACK={"howto-screen":"howto-close","settings-screen":"settings-close","pause-screen":"pause-resume","collection-screen":"collection-close","loadout-screen":"loadout-close","deck-screen":"deck-back","path-screen":"path-back"};
   const PICKS="[data-path],[data-event],[data-deck]",NAV="button,a[href]",STEP={ArrowDown:1,ArrowRight:1,ArrowUp:-1,ArrowLeft:-1};
   const digit=k=>k.length===1&&k>="1"&&k<="9"?Number(k)-1:-1;
 
@@ -10,6 +10,8 @@
     const id=overlays.open,root=$(id),k=e.key,step=STEP[k];
     if(step){
       if(e.target.matches?.("input"))return;
+      // Loadout: up and down scroll the list; left and right step through its buttons below.
+      if(id==="loadout-screen"&&(k==="ArrowUp"||k==="ArrowDown")){$("loadout-body").scrollBy?.({top:(k==="ArrowUp"?-1:1)*120});e.preventDefault();return;}
       if(id==="collection-screen"){$("collection-body").scrollBy?.({top:(k==="ArrowUp"?-1:k==="ArrowDown"?1:0)*120});e.preventDefault();return;}
       const list=[...root.querySelectorAll(NAV)].filter(b=>!b.disabled&&b.offsetParent!==null);
       if(list.length<2)return;

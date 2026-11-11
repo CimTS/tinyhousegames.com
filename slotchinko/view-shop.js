@@ -5,13 +5,26 @@
   const $=id=>document.getElementById(id);
   const P=window.GameView.prototype;
 
+  /* The open Chip: what it does and, when it can be sold, the Sell button. One tap opens it, so a sale is always two taps. */
+  P.renderChipDetail=function(s,stacks){
+    const box=$("chip-detail"),entry=this.chipOpen&&stacks.get(this.chipOpen);
+    if(!entry){this.chipOpen=null;box.hidden=true;box.innerHTML="";document.body.classList.remove("chip-open");return;}
+    const c=entry.chip,g=this.game,owned=s.chips.filter(x=>x.id===c.id),value=Math.max(0,...owned.map(x=>g.sellValue(x)));
+    const why=!s.chips.includes(c)?"Lasts the whole run.":!value?"Part of your deck. It can't be sold.":!g.canSell()?"You can sell when the drop is over.":"";
+    box.hidden=false;document.body.classList.add("chip-open");
+    box.innerHTML=`<div class="chip-detail-copy"><b>${c.icon} ${c.name}${entry.n>1?` ×${entry.n}`:""}</b><span>${c.desc}</span>${why?`<small>${why}</small>`:""}</div>
+      ${why?"":`<button type="button" class="sell-chip" data-sell="${c.id}" aria-label="Sell ${entry.n>1?"one ":""}${c.name} for ${value} coins"><span>SELL${entry.n>1?" ONE":""}</span><b>+${value}¢</b></button>`}`;
+  };
+  P.toggleChip=function(id){this.chipOpen=this.chipOpen===id?null:id;this.renderInventory(this.game.state);};
   P.renderInventory=function(s){
-    const sig=JSON.stringify([s.chips.map(c=>c.id),(s.runBuffs||[]).map(c=>c.id),s.deckMods,s.consumables.map(c=>c.instanceId),s.phase,s.won]);
+    const sig=JSON.stringify([s.chips.map(c=>c.id),(s.runBuffs||[]).map(c=>c.id),s.deckMods,s.consumables.map(c=>c.instanceId),s.phase,s.won,this.chipOpen||""]);
     if(!this.changed("inv",sig))return;
     const stacks=new Map();s.chips.forEach(c=>stacks.set(c.id,{chip:c,n:(stacks.get(c.id)?.n||0)+1}));
     $("inventory").hidden=!s.chips.length&&!s.consumables.length;
+    $("loadout-count").textContent=`${s.chips.length}/${window.SlotchinkoData.BALANCE.MAX_CHIPS}`;
     (s.runBuffs||[]).forEach(c=>stacks.set(c.id,{chip:c,n:1}));
-    $("owned-chips").innerHTML=[...stacks.values()].map(({chip:c,n})=>`<button type="button" class="owned-chip rarity-${c.rarity}" data-info="${c.id}" title="${c.desc}">${c.icon} ${c.name}${n>1?` ×${n}`:""}</button>`).join("")||'<span class="empty-inventory">No Chips yet.</span>';
+    $("owned-chips").innerHTML=[...stacks.values()].map(({chip:c,n})=>`<button type="button" class="owned-chip rarity-${c.rarity}${this.chipOpen===c.id?" is-open":""}" data-info="${c.id}" title="${c.desc}" aria-expanded="${this.chipOpen===c.id}" aria-controls="chip-detail" aria-label="${c.name}${n>1?`, ${n} copies`:""}"><span class="owned-icon">${c.icon}</span><span class="owned-name">${c.name}</span>${n>1?`<i>×${n}</i>`:""}</button>`).join("")||'<span class="empty-inventory">No Chips yet.</span>';
+    this.renderChipDetail(s,stacks);
     const live=s.phase==="slot"||(s.phase==="roundEnd"&&s.won&&!s.victory);
     $("consumable-bag").innerHTML=s.consumables.map(c=>`<button type="button" class="consumable-item rarity-${c.rarity}" data-use="${c.instanceId}" title="${c.desc}" ${live?"":"disabled"} aria-label="Use ${c.name}: ${c.desc}"><span>${c.icon}</span><b>${c.name}</b><small>USE</small></button>`).join("")||'<span class="empty-inventory">Consumables appear here.</span>';
     $("consumable-count").textContent=`${s.consumables.length}/${this.game._bagMax()}`;

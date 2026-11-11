@@ -95,6 +95,21 @@
       const found=D.DECKS.filter(k=>this.prefs.deckOpen(k.id)).length;$("deck-count").textContent=`${found}/${D.DECKS.length} OPEN`;
       this.show("deck-screen");
     }
+    /* Loadout sheet: every Chip you own with what it does and its Sell button, then run-long buffs and active sets.
+       Opening it pauses a live drop like any other sheet. */
+    showLoadout(game){
+      const s=game.state,B=window.SlotchinkoData.BALANCE,stacks=new Map(),can=game.canSell();
+      s.chips.forEach(c=>{const e=stacks.get(c.id)||{chip:c,n:0,value:0};e.n++;e.value=Math.max(e.value,game.sellValue(c));stacks.set(c.id,e);});
+      const row=({chip:c,n,value})=>`<li class="col-tile loadout-row rarity-${c.rarity}"><span class="col-icon">${c.icon}</span><span><b>${c.name}${n>1?` ×${n}`:""}</b><small>${c.desc}</small>${value?"":`<small class="loadout-note">Part of your deck. It can't be sold.</small>`}</span>${value&&can?`<button type="button" class="sell-chip" data-sell="${c.id}" aria-label="Sell ${n>1?"one ":""}${c.name} for ${value} coins"><span>SELL${n>1?" ONE":""}</span><b>+${value}¢</b></button>`:""}</li>`;
+      const buffs=(s.runBuffs||[]).map(c=>`<li class="col-tile rarity-${c.rarity}"><span class="col-icon">${c.icon}</span><span><b>${c.name}</b><small>${c.desc}</small></span></li>`).join("");
+      const sets=game._effects().synergies.map(x=>`<li class="is-found"><b>${x}</b></li>`).join("");
+      $("loadout-sheet-count").textContent=`${s.chips.length}/${B.MAX_CHIPS} CHIPS · ${s.coins}¢`;
+      $("loadout-body").innerHTML=`<section class="col-family"><h3><span>✦</span>Chips<small>${can?"Sells for half its price":"Sell when the drop is over"}</small></h3>${stacks.size?`<ul class="col-grid">${[...stacks.values()].map(row).join("")}</ul>`:`<p class="loadout-empty">No Chips yet. Buy them in the shop after a blind.</p>`}</section>`
+        +(buffs?`<section class="col-family"><h3><span>◍</span>Whole-run buffs</h3><ul class="col-grid">${buffs}</ul></section>`:"")
+        +`<section class="col-family"><h3><span>∞</span>Active sets</h3>${sets?`<ul class="col-sets">${sets}</ul>`:`<p class="loadout-empty">No sets yet. Pair two different Chips with matching tags.</p>`}</section>`;
+      if(this.open!=="loadout-screen")this.show("loadout-screen");
+    }
+    closeLoadout(){if(this.open==="loadout-screen")this.hide();}
     /* Collection: every Chip by family, the other items, sets found and decks. Locked tiles show their milestone. */
     showCollection(){
       const d=this.prefs.data,D=window.SlotchinkoData,locked=this.prefs.locked(),hint=id=>D.UNLOCKS.find(u=>u.id===id)?.hint||"";

@@ -42,9 +42,20 @@ button{cursor:pointer}button:disabled{cursor:not-allowed}
 
 /* Loadout */
 .inventory-panel{flex-shrink:0}
-.owned-chips{flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+/* Every Chip you own is in view: the row wraps instead of scrolling. */
+.owned-chips{flex-wrap:wrap;padding-bottom:2px}
 .owned-chips::-webkit-scrollbar,.consumable-bag::-webkit-scrollbar{display:none}
-.owned-chip{flex:0 0 auto;white-space:nowrap;color:inherit}
+/* The row is icon tiles on every screen; names and Sell live in the open Chip and in View All. */
+.owned-chip{position:relative;flex:0 0 auto;white-space:nowrap;color:inherit;min-width:44px;justify-content:center}
+.owned-chip .owned-name{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.owned-chip .owned-icon{font-size:16px}
+.owned-chip i{font-style:normal;color:var(--muted)}
+.loadout-count{margin-left:6px;font:700 11px 'DM Mono',monospace;letter-spacing:.8px;color:var(--muted)}
+.loadout-open{min-height:32px;padding:4px 10px;border:1px solid #2f8f8a;border-radius:999px;background:#0d2a2e;color:var(--cyan);font:700 11px 'DM Mono',monospace;letter-spacing:1px}
+.col-tile.loadout-row{grid-template-columns:30px 1fr auto;align-items:center}
+.loadout-card .col-grid{grid-template-columns:1fr}
+.loadout-note{color:var(--muted)!important}
+.loadout-empty{margin:0;font-size:13px;line-height:1.5;color:#9eabc4}
 .consumable-item{flex:0 0 auto}
 .consumable-item:disabled{opacity:.6}
 .consumable-item small{font-size:11px}
@@ -288,3 +299,15 @@ body.aiming #aim-guide::after{content:"";position:absolute;left:50%;top:22px;wid
 #drop-button.drop-confirm{font-size:22px;letter-spacing:3px;min-height:64px;background:linear-gradient(135deg,#ffcf5a,#ff8a3d);color:#1a1206;box-shadow:0 0 18px rgba(255,170,60,.55);animation:dropPulse 1.2s ease-in-out infinite}
 @keyframes dropPulse{50%{box-shadow:0 0 30px rgba(255,170,60,.9)}}
 @media (prefers-reduced-motion:reduce){#drop-button.drop-confirm{animation:none}}
+
+/* Loadout: the open Chip's details and its Sell button. */
+.owned-chip.is-open{border-color:var(--cyan);background:#12303a}
+.chip-detail{display:flex;align-items:center;gap:10px;margin-top:7px;padding:9px 10px;border:1px solid #2b4a63;border-radius:8px;background:#101b2d}
+.chip-detail[hidden]{display:none}
+.chip-detail-copy{flex:1 1 auto;min-width:0;display:grid;gap:3px;font-size:12px;line-height:1.4}
+.chip-detail-copy b{font:800 15px 'Barlow Condensed',sans-serif;letter-spacing:.4px;color:#fff}
+.chip-detail-copy span{color:#c9d3e6}
+.chip-detail-copy small{color:var(--muted);font-size:11px}
+.sell-chip{flex:0 0 auto;display:grid;justify-items:center;gap:1px;min-width:72px;min-height:48px;padding:6px 10px;border:1px solid #d9a441;border-radius:8px;background:linear-gradient(180deg,#3a2c10,#2a2110);color:#ffd27a;font-size:11px;font-weight:700;letter-spacing:.8px}
+.sell-chip b{font:800 16px 'Barlow Condensed',sans-serif;color:#fff}
+.sell-chip:active{transform:translateY(2px)}

@@ -68,6 +68,18 @@
       this.toast(`${item.name.toUpperCase()}${note}`);this.render();
     },
 
+    /* Selling: half what the Chip cost, at least 1¢. A deck's starting Chip is part of the deck and cannot be sold. */
+    sellValue(chip){return chip&&!String(chip.instanceId).startsWith("deck-")?Math.max(1,Math.floor((chip.cost||0)*BALANCE.SELL_RATE)):0;},
+    canSell(){const s=this.state;return s.phase==="slot"||(s.phase==="roundEnd"&&s.won&&!s.victory);},
+    /* Sells one copy of a Chip (the newest), while preparing a hand or in the shop. Never mid-drop. */
+    sellChip(id){
+      const s=this.state;if(!this.canSell())return;
+      let index=-1;s.chips.forEach((c,i)=>{if(c.id===id&&this.sellValue(c)>0)index=i;});
+      if(index<0)return;
+      const [chip]=s.chips.splice(index,1),value=this.sellValue(chip);
+      s.coins+=value;if(s.phase==="slot")this.evaluateHand();
+      this.toast(`${chip.name.toUpperCase()} SOLD · +${value}¢`);this.render();
+    },
     _rerollCost(){return BALANCE.REROLL_BASE+this.state.shopRerolls+(this._ngHas("pricey-rerolls")?NG.REROLL_ADD:0);},
     rerollShop(){
       const s=this.state;if(s.phase!=="roundEnd"||!s.won||s.victory)return;

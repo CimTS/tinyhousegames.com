@@ -75,7 +75,8 @@
       if(this.changed("drop",shop+"|"+aiming))drop.innerHTML=shop?"CHOOSE PATH →":aiming?"DROP ●":"DROP HAND ↓";
       drop.classList.toggle("drop-confirm",aiming);document.body.classList.toggle("aiming",aiming);
       // One stage at a time on a phone (phone.css): hand, aim, drop, shop, end.
-      document.body.dataset.stage=s.phase==="slot"?(aiming?"aim":"hand"):s.phase==="drop"?"drop":shop?"shop":"end";
+      const stage=s.phase==="slot"?(aiming?"aim":"hand"):s.phase==="drop"?"drop":shop?"shop":"end";
+      if(document.body.dataset.stage!==stage){document.body.dataset.stage=stage;if(this.phone())$("app").scrollTop=0;}
       drop.disabled=!(shop||s.phase==="slot");
     }
 
@@ -111,7 +112,10 @@
 
     scrollTop(){$("app").scrollTo({top:0,behavior:this.scrollMode()});}
     scrollTo(el,block="start"){window.setTimeout(()=>el.scrollIntoView({behavior:this.scrollMode(),block}),120);}
-    scrollMode(){return this.prefs.reducedMotion()?"auto":"smooth";}
+    /* A phone shows one stage at a time (phone.css), so a stage change jumps straight to its place:
+       a gliding scroll can be cut short there when the screen is rebuilt under it. */
+    phone(){return !!window.matchMedia?.("(max-width:699px),(max-height:599px) and (max-width:999px)").matches;}
+    scrollMode(){return this.prefs.reducedMotion()||this.phone()?"auto":"smooth";}
     vibrate(pattern){if(navigator.vibrate&&this.prefs.vibration())navigator.vibrate(pattern);}
     toast(message){
       const el=$("toast");el.textContent=message;el.classList.add("show");

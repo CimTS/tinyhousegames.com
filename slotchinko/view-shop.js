@@ -76,6 +76,7 @@
         <div class="market-title"><span class="market-kicker">AFTER-BLIND EXCHANGE</span><b>BLACK MARKET <i>✦</i></b><small>Next: blind ${s.round+1}${s.path?.boss?" · BOSS":""}</small></div>
         <button type="button" id="reroll-shop" class="reroll-button" ${s.coins<cost?"disabled":""}><span>↻</span><b>REROLL</b><small>${cost}¢</small></button>
       </div>
+      <button type="button" class="shop-loadout" data-open-loadout aria-haspopup="dialog"><span>YOUR CHIPS <b>${s.chips.length}/${BALANCE.MAX_CHIPS}</b></span><span>VIEW OR SELL ›</span></button>
       <div class="shop-tabs" role="tablist" aria-label="Shop sections">
         ${[{tab:"all",label:"ALL",n:inventory.length},...SECTIONS.map(x=>({...x,n:count(x.tab)}))].map(t=>`<button type="button" role="tab" class="shop-tab ${tab===t.tab?"is-active":""}" data-tab="${t.tab}" aria-selected="${tab===t.tab}">${t.label}<i>${t.n}</i></button>`).join("")}
       </div>

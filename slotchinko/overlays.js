@@ -52,6 +52,10 @@
     hide(){
       if(!this.open)return;
       $(this.open).hidden=true;this.open=null;this.onChange();
+      // A finished run always ends on its summary: closing How to Play or any sheet opened over it brings it back
+      // (as it was; the run is recorded once), so the game is never left with nothing to press.
+      const s=window.slotchinko?.state;
+      if(this.endShown&&s&&(s.victory||(s.phase==="roundEnd"&&!s.won)))this.show("end-screen");
     }
     get pausing(){return !!this.open;}
     showTitle(){
@@ -154,6 +158,7 @@
       this.show("event-screen");
     }
     showEnd(s,sum){
+      this.endShown=true;
       const game=window.slotchinko,rec=this.prefs.recordRun(s,game),best=rec.isBest,d=this.prefs.data,cleared=s.victory?s.round:s.round-1,D=window.SlotchinkoData;
       sum=sum||game.summary();
       $("end-hand").textContent=sum.bestHand;

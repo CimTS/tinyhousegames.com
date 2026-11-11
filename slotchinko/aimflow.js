@@ -8,6 +8,8 @@
       get aiming(){return f.sync();},
       press(){if(game.state.phase!=="slot")return false;if(!on){on=true;return false;}on=false;game.startDrop();return true;},
       boardRelease(){if(game.state.phase==="slot")on=true;},
+      /* Back to the hand without dropping (the phone layout shows one stage at a time). */
+      cancel(){on=false;},
     };
     return f;
   }

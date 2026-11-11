@@ -70,6 +70,7 @@
       const info=e.target.closest("[data-info]");
       if(info)view.toggleChip(info.dataset.info);
     });
+    $("aim-back").addEventListener("click",()=>{game.aimFlow.cancel();game.render();});
     $("loadout-open").addEventListener("click",()=>overlays.showLoadout(game));
     $("loadout-close").addEventListener("click",()=>overlays.closeLoadout());
     $("loadout-body").addEventListener("click",e=>{

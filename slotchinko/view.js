@@ -50,7 +50,7 @@
       this.buttons(s);
       this.cards(s);
       const overlay=$("board-overlay");
-      overlay.classList.toggle("hidden",s.phase==="drop");
+      overlay.classList.toggle("hidden",s.phase==="drop"||!!game.aimFlow?.aiming);
       overlay.textContent=s.phase==="roundEnd"?(s.victory?"YOU BEAT THE HOUSE":s.won?"BLIND CLEARED":"RUN OVER"):"YOUR BOARD IS WAITING";
       this.renderShop(s);this.renderInventory(s);this.renderAim();
       const next=`${s.phase}:${s.won}:${s.round}`;
@@ -61,9 +61,10 @@
     phaseText(s){
       const shop=s.phase==="roundEnd"&&s.won;
       const need=Math.max(0,s.target-s.score).toLocaleString("en-US"),n=BALANCE.HANDS_PER_BLIND,at=n-(s.handsLeft||n)+1;
-      const hands=at>=n?"Last hand.":`Hand ${at} of ${n}.`;
-      $("phase-label").textContent=s.phase==="slot"?`PREPARE YOUR HAND · ${at}/${n}`:s.phase==="drop"?"THE DROP IS LIVE":s.victory?"YOU WIN":shop?"BLIND CLEARED":"RUN OVER";
-      $("status-message").textContent=window.SlotchinkoCopy.words(s.phase==="slot"?(this.game.aimFlow?.aiming?"Aim: drag or tap the board, then tap DROP to release.":`${hands} You need ${need} more points. Tap cards to hold, draw up to twice, press Drop Hand to aim, then tap Drop.`):s.phase==="drop"?"Watch the balls fall. Drag across the board to aim the next ball.":s.victory?"Every blind beaten.":shop?"Buy Chips and consumables, reroll if needed, then enter the next blind.":"Your score fell short of the blind.");
+      // The full how-to line shows on the very first hand only; after that the hint is just what is still needed.
+      const first=s.round===1&&at===1,last=at>=n&&n>1?"Last hand. ":"";
+      $("phase-label").textContent=s.phase==="slot"?(this.game.aimFlow?.aiming?"AIM YOUR DROP":"PREPARE YOUR HAND"):s.phase==="drop"?"THE DROP IS LIVE":s.victory?"YOU WIN":shop?"BLIND CLEARED":"RUN OVER";
+      $("status-message").textContent=window.SlotchinkoCopy.words(s.phase==="slot"?(this.game.aimFlow?.aiming?"Aim: drag or tap the board, then tap DROP to release.":(first?`You need ${need} more points. Tap cards to hold, draw up to twice, press Drop Hand to aim, then tap Drop.`:`${last}You need ${need} more points.`)):s.phase==="drop"?"Watch the balls fall. Drag across the board to aim the next ball.":s.victory?"Every blind beaten.":shop?"Buy Chips and consumables, reroll if needed, then enter the next blind.":"Your score fell short of the blind.");
     }
 
     buttons(s){
@@ -73,6 +74,8 @@
       const aiming=!!this.game.aimFlow?.aiming;
       if(this.changed("drop",shop+"|"+aiming))drop.innerHTML=shop?"CHOOSE PATH →":aiming?"DROP ●":"DROP HAND ↓";
       drop.classList.toggle("drop-confirm",aiming);document.body.classList.toggle("aiming",aiming);
+      // One stage at a time on a phone (phone.css): hand, aim, drop, shop, end.
+      document.body.dataset.stage=s.phase==="slot"?(aiming?"aim":"hand"):s.phase==="drop"?"drop":shop?"shop":"end";
       drop.disabled=!(shop||s.phase==="slot");
     }
 

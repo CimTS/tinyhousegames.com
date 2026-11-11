@@ -60,6 +60,7 @@
       if(buy)game.purchase(buy.dataset.buy);
       else if(e.target.closest("#reroll-shop"))game.rerollShop();
       else if(e.target.closest("#shop-next"))overlays.showPath(game);
+      else if(e.target.closest("[data-open-loadout]"))overlays.showLoadout(game);
       else if(e.target.closest("[data-tab]"))view.setShopTab(e.target.closest("[data-tab]").dataset.tab);
     });
     $("consumable-bag").addEventListener("click",e=>{
@@ -70,6 +71,8 @@
       const info=e.target.closest("[data-info]");
       if(info)view.toggleChip(info.dataset.info);
     });
+    // The build code, so two devices can be compared at a glance.
+    document.querySelectorAll("[data-build]").forEach(el=>{el.textContent=window.SLOTCHINKO_BUILD?`BUILD ${window.SLOTCHINKO_BUILD}`:"";});
     $("aim-back").addEventListener("click",()=>{game.aimFlow.cancel();game.render();});
     $("loadout-open").addEventListener("click",()=>overlays.showLoadout(game));
     $("loadout-close").addEventListener("click",()=>overlays.closeLoadout());

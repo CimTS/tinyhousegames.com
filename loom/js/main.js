@@ -11,7 +11,7 @@ import { moveCursor, keyAction } from "./keys.js";
 import { installDefs, setPalette, colorName } from "./art.js";
 import { LEVELS, levelPiece, levelById, levelCleared } from "./campaign.js";
 import { paletteById, isPaletteUnlocked } from "./palettes.js";
-import { defaultProgress, recordFinish } from "./progress.js";
+import { cleanProgress, recordFinish } from "./progress.js";
 import * as ui from "./ui.js";
 import { VERSION } from "./version.js";
 import { Studio } from "./studio.js";
@@ -27,7 +27,7 @@ if (askSound) { settings.value.sound = false; settings.value.soundAsked = false;
 const announce = text => { $("live-region").textContent = ""; requestAnimationFrame(() => { $("live-region").textContent = text; }); };
 const where = i => `row ${Math.floor(i / 5) + 1}, column ${i % 5 + 1}`;
 
-let progress = { ...defaultProgress(), ...storage.getProgress(defaultProgress()) };
+let progress = cleanProgress(storage.getProgress(null));
 const saveProgress = () => storage.saveProgress(progress);
 const applyPalette = () => {
   const p = paletteById(progress.palette);
@@ -43,6 +43,7 @@ const game = {
   start(piece, { replay = false, silent = false } = {}) {
     if (this.tutorial.active && piece.mode !== "tutorial") this.tutorial.stop();
     audio.hush();   // a tune from the last piece does not carry into this one
+    ui.stopTuneLights();
     this.state = new GameState(piece.seed, piece, { silent: replay || silent || piece.mode === "tutorial" });
     this.replaying = replay;
     this.finishedShown = false;
@@ -157,8 +158,11 @@ const game = {
       refreshMenus();
     }
     if (this.replaying) { eyebrow = "A shared piece"; title = "Woven by a friend"; next = "Weave my own"; this.nextAction = () => { history.replaceState(null, "", location.pathname); this.start(dailyPiece()); }; }
-    audio.finish(d.cells);   // the finished cloth is played back as a tune
+    const tune = audio.finish(d.cells);   // the finished cloth is played back as a tune
     ui.renderFinish({ cells: d.cells, result: s.result, stats, title, eyebrow, unlockedNames, nextLabel: next, animate });
+    // Each square lights as its note sounds. Calm mode means no movement, so the lights stay off.
+    const calm = settings.value.calm || matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!calm) ui.lightTune(tune, () => audio.ctx.currentTime);
     announce(`${title}. ${s.result.score} points. ${stats.cardsDone} of ${stats.cardCount} patterns.`);
   },
 
@@ -285,6 +289,7 @@ settings.onChange((key, value) => {
     storage.saveSettings(settings.value);
     showSoundChoice();
   }
+  if (key === "sound" && !value) { audio.hush(); ui.stopTuneLights(); }   // sound off ends a tune and its lights
   if (key === "sound") { syncSoundButton(); audio.mute(!value); if (value && settings.value.ambient) audio.startAmbient(); }
   if (key === "ambient") value ? audio.startAmbient() : audio.stopAmbient();
 });

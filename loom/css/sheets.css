@@ -111,6 +111,11 @@
 .tapestry.weaving .tapestry-row { animation: shuttle .55s ease-in-out both; animation-delay: calc(var(--row) * .28s + .15s); }
 .tapestry.weaving .fringe { animation: fringe-in .6s ease both; animation-delay: 1.7s; }
 
+/* The finished piece plays itself: each square lights while its note sounds.
+   A quick, soft rise and a slower fade, so the light glides along the cloth and never flashes. */
+.tune-light { opacity: 0; pointer-events: none; transition: opacity .4s ease-out; }
+.tune-light.lit { opacity: 1; transition-duration: .09s; }
+
 /* Tutorial: in the page flow above the loom, so it never covers the board. */
 .tutorial-banner {
   width: 100%; margin-bottom: 12px; padding: 12px 16px 10px; border-radius: 16px; text-align: center;

@@ -53,6 +53,27 @@ export const HUM_PITCH = [293.66, 659.26, 739.99, 440.0, 493.88];
 export const FAMILIES = [[0, 2, 3], [0, 2, 4], [4, 1], [3, 1]];
 // The finished-piece tune: seconds per square, the pause after each row, and the pause before it starts.
 export const TUNE = { step: 0.34, breath: 0.4, lead: 0.8 };
+
+/**
+ * When each square of a finished cloth sounds, in seconds from the moment the tune is asked for.
+ * The cloth is read like a page: left to right, top row first, with a breath after each row.
+ * An empty square is a rest. `home` is when the two closing notes sound.
+ */
+export function tunePlan(cells = []) {
+  const notes = [];
+  let when = TUNE.lead;
+  for (let i = 0; i < 25 && cells.length; i++) {
+    if (cells[i]) notes.push({ index: i, at: when });
+    when += TUNE.step + (i % 5 === 4 ? TUNE.breath : 0);
+  }
+  return { notes, home: [when + 0.2, when + 0.9], length: when + 0.9 };
+}
+/** The square that is sounding `t` seconds into a tune, or null during a rest, a breath or the closing notes. */
+export function squareAt(plan, t) {
+  let found = null;
+  for (const n of plan.notes) { if (n.at <= t) found = n; else break; }
+  return found && t < found.at + TUNE.step ? found.index : null;
+}
 const STEPS = new Set(["0,1", "1,0", "1,2", "2,1", "3,4", "4,3"]);
 /** True when two colours' notes are a whole step apart: the one interval that must never be held. */
 export const isStep = (a, b) => STEPS.has(`${a},${b}`);
@@ -278,24 +299,23 @@ export class LoomAudio {
   // The finished piece plays itself. The cloth is read like a page: left to right,
   // top row first, five squares and then a breath. An empty square is a rest.
   // It ends on D then A, the home notes, so every tune comes to rest.
-  // Returns how long the tune lasts, in seconds.
+  // Returns the tune's plan with `start`, the audio-clock time it was asked for, so the
+  // screen can light each square as it sounds. Returns null if nothing was played.
   finish(cells = []) {
-    if (!this.ready) return 0;
-    let when = TUNE.lead, prev = null;
-    for (let i = 0; i < 25 && cells.length; i++) {
-      const tile = cells[i];
-      if (tile) {
-        this.sound(tile.c, freqFor(tile.c), {
-          level: (0.5 + 0.06 * tile.t) * (prev === tile.c ? 0.8 : 1),
-          fade: 0.4 + 0.1 * tile.t, hold: 0, delay: when
-        });
-        prev = tile.c;
-      }
-      when += TUNE.step + (i % 5 === 4 ? TUNE.breath : 0);
+    if (!this.ready) return null;
+    const plan = tunePlan(cells);
+    let prev = null;
+    for (const { index, at } of plan.notes) {
+      const tile = cells[index];
+      this.sound(tile.c, freqFor(tile.c), {
+        level: (0.5 + 0.06 * tile.t) * (prev === tile.c ? 0.8 : 1),
+        fade: 0.4 + 0.1 * tile.t, hold: 0, delay: at
+      });
+      prev = tile.c;
     }
-    this.sound(0, NOTES[0], { level: 0.62, fade: 2.2, hold: 0.5, delay: when + 0.2 });
-    this.sound(3, NOTES[3], { level: 0.5, fade: 2.6, hold: 0.5, delay: when + 0.9 });
-    return when + 0.9;
+    this.sound(0, NOTES[0], { level: 0.62, fade: 2.2, hold: 0.5, delay: plan.home[0] });
+    this.sound(3, NOTES[3], { level: 0.5, fade: 2.6, hold: 0.5, delay: plan.home[1] });
+    return { start: this.ctx.currentTime, ...plan };
   }
 
   // Quietly ends whatever is sounding or still to come (a tune, a ringing note).

@@ -5,6 +5,7 @@ import { CARD_INFO, CARD_HELP, exampleCells, progressWords } from "./patterns.js
 import { LEVELS, isLevelUnlocked } from "./campaign.js";
 import { PALETTES, isPaletteUnlocked, unlockText } from "./palettes.js";
 import { GameState } from "./state.js";
+import { squareAt } from "./audio.js";
 
 const $ = id => document.getElementById(id);
 const OVERLAYS = ["welcome", "campaign-sheet", "settings-sheet", "gallery-sheet", "finish-sheet", "pattern-sheet"];
@@ -130,14 +131,17 @@ export function renderGallery(progress, items, onOpenStudio = null) {
 // Older gallery entries stored only moves; rebuild their cells by replay.
 export function replayCells(item) {
   const s = new GameState(item.seed, null, { silent: true });
-  for (const m of item.moves) m.type === "place" ? s.place(m.index) : s.merge(m.from, m.to);
+  for (const m of item.moves) {
+    if (!m) continue;   // a damaged entry: skip the move instead of failing the whole gallery
+    m.type === "place" ? s.place(m.index) : s.merge(m.from, m.to);
+  }
   return s.data.cells;
 }
 
 export function renderFinish({ cells, result, stats, title, eyebrow, unlockedNames, nextLabel, animate }) {
   $("finish-eyebrow").textContent = eyebrow;
   $("finish-title").textContent = title;
-  $("finish-art").replaceChildren(patternSvg(cells, { animate }));
+  $("finish-art").replaceChildren(patternSvg(cells, { animate, lights: true }));
   $("finish-score").textContent = String(result.score);
   $("finish-unit").textContent = result.score === 1 ? "point" : "points";
   $("finish-stars").textContent = "★".repeat(result.stars) + "☆".repeat(3 - result.stars);
@@ -150,6 +154,33 @@ export function renderFinish({ cells, result, stats, title, eyebrow, unlockedNam
   note.textContent = unlockedNames.length ? `New dye unlocked: ${unlockedNames.join(", ")}. Choose it in Settings.` : "";
   $("finish-next").textContent = nextLabel;
   openSheet("finish-sheet");
+}
+
+// The finished piece plays itself, and the cloth shows where the tune is: each square
+// lights while its note sounds. `tune` comes from LoomAudio#finish; `clock` returns the
+// audio clock, so the lights stay with the sound even if the page is slowed down.
+let lightsFrame = 0;
+export function stopTuneLights() {
+  cancelAnimationFrame(lightsFrame);
+  document.querySelectorAll(".tune-light.lit").forEach(el => el.classList.remove("lit"));
+}
+export function lightTune(tune, clock) {
+  stopTuneLights();
+  const svg = $("finish-art").querySelector("svg");
+  if (!tune || !svg) return;
+  const lights = new Map([...svg.querySelectorAll(".tune-light")].map(el => [Number(el.dataset.index), el]));
+  let lit = null;
+  const tick = () => {
+    if (!svg.isConnected) return;
+    const t = clock() - tune.start, now = squareAt(tune, t);
+    if (now !== lit) {
+      lights.get(lit)?.classList.remove("lit");
+      lights.get(now)?.classList.add("lit");
+      lit = now;
+    }
+    if (t < tune.length) lightsFrame = requestAnimationFrame(tick);
+  };
+  lightsFrame = requestAnimationFrame(tick);
 }
 
 // A tiny loom showing one correct way to make a pattern.

@@ -4,6 +4,8 @@ import { canMerge, isPieceComplete } from "./rules.js";
 import { evaluate, scorePiece } from "./patterns.js";
 import { storage } from "./storage.js";
 
+export const UNDO_STEPS = 20;
+
 export class GameState {
   // `options.silent` suppresses all storage writes — used for share-link
   // replay and gallery previews so viewing a piece never mutates the archive.
@@ -27,9 +29,12 @@ export class GameState {
     if (this.data.mode === "daily") storage.saveDaily(this.data.seed, this.data);
   }
 
-  // Undo is deliberately one step deep: it forgives a misclick without
-  // inviting long chains of second-guessing.
-  remember(before) { this.data.undo = [before]; }
+  // Undo walks back move by move, up to UNDO_STEPS. A slip is often noticed a
+  // few moves late, and taking only the last move back is not forgiving enough.
+  remember(before) {
+    this.data.undo.push(before);
+    if (this.data.undo.length > UNDO_STEPS) this.data.undo.shift();
+  }
 
   stats() {
     const cardsDone = this.progress.filter(p => p.done).length;
@@ -55,7 +60,6 @@ export class GameState {
     const before = {
       cells: this.data.cells.map(x => x ? { ...x } : null),
       queue: this.data.queue.map(x => ({ ...x })),
-      moves: this.data.moves.slice(),
       finished: false
     };
     const tile = this.data.queue.shift();
@@ -75,7 +79,6 @@ export class GameState {
     const before = {
       cells: this.data.cells.map(x => x ? { ...x } : null),
       queue: this.data.queue.map(x => ({ ...x })),
-      moves: this.data.moves.slice(),
       finished: false
     };
     const source = { ...this.data.cells[from] }, target = { ...this.data.cells[to] };

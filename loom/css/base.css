@@ -15,6 +15,7 @@
   --accent-ink: #FFFCF6;
   --accent-soft: #E3EAE4;
   --gold: #C79533;
+  --star: #876010;   /* stars are read, not decoration: 5:1 on the paper */
   --glow: rgba(199, 149, 51, .45);
   --focus: #1F4E79;
   --shadow: 0 10px 30px rgba(74, 58, 38, .10);
@@ -40,6 +41,7 @@
   --accent-ink: #1C1B18;
   --accent-soft: #34413C;
   --gold: #E0B45A;
+  --star: #E0B45A;
   --glow: rgba(224, 180, 90, .40);
   --focus: #9CC6F0;
   --shadow: 0 10px 30px rgba(0, 0, 0, .35);
@@ -57,7 +59,7 @@ button { cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-colo
 :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
 .hidden { display: none !important; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-.eyebrow { color: var(--muted); font-size: .72rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+.eyebrow { color: var(--muted); font-size: .82rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
 
 .primary-button, .quiet-button, .menu-button, .icon-button, .undo-button, .danger-button, .link-button {
   min-height: var(--tap); border-radius: 999px;

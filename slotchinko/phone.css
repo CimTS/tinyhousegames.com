@@ -20,14 +20,21 @@
   .owned-chips{gap:4px}
   .inventory-panel{padding:9px 10px}
   .inventory-panel .section-heading{margin-bottom:6px}
-  .synergy-line{margin-top:6px;padding:5px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .synergy-line{margin-top:6px;padding:5px 8px}
   .consumable-row{margin-top:7px;padding-top:7px}
   /* The suit note becomes one line: what the balls are and how many. */
   #hand-management{padding:6px 10px}
   #hand-management .hand-note-icon{font-size:16px}
   #hand-management b{display:none}
   #hand-management p{display:inline;margin:0;font-size:12px}
-  #hand-management>div:nth-child(2){flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #hand-management>div:nth-child(2){flex:1;min-width:0}
+  #hand-management .hand-note-right{white-space:nowrap}
+  /* While aiming and dropping only the balls matter: what they are and how many. */
+  body[data-stage="aim"] #hand-management p,body[data-stage="drop"] #hand-management p{display:none}
+  body[data-stage="aim"] #hand-management,body[data-stage="drop"] #hand-management{justify-content:space-between}
+  body[data-stage="aim"] #hand-management .hand-note-icon,body[data-stage="drop"] #hand-management .hand-note-icon,
+  body[data-stage="aim"] #hand-management>div:nth-child(2),body[data-stage="drop"] #hand-management>div:nth-child(2){display:none}
+  body[data-stage="aim"] #hand-management::before,body[data-stage="drop"] #hand-management::before{content:"THIS HAND DROPS";font:700 12px 'Barlow Condensed',sans-serif;letter-spacing:1.4px;color:var(--muted)}
 
   /* ---- Aim and drop: the board takes the screen; the hand is a summary with Drop under it. ---- */
   body[data-stage="aim"] .site-bar,body[data-stage="drop"] .site-bar,
@@ -43,6 +50,9 @@
   body[data-stage="aim"] #plinko-canvas,body[data-stage="drop"] #plinko-canvas{max-width:calc(52dvh*340/270)}
   /* On a boss blind the boss panel over the board already carries the rule. */
   body.boss-fight[data-stage="aim"] .phase-banner,body.boss-fight[data-stage="drop"] .phase-banner{display:none}
+  /* One instruction while aiming: the line on the board itself. */
+  body[data-stage="aim"] #plinko-section .section-heading .micro,body[data-stage="drop"] #plinko-section .section-heading .micro,
+  body[data-stage="aim"] .phase-banner p{display:none}
   body[data-stage="aim"] #spin-button,body[data-stage="drop"] #spin-button{display:none}
   body[data-stage="aim"] .aim-back,body[data-stage="drop"] .aim-back{display:block}
   body[data-stage="drop"] .aim-back{visibility:hidden}
@@ -53,6 +63,9 @@
   /* The shop is the first thing on its screen, so reaching it never depends on a scroll. The Loadout follows it,
      and the shop carries a shortcut to your Chips. */
   body[data-stage="shop"] .phase-banner{display:none}
+  /* In the shop, messages and coin pop-ups sit above the pinned button, clear of the title, Reroll and your Chips. */
+  body[data-stage="shop"] #toast{top:auto;bottom:calc(84px + env(safe-area-inset-bottom))}
+  body[data-stage="shop"] .payout-stack-hud{top:auto;bottom:calc(132px + env(safe-area-inset-bottom));flex-direction:column-reverse}
   body[data-stage="shop"] #shop-ui{order:1;padding-bottom:0;scroll-margin-top:76px}
   body[data-stage="shop"] #inventory{order:2;margin-bottom:76px}
   .shop-loadout{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;min-height:44px;padding:8px 12px;border:1px solid #2f8f8a;border-radius:10px;background:#0d2a2e;color:var(--cyan);font:700 12px 'DM Mono',monospace;letter-spacing:1px}

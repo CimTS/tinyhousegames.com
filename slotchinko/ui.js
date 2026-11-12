@@ -78,6 +78,7 @@
     $("tilt-button").addEventListener("pointerdown",e=>e.stopPropagation());  // the board under it takes drags to aim
     $("tilt-button").addEventListener("click",()=>game.tilt());
     $("coach-skip").addEventListener("click",()=>{prefs.coachDone();game.render();});
+    $("coach-next").addEventListener("click",()=>{if(view.coachShop)view.coachShop.step=1;game.render();});
     $("loadout-open").addEventListener("click",()=>overlays.showLoadout(game));
     $("loadout-close").addEventListener("click",()=>overlays.closeLoadout());
     $("loadout-body").addEventListener("click",e=>{

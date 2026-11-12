@@ -23,6 +23,9 @@
     /* Clear save data: best scores, wins, unlocks, Ascension and the Collection (motion preference kept). */
     reset(){const motion=this.data.motion;this.data={...FRESH(),motion};write(this.data);}
     apply(){document.documentElement.classList.toggle("reduce-motion",this.reducedMotion());}
+    /* First-hand tips: for someone who has never finished a run, until they finish the first blind or hide them. */
+    coachOn(){const d=this.data;return !d.coached&&!d.best&&!d.wins;}
+    coachDone(){if(this.data.coached)return;this.data.coached=true;write(this.data);}
     /* Ids still locked in the unlock pool, for a new run. */
     locked(){return window.SlotchinkoData.UNLOCKS.map(u=>u.id).filter(id=>!this.data.found.includes(id));}
     deckOpen(id){return id==="house"||this.data.found.includes(id);}
@@ -69,6 +72,9 @@
     showHowTo(){
       this.returnTo=this.open==="title-screen"?"title":null;
       $("motion-toggle").checked=this.prefs.reducedMotion();
+      // The hand chart is written from the game's own table, so it can never disagree with play.
+      const LOOKS={"High Card":"nothing matches","One Pair":"7 7","Two Pair":"7 7 · K K","Three of a Kind":"7 7 7","Straight":"5 6 7 8 9","Flush":"five of one suit","Full House":"7 7 7 · K K","Four of a Kind":"7 7 7 7","Straight Flush":"5 6 7 8 9, one suit","Royal Flush":"10 J Q K A, one suit"};
+      $("hand-chart").tBodies[0].innerHTML=Object.entries(window.SlotchinkoData.HANDS).map(([name,h])=>`<tr><th scope="row">${name}</th><td>${LOOKS[name]||""}</td><td>${h.balls}</td><td>×${h.power}</td></tr>`).join("");
       this.show("howto-screen");
     }
     closeHowTo(){if(this.returnTo==="title"){this.returnTo=null;this.showTitle();}else this.hide();}

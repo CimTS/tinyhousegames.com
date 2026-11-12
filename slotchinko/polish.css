@@ -327,3 +327,29 @@ body.aiming #aim-guide::after{content:"";position:absolute;left:50%;top:22px;wid
 /* Joker in hand: a star, then the card it is playing as. */
 .reel.is-joker{border-color:#a78bfa;background:linear-gradient(180deg,#2c2550,#16162c)}
 .reel.is-joker .card-rank{color:#d6c8ff}
+
+/* First-hand tips: one instruction at a time in the banner, gold so it reads as help. */
+.coach{display:flex;align-items:center;gap:10px}
+.coach[hidden]{display:none}
+.coach-step{flex:none;font:800 12px/1 'Barlow Condensed',sans-serif;letter-spacing:1.2px;color:#07131a;background:var(--gold);border-radius:5px;padding:4px 7px}
+.coach-text{flex:1;font:500 14px/1.35 inherit;font-family:inherit;letter-spacing:0;color:#eef4ff;text-transform:none}
+/* The button keeps a 44px touch area but spills over the banner's padding, so it never makes the banner taller. */
+.coach-skip{flex:none;min-height:44px;margin:-10px -6px -10px 0;padding:0 6px;border:0;background:transparent;color:#a3afc7;font:700 12px/1 'Barlow Condensed',sans-serif;letter-spacing:1px;text-decoration:underline;text-underline-offset:3px}
+@media(max-width:699px),(max-height:599px) and (max-width:999px){.coach{gap:8px}.coach-text{font-size:13px;line-height:1.3}}
+body.coaching .phase-banner{border-left-color:var(--gold);display:block!important}
+body.coaching .phase-banner>div:not(.coach),body.coaching .phase-banner>p{display:none!important}
+.coach-glow{outline:2px solid var(--gold);outline-offset:3px;border-radius:9px;animation:coachPulse 1.4s ease-in-out infinite}
+@keyframes coachPulse{50%{outline-color:#ffd16640}}
+.reduce-motion .coach-glow{animation:none}
+/* How to Play: four steps, the hand chart, and the rest folded away. */
+.howto-sub{margin:4px 0 0;font:800 13px/1 'Barlow Condensed',sans-serif;letter-spacing:1.6px;color:var(--cyan)}
+.hand-chart{width:100%;border-collapse:collapse;font-size:13px}
+.hand-chart th,.hand-chart td{padding:2.5px 6px;text-align:left;border-bottom:1px solid #223049}
+.hand-chart thead th{font:700 11px/1 'Barlow Condensed',sans-serif;letter-spacing:1.2px;color:#8fa0bd;text-transform:uppercase}
+.hand-chart tbody th{color:var(--text);font-weight:600}.hand-chart td:nth-child(2){color:#a9b6cf}
+.hand-chart td:nth-child(3),.hand-chart td:nth-child(4),.hand-chart th:nth-child(3),.hand-chart th:nth-child(4){text-align:right;color:var(--gold)}
+.howto-more{border:1px solid #25334a;border-radius:8px;padding:0 10px}
+.howto-more summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font:800 13px/1 'Barlow Condensed',sans-serif;letter-spacing:1.6px;color:#c4cfe3}
+.howto-more[open]{padding-bottom:10px}.howto-more p+p{margin-top:7px}
+/* While tips show on a phone, pop-up messages move to the bottom so they never cover the tip. */
+@media(max-width:699px),(max-height:599px) and (max-width:999px){body.coaching #toast{top:auto;bottom:calc(84px + env(safe-area-inset-bottom))}}

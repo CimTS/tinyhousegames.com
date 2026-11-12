@@ -1,0 +1,84 @@
+/* Slotchinko tablet layer: two screens. Play (cards and board together, so there is no separate aim screen)
+   and Shop (the market with your Chips beside it). A phone bounces between three screens and a desktop
+   fits everything on one; a tablet is 700-999px wide and at least 600px tall, upright or on its side. */
+@media(min-width:700px) and (max-width:999px) and (min-height:600px){
+  #app{width:100%;max-width:940px;height:100dvh;min-height:0;gap:9px;--pad:18px;padding-left:var(--pad);padding-right:var(--pad);overflow-y:auto}
+  footer{display:none}
+  .shop-loadout{display:none}
+  /* Messages sit under the counters, clear of the pockets; while Lou is talking they move to the bottom. */
+  #toast{top:calc(78px + env(safe-area-inset-top));bottom:auto}
+  body.coaching #toast,body[data-stage="shop"] #toast{top:auto;bottom:calc(84px + env(safe-area-inset-bottom))}
+  .phase-banner p,#status-message{font-size:13px}
+
+  /* ---- Play ---- */
+  body:not([data-stage="shop"]) #shop-ui{display:none}
+  #plinko-canvas{margin:0 auto}
+
+  /* ---- Shop: the market, with your Chips and Bag in a strip beside it. ---- */
+  body[data-stage="shop"] #app{display:grid;grid-template-columns:minmax(0,1fr) 232px;grid-template-rows:auto auto auto minmax(0,1fr);gap:9px 12px;overflow:hidden}
+  body[data-stage="shop"] .site-bar{grid-column:1/-1;grid-row:1}
+  body[data-stage="shop"] .topbar{grid-column:1/-1;grid-row:2}
+  body[data-stage="shop"] .phase-banner{display:none}
+  body.coaching[data-stage="shop"] .phase-banner{grid-column:1/-1;grid-row:3}
+  body[data-stage="shop"] #slot-machine,body[data-stage="shop"] #plinko-section,body[data-stage="shop"] #hand-management{display:none}
+  body[data-stage="shop"] #shop-ui{grid-column:1;grid-row:4;min-height:0;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#3a4965 transparent;margin-bottom:10px}
+  body[data-stage="shop"] #inventory{display:block;grid-column:2;grid-row:4;align-self:start;max-height:100%;overflow-y:auto;scrollbar-width:thin}
+  body[data-stage="shop"] .shop-grid{grid-template-columns:repeat(auto-fill,minmax(142px,1fr));gap:8px}
+  body[data-stage="shop"] .shop-next{position:sticky;bottom:0}
+  body[data-stage="shop"] .consumable-bag{flex-wrap:wrap;overflow:visible}
+}
+
+/* Upright: cards with the hand and buttons beside them, your Chips and Bag in one row, and the board under
+   them filling what is left. Budgeted so the board stays big even with a full loadout on a boss blind. */
+@media(min-width:700px) and (max-width:999px) and (min-height:600px) and (orientation:portrait){
+  body:not([data-stage="shop"]) #app{overflow:hidden}
+  body:not([data-stage="shop"]) .site-bar{display:none}
+  /* On a boss blind the panel over the board already carries the rule. */
+  body.boss-fight:not(.coaching):not([data-stage="shop"]) .phase-banner{display:none}
+  #slot-machine{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);grid-template-rows:auto auto 1fr;column-gap:14px}
+  #slot-machine .section-heading{grid-column:1/-1}
+  #reels{grid-column:1;grid-row:2/4}
+  #slot-machine .hand-row{grid-column:2;grid-row:2;padding:0 2px 8px}
+  #slot-machine .action-row{grid-column:2;grid-row:3;align-self:end}
+  .reel{height:clamp(108px,13dvh,140px)}
+  .reel .card-rank{font-size:27px}.reel .symbol{font-size:34px}
+  #slot-machine .btn{min-height:54px}
+  body:not([data-stage="shop"]) #hand-management{display:none}
+  /* Chips on the left, Bag on the right: one row. Details are a tap away. */
+  body:not([data-stage="shop"]) .inventory-panel{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);column-gap:14px;padding:8px 11px}
+  body:not([data-stage="shop"]) .inventory-panel[hidden]{display:none}
+  body:not([data-stage="shop"]) .inventory-panel>*{grid-column:1}
+  body:not([data-stage="shop"]) .inventory-panel .consumable-row{grid-column:2;grid-row:1/3;margin:0;padding:0 0 0 12px;border-top:0;border-left:1px solid #27334a}
+  body:not([data-stage="shop"]) .inventory-panel .chip-detail{grid-column:1/-1}
+  body:not([data-stage="shop"]) .inventory-panel .trophy-slot{grid-column:1/-1}
+  body:not([data-stage="shop"]) .synergy-line{display:none}
+  body:not([data-stage="shop"]) .consumable-bag{flex-wrap:wrap}
+  #plinko-section{flex:1 1 0;min-height:0;display:flex;flex-direction:column;margin-bottom:10px}
+  #plinko-canvas{flex:1 1 0;min-height:0;height:auto;width:auto;max-width:100%;max-height:calc((100vw - 2*var(--pad) - 26px)*270/340);aspect-ratio:340/270;align-self:center}
+}
+
+/* On its side: cards and Chips on the left, the board on the right at full height. */
+@media(min-width:700px) and (max-width:999px) and (min-height:600px) and (orientation:landscape){
+  :root{--tab-board-h:calc(100dvh - 168px)}
+  body.boss-fight{--tab-board-h:calc(100dvh - 240px)}
+  body:not([data-stage="shop"]) .site-bar{display:none}
+  /* On a boss blind the panel over the board already carries the rule. */
+  body.boss-fight:not(.coaching):not([data-stage="shop"]) .phase-banner{display:none}
+  body:not([data-stage="shop"]) #hand-management{display:none}
+  #slot-machine .section-heading>span:first-child{display:none}
+  .reel{height:66px;min-height:0}
+  #slot-machine .hand-row{padding:6px 2px 6px}
+  body:not([data-stage="shop"]) .consumable-row{margin-top:5px;padding-top:5px}
+  body:not([data-stage="shop"]) .consumable-bag{flex-wrap:wrap}
+  body:not([data-stage="shop"]) .inventory-panel .section-heading{margin-bottom:5px}
+  body:not([data-stage="shop"]) #app{display:grid;grid-template-columns:minmax(300px,34%) minmax(0,1fr);grid-template-rows:auto auto auto auto minmax(0,1fr);gap:8px 12px;align-content:start;overflow:hidden}
+  body:not([data-stage="shop"]) .topbar{grid-column:1/-1;grid-row:2}
+  body:not([data-stage="shop"]) .phase-banner{grid-column:1;grid-row:3}
+  body:not([data-stage="shop"]) #slot-machine{grid-column:1;grid-row:4}
+  /* Your Chips take what height is left and scroll inside it, so nothing is ever cut off. */
+  body:not([data-stage="shop"]) #inventory{grid-column:1;grid-row:5;padding:8px 10px;align-self:start;min-height:0;max-height:calc(100% - 10px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:#3a4965 transparent}
+  body:not([data-stage="shop"]) #plinko-section{grid-column:2;grid-row:3/-1;align-self:start;min-height:0}
+  #plinko-canvas{width:100%;height:auto;max-width:calc(var(--tab-board-h)*340/270)}
+  body:not([data-stage="shop"]) .synergy-line{display:none}
+  .owned-chip{min-height:36px;min-width:32px;padding:3px 5px}
+}

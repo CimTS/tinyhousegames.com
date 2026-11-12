@@ -77,6 +77,7 @@
     $("aim-back").addEventListener("click",()=>{game.aimFlow.cancel();game.render();});
     $("tilt-button").addEventListener("pointerdown",e=>e.stopPropagation());  // the board under it takes drags to aim
     $("tilt-button").addEventListener("click",()=>game.tilt());
+    $("coach-skip").addEventListener("click",()=>{prefs.coachDone();game.render();});
     $("loadout-open").addEventListener("click",()=>overlays.showLoadout(game));
     $("loadout-close").addEventListener("click",()=>overlays.closeLoadout());
     $("loadout-body").addEventListener("click",e=>{

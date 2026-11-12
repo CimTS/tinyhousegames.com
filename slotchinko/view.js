@@ -46,7 +46,7 @@
       $("balls-left").textContent=`BALLS: ${s.ballsLeft+s.activeBalls}`;
       $("round-earned").textContent=`THIS DROP: ${s.roundScore.toLocaleString("en-US")}`;
       const hn=s.handsMax||BALANCE.HANDS_PER_BLIND;$("tilt-button").hidden=!(s.phase==="drop"&&s.tiltReady);$("hand-count").textContent=window.SlotchinkoCopy.words(`HAND ${Math.min(hn,hn-(s.handsLeft||hn)+1)} OF ${hn} · TAP CARDS TO HOLD`);
-      this.phaseText(s);
+      this.phaseText(s);this.coach(s);
       this.buttons(s);
       this.cards(s);
       const overlay=$("board-overlay");
@@ -54,7 +54,8 @@
       overlay.textContent=s.phase==="roundEnd"?(s.victory?"YOU BEAT THE HOUSE":s.won?"BLIND CLEARED":"RUN OVER"):"YOUR BOARD IS WAITING";
       this.renderShop(s);this.renderInventory(s);this.renderAim();
       const next=`${s.phase}:${s.won}:${s.round}`;
-      if(this.changed("flow",next)&&s.phase==="roundEnd"&&s.won&&!s.victory)this.scrollTo($("shop-ui"));
+      // With a tip showing on a phone, stay at the top: the tip sits just above the shop.
+      if(this.changed("flow",next)&&s.phase==="roundEnd"&&s.won&&!s.victory){if(this.phone()&&document.body.classList.contains("coaching"))this.scrollTop();else this.scrollTo($("shop-ui"));}
       if(s.phase==="slot"&&this.changed("hand",`${s.round}:${s.handsLeft}`))this.scrollTop();
     }
 
@@ -65,6 +66,19 @@
       const first=s.round===1&&at===1,last=at>=n&&n>1?"Last hand. ":"";
       $("phase-label").textContent=s.phase==="slot"?(this.game.aimFlow?.aiming?"AIM YOUR DROP":"PREPARE YOUR HAND"):s.phase==="drop"?"THE DROP IS LIVE":s.victory?"YOU WIN":shop?"BLIND CLEARED":"RUN OVER";
       $("status-message").textContent=window.SlotchinkoCopy.words(s.phase==="slot"?(this.game.aimFlow?.aiming?"Aim: drag or tap the board, then tap DROP to release.":(first?`You need ${need} more points. Tap cards to hold, draw up to twice, press Drop Hand to aim, then tap Drop.`:`${last}You need ${need} more points.`)):s.phase==="drop"?"Watch the balls fall. Drag across the board to aim the next ball.":s.victory?"Every blind beaten.":shop?"Buy Chips and consumables, reroll if needed, then enter the next blind.":"Your score fell short of the blind.");
+    }
+
+    /* First-hand tips (coach.js): one instruction at a time in the banner, with a glow on the thing to press. */
+    coach(s){
+      const on=!!this.prefs.coachOn?.();
+      if(on&&(s.round>1||s.victory||(s.phase==="roundEnd"&&!s.won)))this.prefs.coachDone();
+      const tip=on?window.SlotchinkoCoach.tip(s,!!this.game.aimFlow?.aiming):null;
+      document.body.classList.toggle("coaching",!!tip);$("coach").hidden=!tip;
+      if(!this.changed("coach",tip?tip.n+tip.text:""))return;
+      document.querySelectorAll(".coach-glow").forEach(e=>e.classList.remove("coach-glow"));
+      if(!tip)return;
+      $("coach-step").textContent=`TIP ${tip.n} OF ${tip.of}`;$("coach-text").textContent=window.SlotchinkoCopy.words(tip.text);
+      $(tip.target)?.classList.add("coach-glow");
     }
 
     buttons(s){

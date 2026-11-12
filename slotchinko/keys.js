@@ -35,6 +35,7 @@
       else if(digit(k)<5)game.toggleHold(digit(k));
     }
     else if(k==="d"||k==="D")game.spin();
+    else if(k==="t"||k==="T")game.tilt();
     else if((k==="r"||k==="R")&&shop)$("reroll-shop")?.click();
     else if((k==="Enter"||k===" ")&&!e.target.closest?.("button,a")){$("drop-button").click();e.preventDefault();}
   }

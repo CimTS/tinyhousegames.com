@@ -31,6 +31,7 @@
       const ev=this.rng.stream("event"),note=t=>{s.eventResult=t;this.toast(t);};
       const boost=(action,value)=>s.pendingBoosts.push({action,value,id:"event-"+id});
       let climb=1,blindPay=1;
+      if(id!=="lounge"&&s.stats)s.stats.events=(s.stats.events||0)+1;
       if(id==="lounge"){if(i===0){boost("balls",3);note("+3 BALLS NEXT HAND");}else{boost("power",0.5);note("+50% POWER NEXT HAND");}}
       else if(id==="wager"&&i===0){s.coins-=5;if(ev()<0.5){s.coins+=12;s.stats.coinsEarned+=7;note("YOU CALLED IT · +12¢");}else note("THE HOUSE WINS · -5¢");}
       else if(id==="loaded-dice"&&i===0){

@@ -53,21 +53,29 @@
     { id:"ricochet-rig", name:"Ricochet Rig", icon:"⤨", rarity:"uncommon", kind:"chip", cost:6, stackable:true, maxStack:2, tags:["bounce","launch"], desc:"+6% score. Balls bounce 12% harder off pegs.", effect:{scoreMult:1.06,bounce:0.12} },
     { id:"croupier-cut", name:"Croupier's Cut", icon:"♠", rarity:"uncommon", kind:"chip", cost:7, stackable:true, maxStack:2, tags:["economy","wild"], desc:"+1 coin for each ball in the ×4 pocket, up to 3 per drop. Copies add +3 more.", effect:{croupier:1} },
     { id:"jackpot-funnel", name:"Jackpot Funnel", icon:"▼", rarity:"rare", kind:"chip", cost:10, stackable:false, maxStack:1, tags:["bucket","gravity"], desc:"The ×4 pocket pays ×5.", effect:{funnel:1} },
-    { id:"world-tree", name:"World Tree", icon:"♧", rarity:"legendary", kind:"chip", cost:15, stackable:false, maxStack:1, tags:["element","synergy","legendary"], desc:"+15% score on every ball, and +60% more when your hand holds all four suits.", effect:{fourSuitBonus:0.60,allElementScore:0.15} }
+    { id:"world-tree", name:"World Tree", icon:"♧", rarity:"legendary", kind:"chip", cost:15, stackable:false, maxStack:1, tags:["element","synergy","legendary"], desc:"+15% score on every ball, and +60% more when your hand holds all four suits.", effect:{fourSuitBonus:0.60,allElementScore:0.15} },
+    { id:"loaded-die", name:"Loaded Die", icon:"⚄", rarity:"uncommon", kind:"chip", cost:7, stackable:false, maxStack:1, tags:["bucket","risk"], desc:"Each drop, one random pocket pays double. Never the ×4.", effect:{loadedDie:1} },
+    { id:"second-wind", name:"Second Wind", icon:"↟", rarity:"uncommon", kind:"chip", cost:6, stackable:true, maxStack:2, tags:["balls","survival"], desc:"The first ball lost to a drain each drop is dropped again. Each copy saves one more.", effect:{secondWind:1} },
+    { id:"pawn-ticket", name:"Pawn Ticket", icon:"⇄", rarity:"common", kind:"chip", cost:4, stackable:false, maxStack:1, tags:["economy"], desc:"Your other Chips sell for the full price you paid.", effect:{pawn:1} },
+    { id:"high-roller", name:"High Roller", icon:"♛", rarity:"rare", kind:"chip", cost:9, stackable:false, maxStack:1, tags:["risk"], desc:"+60% score, but each blind gives you one hand fewer.", effect:{scoreMult:1.60,fewerHands:1} }
   ];
 
   // Deck cards: bought cards change the deck for the rest of the run.
   const CARD_CATALOG = [
     { id:"ace-sleeve", name:"Ace Up the Sleeve", icon:"A", rarity:"common", kind:"card", cost:4, maxStack:3, desc:"Add an extra Ace to your deck (suits rotate ♥ ♠ ♦ ♣).", deck:"addAce" },
     { id:"trim-deck", name:"Trim the Deck", icon:"✂", rarity:"uncommon", kind:"card", cost:6, maxStack:1, desc:"Remove every 2 from your deck. Fewer junk draws.", deck:"trim" },
-    { id:"gold-leaf", name:"Gold Leaf", icon:"✪", rarity:"rare", kind:"card", cost:9, maxStack:1, desc:"Upgrade your Aces to gold: each gold card in a hand adds +0.25 base power.", deck:"gold" }
+    { id:"gold-leaf", name:"Gold Leaf", icon:"✪", rarity:"rare", kind:"card", cost:9, maxStack:1, desc:"Upgrade your Aces to gold: each gold card in a hand adds +0.25 base power.", deck:"gold" },
+    { id:"joker", name:"Joker", icon:"★", rarity:"rare", kind:"card", cost:8, maxStack:1, desc:"Add a Joker to your deck. It plays as whatever card makes your best hand.", deck:"joker" }
   ];
 
   // Pachinko buffs: board changes for the next drop, or for the whole run.
   const BUFF_CATALOG = [
     { id:"rubber-pegs", name:"Rubber Pegs", icon:"◍", rarity:"common", kind:"buff", cost:3, duration:"drop", desc:"Next drop: balls bounce 25% more and score +10%.", action:"bounce", value:0.25 },
     { id:"wide-jackpot", name:"Wide Jackpot", icon:"⇿", rarity:"uncommon", kind:"buff", cost:5, duration:"drop", desc:"Next drop: the ×4 pocket is twice as wide.", action:"wide", value:1 },
-    { id:"magnet-core", name:"Magnet Core", icon:"⊕", rarity:"rare", kind:"buff", cost:9, duration:"run", desc:"Whole run: a magnet under the board pulls balls toward the ×4 pocket.", effect:{magnet:1} }
+    { id:"magnet-core", name:"Magnet Core", icon:"⊕", rarity:"rare", kind:"buff", cost:9, duration:"run", desc:"Whole run: a magnet under the board pulls balls toward the ×4 pocket.", effect:{magnet:1} },
+    { id:"golden-peg", name:"Golden Peg", icon:"✹", rarity:"common", kind:"buff", cost:4, duration:"drop", desc:"Next drop: one random peg turns gold. A ball that hits it scores double.", action:"goldpeg", value:1 },
+    { id:"mystery-pocket", name:"Mystery Pocket", icon:"?", rarity:"rare", kind:"buff", cost:8, duration:"run", desc:"Whole run: each drop one pocket is a mystery. It pays anything from ×0 to ×8, shown when the first ball lands in it.", effect:{mystery:1} },
+    { id:"bumper", name:"Bumper", icon:"◈", rarity:"rare", kind:"buff", cost:7, duration:"run", desc:"Whole run: two bumpers sit above the pockets beside the ×4 and kick balls sideways. Each kick adds +25% to that ball, up to +100%.", effect:{bumper:1} }
   ];
 
   const CONSUMABLE_CATALOG = [
@@ -79,7 +87,9 @@
     { id:"spare-ball", name:"Spare Ball", icon:"•", rarity:"common", kind:"consumable", cost:2, desc:"Next hand: +1 ball.", action:"balls", value:1 },
     { id:"redeal", name:"Redeal", icon:"↺", rarity:"common", kind:"consumable", cost:3, desc:"Throw back your whole hand: five new cards and both draws back.", action:"redeal", value:1 },
     { id:"nudge", name:"Nudge", icon:"⇥", rarity:"uncommon", kind:"consumable", cost:3, desc:"Next drop: balls headed for a ×0.5 pocket or a drain get nudged one pocket inward.", action:"nudge", value:1 },
-    { id:"blind-skip", name:"Blind Skip", icon:"»", rarity:"rare", kind:"consumable", cost:8, desc:"Clear this blind with no drop: it counts as cleared, pays its reward and opens the shop. Not on the final blind.", action:"skip", value:1 }
+    { id:"blind-skip", name:"Blind Skip", icon:"»", rarity:"rare", kind:"consumable", cost:8, desc:"Clear this blind with no drop: it counts as cleared, pays its reward and opens the shop. Not on the final blind.", action:"skip", value:1 },
+    { id:"double-nothing", name:"Double or Nothing", icon:"⚁", rarity:"rare", kind:"consumable", cost:5, desc:"Next drop scores double. If that still doesn't clear the blind, the drop counts for half instead.", action:"double", value:1 },
+    { id:"tilt", name:"Tilt", icon:"⇆", rarity:"uncommon", kind:"consumable", cost:4, desc:"Next drop: a TILT button appears. Press it once to shove every ball toward the middle.", action:"tilt", value:1 }
   ];
 
   const RARITY_WEIGHT = { common:58, uncommon:27, rare:12, legendary:3 };
@@ -92,7 +102,8 @@
     FINAL_BLIND:BLIND_TARGETS.length, BLIND_TARGETS,
     HANDS_PER_BLIND:3, SPARE_HAND_PAY:1, SELL_RATE:0.5, ELITE_CLIMB:1.5, START_COINS:7, BLIND_PAY:3, BASE_BALL_SCORE:25, HEART_SPLIT_HIT:3, DRAIN_ROUND:3,
     REROLL_BASE:2, SHOP_SLOTS:{chip:3,card:2,consumable:2,buff:2}, CROUPIER_CAP:3, FUNNEL_MULT:1.25, GOLD_POWER:0.25, MAX_CHIPS:12, MAX_BAG:3, MAX_HAND_BALLS:24,
-    PRESS_STEP:500, PRESS_CAP:3, CLUB_COIN_HITS:5, DIAMOND_BONUS:35, GLASS_MULT:1.5
+    PRESS_STEP:500, PRESS_CAP:3, CLUB_COIN_HITS:5, DIAMOND_BONUS:35, GLASS_MULT:1.5,
+    BUMP_BONUS:0.25, BUMP_CAP:4, DIE_MULT:2, GOLD_PEG_MULT:2, MYSTERY:[[0,1],[0.5,1],[1,2],[2,3],[3,2],[5,1.5],[8,1]]
   };
 
   // Ascension (New Game+): win at a level to open the next. Each level raises targets and adds the next rule; rules stack.
@@ -146,19 +157,29 @@
   // Unlock pool: some items and decks start locked and open from milestones. test(summary) runs at the end of a run.
   const UNLOCKS=[
     { kind:"item", id:"diamond-matrix", hint:"Clear blind 3.", test:m=>m.blinds>=3 },
-    { kind:"item", id:"croupier-cut", hint:"Earn 40¢ in one run.", test:m=>m.coinsEarned>=40 },
-    { kind:"item", id:"jackpot-funnel", hint:"Score 2,500 in a single drop.", test:m=>m.bestDrop>=2500 },
+    { kind:"item", id:"croupier-cut", hint:"Earn 100¢ in one run.", test:m=>m.coinsEarned>=100 },
+    { kind:"item", id:"jackpot-funnel", hint:"Score 5,000 in a single drop.", test:m=>m.bestDrop>=5000 },
     { kind:"item", id:"phoenix-heart", hint:"Drop a Full House or better.", test:m=>m.bestRank>=6 },
     { kind:"item", id:"rainbow-engine", hint:"Drop a Flush.", test:m=>(m.hands.Flush||0)>0 },
     { kind:"item", id:"singularity", hint:"End a run owning two gravity Chips.", test:m=>m.chipTags.filter(t=>t==="gravity").length>=2 },
     { kind:"item", id:"chaos-theory", hint:"Clear blind 8.", test:m=>m.blinds>=8 },
     { kind:"item", id:"glass-charge", hint:"Drop Three of a Kind 5 times in one run.", test:m=>(m.hands["Three of a Kind"]||0)>=5 },
     { kind:"item", id:"world-tree", hint:"Win a run.", test:m=>m.victory },
-    { kind:"deck", id:"mint", hint:"Earn 60¢ in one run.", test:m=>m.coinsEarned>=60 },
+    { kind:"item", id:"loaded-die", hint:"Clear 5 blinds on the first hand in one run.", test:m=>(m.firstHandClears||0)>=5 },
+    { kind:"item", id:"second-wind", hint:"Clear 2 blinds on your last hand in one run.", test:m=>(m.lastHandClears||0)>=2 },
+    { kind:"item", id:"pawn-ticket", hint:"Sell 5 Chips in one run.", test:m=>(m.sold||0)>=5 },
+    { kind:"item", id:"high-roller", hint:"Beat a boss with a hand to spare.", test:m=>(m.bossSpare||0)>=1 },
+    { kind:"item", id:"joker", hint:"Drop a Straight Flush.", test:m=>m.bestRank>=8 },
+    { kind:"item", id:"mystery-pocket", hint:"Take 5 Events in one run.", test:m=>(m.events||0)>=5 },
+    { kind:"item", id:"golden-peg", hint:"Earn 200¢ in one run.", test:m=>m.coinsEarned>=200 },
+    { kind:"item", id:"bumper", hint:"Score 12,000 in a single drop.", test:m=>m.bestDrop>=12000 },
+    { kind:"item", id:"double-nothing", hint:"Win at Ascension 1 or higher.", test:m=>m.victory&&m.ng>=1 },
+    { kind:"item", id:"tilt", hint:"Win at Ascension 2 or higher.", test:m=>m.victory&&m.ng>=2 },
+    { kind:"deck", id:"mint", hint:"Earn 200¢ in one run.", test:m=>m.coinsEarned>=200 },
     { kind:"deck", id:"rubber", hint:"Clear blind 6.", test:m=>m.blinds>=6 },
     { kind:"deck", id:"ace-high", hint:"Drop Four of a Kind.", test:m=>m.bestRank>=7 },
     { kind:"deck", id:"hoarder", hint:"Fill your Bag.", test:m=>m.maxBag>=3 },
-    { kind:"deck", id:"glass", hint:"Score 6,000 in a single drop.", test:m=>m.bestDrop>=6000 },
+    { kind:"deck", id:"glass", hint:"Score 12,000 in a single drop.", test:m=>m.bestDrop>=12000 },
     { kind:"deck", id:"wild-suit", hint:"Drop 3 Flushes in one run.", test:m=>(m.hands.Flush||0)>=3 },
     { kind:"deck", id:"pachinko", hint:"Win a run.", test:m=>m.victory }
   ];

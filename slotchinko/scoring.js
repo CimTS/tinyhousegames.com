@@ -26,7 +26,8 @@
       const totals={scoreMult:1,extraBalls:0,fortune:0,allElementScore:0,wellPull:0,spadeWell:0,
         spadeScore:0,spadeDamage:0,diamondScore:0,clubScore:0,splitBonus:0,splitChain:0,reactor:0,
         plating:0,stickPower:0,launchSpread:0,coinsPerBlind:0,pressCoins:0,flushBonus:0,suitDiversity:0,
-        fourSuitBonus:0,diamondBonus:0,clubCoins:0,glass:0,drainHalf:false};
+        fourSuitBonus:0,diamondBonus:0,clubCoins:0,glass:0,drainHalf:false,
+        loadedDie:0,secondWind:0,pawn:0,fewerHands:0,mystery:0,bumper:0};
       for(const chip of [...this._chipsInPlay(),...(this.state.runBuffs||[]),...this._trophyItems()]){
         for(const [key,value] of Object.entries(chip.effect||{})){
           if(key==="scoreMult")totals[key]*=value;
@@ -53,7 +54,7 @@
       if(distinct===4)synergy+=fx.fourSuitBonus;
       synergy+=0.4*this._boost(s.activeBoosts||[],"bounce"); // Rubber Pegs: +10% at 0.25 bounce
       const drainFactor=drained?(fx.drainHalf?0.5:0):1;
-      return Math.round(BALANCE.BASE_BALL_SCORE*s.power*multiplier*fx.scoreMult*synergy*(p.glass||1)*drainFactor);
+      return Math.round(BALANCE.BASE_BALL_SCORE*s.power*multiplier*fx.scoreMult*synergy*(p.glass||1)*(p.gilded||1)*(1+BALANCE.BUMP_BONUS*(p.bumps||0))*drainFactor);
     }
   };
   window.SlotchinkoSynergies=SYNERGIES;

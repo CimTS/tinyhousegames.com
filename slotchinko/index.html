@@ -101,6 +101,7 @@
         <canvas id="game-canvas"></canvas>
         <div id="aim-guide"><span>DRAG TO AIM · PRESS DROP</span><i></i></div>
         <div id="board-overlay" class="board-overlay">YOUR BOARD IS WAITING</div>
+        <button id="tilt-button" class="tilt-button" type="button" hidden>⇆ TILT</button>
         <div id="payout-board" class="payout-stack payout-stack-board" aria-hidden="true"></div>
         <div id="target-flash" class="target-flash" aria-hidden="true">TARGET HIT!</div>
       </div>
@@ -115,7 +116,7 @@
       </div>
     </section>
 
-    <footer><span>SLOTCHINKO // V1.0</span><span>HIGH RISK · HIGH MULTIPLIER</span></footer>
+    <footer><span>SLOTCHINKO // V0.1</span><span>HIGH RISK · HIGH MULTIPLIER</span></footer>
   </main>
 
   <div id="toast" role="status" aria-live="polite"></div>
@@ -131,6 +132,7 @@
       <button id="title-howto" class="btn btn-secondary overlay-button" type="button">HOW TO PLAY</button>
       <button id="title-settings" class="btn btn-secondary overlay-button title-settings" type="button"><svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" d="M10.3 2.8h3.4l.5 2.6 1.9.8 2.2-1.5 2.4 2.4-1.5 2.2.8 1.9 2.6.5v3.4l-2.6.5-.8 1.9 1.5 2.2-2.4 2.4-2.2-1.5-1.9.8-.5 2.6h-3.4l-.5-2.6-1.9-.8-2.2 1.5-2.4-2.4 1.5-2.2-.8-1.9-2.6-.5v-3.4l2.6-.5.8-1.9-1.5-2.2 2.4-2.4 2.2 1.5 1.9-.8z"/><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="1.9"/></svg> SOUND</button>
       <a class="kofi-link" href="https://ko-fi.com/nathonlo" target="_blank" rel="noopener">☕ Enjoying it? Buy us a coffee on Ko-fi</a>
+      <button class="update-ready" data-update type="button" hidden>NEW VERSION READY · TAP TO RELOAD</button>
       <p class="build-label" data-build></p>
     </div>
   </div>
@@ -180,6 +182,7 @@
           <div class="clear-actions"><button id="clear-cancel" class="btn btn-secondary" type="button">KEEP</button><button id="clear-yes" class="btn clear-yes" type="button">ERASE</button></div>
         </div>
       </div>
+      <button class="update-ready" data-update type="button" hidden>NEW VERSION READY · TAP TO RELOAD</button>
       <p class="build-label" data-build></p>
       <p class="build-label" id="audio-readout"></p>
       <button id="settings-close" class="btn btn-primary overlay-button" type="button" data-focus>DONE</button>

@@ -48,6 +48,7 @@
           const other = ball === a ? b : a;
           if (other.label === "peg") this._pegInteraction(ball, other);
           else if (other.label === "mover") this.callbacks.onObstacleHit?.({ ball, obstacle: other });
+          else if (other.label === "bumper") this._bump(ball, other);
         }
       });
       Events.on(this.engine, "beforeUpdate", () => {
@@ -130,13 +131,43 @@
       }
     }
 
+    /* Bumper: kicks the ball up and sideways, away from itself. Each kick adds to the ball's score, up to a cap. */
+    _bump(ball, bumper) {
+      const p = ball.plugin, B = window.SlotchinkoData.BALANCE;
+      if (p.lastBump != null && this.clock - p.lastBump < PEG_COOLDOWN_STEPS) return;
+      p.lastBump = this.clock; p.bumps = Math.min(B.BUMP_CAP, (p.bumps || 0) + 1);
+      const dir = Math.sign(ball.position.x - bumper.position.x) || (this.random() < 0.5 ? -1 : 1);
+      const k = this.bumpKick || [2, 1, -1];
+      Body.setVelocity(ball, { x: dir * (k[0] + this.random() * k[1]), y: Math.min(ball.velocity.y, k[2]) });
+      bumper.plugin.hitAt = this.clock;
+      this.callbacks.onObstacleHit?.({ ball, obstacle: bumper });
+    }
+    /* Tilt: one shove toward the middle for every ball in play. */
+    tilt() {
+      for (const ball of this.balls.values()) {
+        const dx = this.width / 2 - ball.position.x;
+        Body.setVelocity(ball, { x: ball.velocity.x * 0.3 + Math.sign(dx) * Math.min(4.5, Math.abs(dx) / 14), y: Math.min(ball.velocity.y, 0.5) - 1 });
+      }
+      this.tiltAt = this.clock;
+    }
+    /* Golden Peg: one random standing peg turns gold for the drop and cannot break. */
+    gildPeg(random = this.random) {
+      const list = [...this.pegs.values()]; if (!list.length) return null;
+      const peg = list[Math.floor(random() * list.length)];
+      peg.plugin.gold = true; peg.plugin.hpSaved = peg.plugin.hp; peg.plugin.hp = 999;
+      return peg;
+    }
+    ungild() {
+      for (const peg of this.pegs.values()) if (peg.plugin.gold) { peg.plugin.gold = false; peg.plugin.hp = peg.plugin.hpSaved || peg.plugin.maxHp; }
+    }
+
     _splitBall(parent) {
       const p = parent.plugin;
       const offset = 7;
       const child = this._createBall(clamp(parent.position.x + (this.random() < 0.5 ? -offset : offset), 10, this.width - 10),
         parent.position.y - 2, Math.max(3.7, parent.circleRadius * 0.82), {
           ...p, parentId: parent.id, splitsLeft: p.chain ? 1 : 0, chain: false, splitAt: 1, pegHits: 0, glass: 0,
-          lastPeg: null, multiplier: (p.multiplier || 1) * 0.65
+          lastPeg: null, lastBump: null, multiplier: (p.multiplier || 1) * 0.65
         });
       Body.setVelocity(child, { x: parent.velocity.x + (this.random() - 0.5) * 2.2, y: Math.max(0.5, parent.velocity.y * 0.78) });
       this.callbacks.onBallSpawn?.({ ball: child, parent, reason: "split" });
@@ -186,7 +217,10 @@
        centerMult: Jackpot Funnel on the x4 pocket; the board keeps the owned value for drawing. */
     pocketValue(i, p = {}) {
       const v = this.bucketValues[i], m = p.centerMult ?? this.centerMult ?? 1;
-      return i === 3 ? v * m : v;
+      if (this.mystery && i === this.mystery.index) return this.mystery.value;
+      // Loaded Die doubles its pocket, but never whichever pocket holds the top value.
+      const die = i === this.die && v < Math.max(...this.bucketValues) ? window.SlotchinkoData.BALANCE.DIE_MULT : 1;
+      return (i === 3 ? v * m : v) * die;
     }
     /* Turns Wide Jackpot on or off for the board: moves the two centre dividers to the new edges. */
     setWideCenter(on) {

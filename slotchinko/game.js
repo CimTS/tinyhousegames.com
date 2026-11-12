@@ -126,6 +126,17 @@
       this.evaluateHand();
     }
 
+    /* The tutorial's first hand is always the same: two Kings showing, and a third King on top of the deck,
+       so "keep the pair, draw, drop" works for everyone. Cards are only moved, never added. */
+    dealTutorialHand(){
+      const s=this.state;if(s.phase!=="slot"||s.round!==1||s.spins||s.deckId!=="house")return;
+      const all=[...s.cards,...s.deck],take=id=>{const i=all.findIndex(c=>c&&c.id===id);return i<0?null:all.splice(i,1)[0];};
+      const hand=["13-heart","13-spade","7-diamond","4-club","9-spade"].map(take),next=["13-diamond","5-heart","10-club"].map(take);
+      if([...hand,...next].some(c=>!c))return;
+      s.cards=hand;s.deck=[...all,...next.reverse()];  // draws come off the end, so the King is first
+      s.held=[false,false,false,false,false];s.tutorial=true;this.evaluateHand();this.render();
+    }
+
     toggleHold(index){
       const s=this.state;
       if(s.phase!=="slot"||!Number.isInteger(index)||index<0||index>4)return;

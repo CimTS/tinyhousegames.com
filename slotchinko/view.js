@@ -34,7 +34,7 @@
       $("round-value").textContent=`${s.round}/${BALANCE.FINAL_BLIND}`;
       $("score-value").textContent=s.score.toLocaleString("en-US");
       $("target-value").textContent=s.target.toLocaleString("en-US");
-      $("coins-value").textContent=s.coins;
+      if(this.changed("coins",s.coins))$("coins-value").textContent=`${s.coins}¢`;  /* coin.js draws the ¢ as the coin */
       const pct=Math.min(100,100*s.score/s.target);
       $("target-bar-fill").style.width=`${pct}%`;
       $("target-bar").classList.toggle("is-hit",s.score>=s.target);

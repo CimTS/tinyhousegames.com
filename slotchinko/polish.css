@@ -386,3 +386,5 @@ body.coaching:not([data-coach="5"]) #app .panel:not(:has(.coach-glow)):not(:has(
 .coin{display:inline-block;width:.92em;height:.92em;margin:0 .04em 0 .1em;vertical-align:-.11em;line-height:0}
 .coin svg{display:block;width:100%;height:100%}
 .item-icon .coin,.owned-icon .coin,.col-icon .coin,.payout-icon .coin{margin:0;vertical-align:middle}
+/* The coin after the COINS number up top is gold, like the coins it counts. */
+#coins-value .coin{color:var(--gold);width:.8em;height:.8em;margin-left:.14em;vertical-align:-.06em}

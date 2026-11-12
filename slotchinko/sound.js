@@ -19,7 +19,43 @@
   const PENTA = [0, 3, 5, 7, 10, 12, 15, 17, 19, 22, 24, 27]; // A minor pentatonic, matches music
   const hz = s => 440 * Math.pow(2, s / 12);
   let ctx = null, master, sfx, music = null, muted = localStorage.getItem(KEY) === "1";
+  // Phone speaker mode: most of this mix's energy is deep bass (kick and sub, under 150 Hz). A phone speaker cannot
+  // play that; driven hard it rattles and distorts, and the limiter ducks everything else in time with a bass
+  // nobody can hear. The mode trims the deep bass before the compressor. On by default on phones; a Settings switch.
+  const SKEY = "slotchinko-speaker";
+  const phoneLike = () => { try { return !!window.matchMedia && window.matchMedia("(max-width:699px),(max-height:599px) and (max-width:999px)").matches; } catch { return false; } };
+  let small = (() => { let v = null; try { v = localStorage.getItem(SKEY); } catch { /* private mode */ } return v === "small" ? true : v === "full" ? false : phoneLike(); })();
+  let bassCut = [];
+  const CUT = { small: 105, full: 24 };
   const MAX_VOICES = 5, active = [], lastHit = new Map(); let lastPeg = 0, pegRate = 0;
+  // Scoring plays in key: each ball that scores in a drop climbs one step up the chord the music is on.
+  let combo = 0, lastBig = -9, stolen = 0;
+  const TOP = 27; // highest scoring note, in semitones above A4 (C7, 2093 Hz): above this a phone speaker turns notes into chirps
+  // How a scoring ball sounds. ?score= picks one to compare: classic (the original: a fixed bright sound per pocket),
+  // inkey (the original shape, tuned to the music's chord), climb (the original sound, each scoring ball a step higher),
+  // ladder (low chord tones that climb).
+  const SCORE = (m => (m ? m[1] : "classic"))(typeof location !== "undefined" && /[?&]score=(classic|inkey|climb|ladder)(?:&|$)/.exec(location.search));
+  const CAP = 36; // A7, 3520 Hz: the tuned styles fold anything higher down an octave
+  function scoreNotes(mult) {
+    const step = mult >= 4 ? 10 : mult >= 2 ? 7 : mult >= 1 ? 4 : 0, root = PENTA[step] + (mult >= 1 ? 0 : -12);
+    const fold = list => list.map(s => { while (s > CAP) s -= 12; return s; });
+    if (mult < 1 || SCORE === "classic") return [root, root + 12, root + 19];
+    if (SCORE === "ladder") { const k = Math.min(5, combo++); return ladder([k, k + 1, k + 2]); }
+    if (SCORE === "inkey") {
+      // the chord tone nearest the original note, then its octave and fifth as before
+      const pcs = (music && music.chordAt ? music.chordAt() : [0, 3, 7]).map(s => ((s % 12) + 12) % 12);
+      let best = root; for (let d = 0; d < 7; d++) { if (pcs.includes(((root + d) % 12 + 12) % 12)) { best = root + d; break; } if (pcs.includes(((root - d) % 12 + 12) % 12)) { best = root - d; break; } }
+      return fold([best, best + 12, best + 19]);
+    }
+    // climb: the original sound, starting a little lower and stepping up the scale with each scoring ball
+    const start = mult >= 4 ? 8 : mult >= 2 ? 6 : 4, r = PENTA[Math.min(PENTA.length - 1, start + Math.min(3, combo++))];
+    return fold([r, r + 12, r + 19]);
+  }
+  function ladder(steps) {
+    const ch = (music && music.chordAt ? music.chordAt() : [0, 3, 7]).map(s => ((s % 12) + 12) % 12).sort((a, b) => a - b);
+    const tones = [...ch, ...ch.map(s => s + 12), ...ch.map(s => s + 24)];
+    return steps.map(k => { let s = tones[Math.min(tones.length - 1, k)]; while (s > TOP) s -= 12; return s; });
+  }
   // ?sfx=zzfx: comparison mode, sfx from pre-rendered ZzFX buffers (vendor/zzfx) through the same chain.
   const ZMODE = typeof location !== "undefined" && !/[?&]sfx=classic(&|$)/.test(location.search); let Z = null;
 
@@ -37,12 +73,14 @@
     clip.curve = c; clip.oversample = "2x";
     const clipOff = !(typeof location !== "undefined" && /[?&]clip=on(&|$)/.test(location.search)); // soft clip only with ?clip=on
     const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 9000; lp.Q.value = 0.3;
+    bassCut = [0, 1].map(() => { const h = ctx.createBiquadFilter(); h.type = "highpass"; h.Q.value = 0.71; h.frequency.value = small ? CUT.small : CUT.full; return h; });
+    bassCut[0].connect(bassCut[1]);
     master = ctx.createGain(); master.gain.value = muted ? 0 : 0.35;
     // Brick-wall limiter last in the chain so stacked sounds can never clip the output.
     const limiter = ctx.createDynamicsCompressor();
     limiter.threshold.value = -6; limiter.knee.value = 0; limiter.ratio.value = 20; limiter.attack.value = 0.002; limiter.release.value = 0.1;
-    if (clipOff) { const mk = ctx.createGain(); mk.gain.value = 1.3 / Math.tanh(1.3); lp.connect(comp).connect(mk).connect(master); } // same small-signal level as the curve
-    else lp.connect(comp).connect(clipIn).connect(clip).connect(master);
+    if (clipOff) { const mk = ctx.createGain(); mk.gain.value = 1.3 / Math.tanh(1.3); lp.connect(bassCut[0]); bassCut[1].connect(comp).connect(mk).connect(master); } // same small-signal level as the curve
+    else { lp.connect(bassCut[0]); bassCut[1].connect(comp).connect(clipIn).connect(clip).connect(master); }
     master.connect(limiter).connect(ctx.destination);
     sfx = ctx.createGain(); sfx.gain.value = BASE.sfx * volume.sfx; sfx.connect(lp);
     if (ZMODE && window.ZzfxBuild) Z = buildZ();
@@ -67,6 +105,11 @@
     if (ctx) { master.gain.cancelScheduledValues(ctx.currentTime); master.gain.setTargetAtTime(m ? 0 : 0.35, ctx.currentTime, 0.08); }
     syncUI();
   }
+  function setSmallSpeaker(on) {
+    small = !!on; try { localStorage.setItem(SKEY, small ? "small" : "full"); } catch { /* private mode */ }
+    if (ctx) for (const h of bassCut) { h.frequency.cancelScheduledValues(ctx.currentTime); h.frequency.setTargetAtTime(small ? CUT.small : CUT.full, ctx.currentTime, 0.05); }
+    syncUI();
+  }
   function setVolume(kind, v) {
     if (!(kind in BASE)) return;
     volume[kind] = clamp(v);
@@ -86,6 +129,9 @@
       if (o) { o.textContent = pct ? pct + "%" : "OFF"; o.parentElement?.classList.toggle("is-off", !pct); }
     }
     const t = el("mute-toggle"); if (t) t.checked = muted;
+    const sp = el("speaker-toggle"); if (sp) sp.checked = small;
+    const au = el("audio-readout");
+    if (au) { const a = stats(); au.textContent = ctx ? `AUDIO ${Math.round(a.rate / 1000)}K · ${a.bars || 0} BARS · ${a.late || 0} LATE · SLOWEST ${a.slow || 0} MS · ${a.cut} CUT` : ""; }
     el("settings-screen")?.classList.toggle("is-muted", muted);
     const b = el("settings-button");
     if (b) { b.classList.toggle("is-muted", muted); b.title = muted ? "Sound settings (muted)" : "Sound settings"; }
@@ -93,10 +139,12 @@
   const ok = () => ctx && !muted && volume.sfx > 0 && !document.hidden && ctx.state === "running";
 
   // Voice pool: at most MAX_VOICES sfx at once; the oldest fades out quickly to make room.
+  const KEEP = typeof location !== "undefined" && /[?&]keep=1(?:&|$)/.test(location.search); // ?keep=1: scoring notes are never the ones cut
+  let keepNext = false;
   function addVoice(src, g, at, peak) {
-    const v = { src, g, at, peak }; active.push(v);
+    const v = { src, g, at, peak, keep: KEEP && keepNext }; active.push(v);
     src.onended = () => { const i = active.indexOf(v); if (i >= 0) active.splice(i, 1); };
-    while (active.length > MAX_VOICES) steal(active.shift());
+    while (active.length > MAX_VOICES + (KEEP ? 3 : 0)) { let i = active.findIndex(x => !x.keep && x !== v); if (i < 0) i = 0; steal(active.splice(i, 1)[0]); stolen++; }
   }
   function steal(v) {
     const now = ctx.currentTime, p = v.g.gain;
@@ -191,10 +239,12 @@
     drop() { zplay("drain", { vel: 0.07, rate: 330 / 147 }); },
     bucket(mult, drained) {
       if (drained) { zplay("drain", { vel: 0.08 }); return; }
-      const step = mult >= 4 ? 10 : mult >= 2 ? 7 : mult >= 1 ? 4 : 0, base = mult >= 1 ? 12 : 0;
-      zplay("bucket", { vel: 0.1, rate: hz(PENTA[step] + base - 12) / 440 });
-      if (mult >= 2) zplay("bucket", { t: 0.05, vel: 0.06, rate: hz(PENTA[step] + base) / 440 });
-      if (mult >= 4) zplay("bucket", { t: 0.1, vel: 0.05, rate: hz(PENTA[step] + base + 7) / 440 });
+      const n = scoreNotes(mult); // one note; a x2 pocket adds a second, a x4 a third
+      keepNext = true;
+      zplay("bucket", { vel: 0.1, rate: hz(n[0]) / 440 });
+      if (mult >= 2) zplay("bucket", { t: 0.05, vel: 0.06, rate: hz(n[1]) / 440 });
+      if (mult >= 4) zplay("bucket", { t: 0.1, vel: 0.05, rate: hz(n[2]) / 440 });
+      keepNext = false;
     },
     tally(steps) { for (let i = 0; i < steps; i++) zplay("tally", { t: i * 0.06, vel: 0.05, rate: hz(PENTA[i % PENTA.length]) / 440 }); },
     win() { [0, 4, 7, 12, 16].forEach((s, i) => zplay("note", { t: i * 0.08, vel: 0.07, rate: hz(s + 3 - 12) / 220 })); },
@@ -227,10 +277,10 @@
     bucket(mult, drained) {
       if (!ok()) return;
       if (drained) { tone(147, { dur: 0.3, vel: 0.08, bend: 0.8 }); return; }
-      const step = mult >= 4 ? 10 : mult >= 2 ? 7 : mult >= 1 ? 4 : 0, base = mult >= 1 ? 12 : 0;
-      tone(hz(PENTA[step] + base - 12), { dur: 0.35, vel: 0.1, type: mult < 1 ? "sine" : "triangle" });
-      if (mult >= 2) tone(hz(PENTA[step] + base), { t: 0.05, dur: 0.3, vel: 0.06 });
-      if (mult >= 4) tone(hz(PENTA[step] + base + 7), { t: 0.1, dur: 0.5, vel: 0.05 });
+      const n = scoreNotes(mult);
+      tone(hz(n[0]), { dur: 0.35, vel: 0.1, type: mult < 1 ? "sine" : "triangle" });
+      if (mult >= 2) tone(hz(n[1]), { t: 0.05, dur: 0.3, vel: 0.06 });
+      if (mult >= 4) tone(hz(n[2]), { t: 0.1, dur: 0.5, vel: 0.05 });
     },
     tally(steps) { if (ok()) for (let i = 0; i < steps; i++) tone(hz(PENTA[i % PENTA.length]), { t: i * 0.06, dur: 0.2, vel: 0.05 }); },
     win() { if (ok()) [0, 4, 7, 12, 16].forEach((s, i) => tone(hz(s + 3 - 12), { t: i * 0.08, dur: 0.9, vel: 0.07, type: "triangle", attack: 0.01 })); },
@@ -245,6 +295,41 @@
   const intensityOf = g => { const s = g.state; return s.target ? Math.min(1, s.score / s.target) * 0.85 + (s.phase === "drop" ? 0.15 : 0) : 0.2; };
   const mood = g => { if (music) music.setIntensity(intensityOf(g)); };
 
+  /* The big-moment sting (filter sweep, riser, chord). When several balls land in the x4 pocket together it
+     plays once, not once per ball: stacked risers are noise, and each one is a dozen live nodes on a phone. */
+  const BIG_GAP = 1.6;
+  // ?sting= compares: all (the original: the whole sting for every x4 ball), once (one sting per burst),
+  // chord (the chord for every x4 ball; the sweep and riser once per burst), climb (as chord, but the chord is the
+  // one the music is on and it climbs with each x4 ball in the drop).
+  // climb is the default: the original stab was always C major, whatever chord the music was on, and repeated
+  // unchanged for every ball. Over G or E minor that is a clash, and stacked it was a sharp, unmusical ding.
+  const STINGS = (m => (m ? m[1] : "climb"))(typeof location !== "undefined" && /[?&]sting=(all|once|chord|climb)(?:&|$)/.exec(location.search));
+  let bigs = 0; // x4 balls so far in this drop
+  function big() {
+    if (!music || !ctx) return;
+    if (STINGS === "all") { music.accent("big"); return; }
+    const burst = ctx.currentTime - lastBig < BIG_GAP, n = bigs++;
+    if (STINGS === "climb") { music.accent("climb", undefined, n); if (burst) return; lastBig = ctx.currentTime; music.accent("sweep"); return; }
+    if (burst) { if (STINGS === "chord") music.accent("chord"); return; }
+    lastBig = ctx.currentTime; music.accent("big");
+  }
+  const moodFor = s => (s.victory || (s.phase === "roundEnd" && !s.won)) ? null : s.phase === "roundEnd" ? "shop" : s.handsLeft === 1 && s.round ? "last" : s.boss ? "boss" : "play";
+  const setMood = g => { const m = moodFor(g.state); if (m && music && music.setMood) music.setMood(m); };
+  // One place for what a game event sounds like; the hooks below and the offline recorder both call it.
+  function play(e) {
+    if (e.k === "hand") { combo = 0; bigs = 0; S.hand(e.power); if (e.big) big(); }
+    else if (e.k === "ball") S.drop();
+    else if (e.k === "peg") S.peg(e.x, e.y);
+    else if (e.k === "bucket") {
+      S.bucket(e.mult, e.drained);
+      if (e.gained > 0) S.tally(Math.min(6, 1 + Math.floor(Math.log10(e.gained + 1) * 1.5)));
+      if (e.mult >= 4) big();
+      if (music && e.target) music.setIntensity(Math.min(1, e.score / e.target) * 0.85 + 0.15);
+    }
+    else if (e.k === "finish") { setTimeout(e.won ? S.win : S.fail, 300); if (music) { music.accent(e.won ? "win" : "fail"); if (e.won && music.setMood) music.setMood("shop"); } }
+    else if (e.k === "next") { if (music) { music.accent("reset"); music.setIntensity(0.15); if (music.setMood) music.setMood(e.mood || "play"); } }
+    else if (e.k === "mood") { if (music && music.setMood) music.setMood(e.mood); }
+  }
   function wrap(proto, name, before, after) {
     const orig = proto[name]; if (typeof orig !== "function") { console.info("[sound] hook missing:", name); return; }
     proto[name] = function (...args) { const pre = before ? before.apply(this, args) : undefined; const r = orig.apply(this, args); if (after) after.call(this, pre, ...args); return r; };
@@ -255,9 +340,9 @@
     wrap(G, "spin", function () { return this.state.spins; }, function (prev) {
       if (this.state.spins === prev) return; S.reel(5 - this.state.held.filter(Boolean).length);
       const p = this.state.power || 1; setTimeout(() => S.hand(p), 520);
-      if (p >= 4 && music) setTimeout(() => music.accent("big"), 520);
+      if (p >= 4 && music) setTimeout(big, 520);
     });
-    wrap(G, "startDrop", function () { return this.state.phase; }, function (ph) { if (ph === "slot" && this.state.phase === "drop") { S.hand(this.state.power || 1); mood(this); } });
+    wrap(G, "startDrop", function () { return this.state.phase; }, function (ph) { if (ph === "slot" && this.state.phase === "drop") { combo = 0; bigs = 0; S.hand(this.state.power || 1); mood(this); } });
     wrap(G, "_dropNext", function () { return this.state.ballsLeft; }, function (prev) { if (this.state.ballsLeft < prev) S.drop(); });
     wrap(G, "onPegHit", null, function (_, ball, peg) {
       const p = this.physics, pos = (peg && peg.position) || (ball && ball.position) || { x: 0, y: 0 };
@@ -266,20 +351,21 @@
     wrap(G, "onBucket", function () { return this.state.roundScore; }, function (prev, r) {
       S.bucket(r.multiplier, r.drained);
       const gained = this.state.roundScore - prev; if (gained > 0) S.tally(Math.min(6, 1 + Math.floor(Math.log10(gained + 1) * 1.5)));
-      if (r.multiplier >= 4 && music) music.accent("big");
+      if (r.multiplier >= 4) big();
       mood(this);
     });
     wrap(G, "finishRound", function () { return this.state.phase; }, function (ph) {
       if (ph !== "drop") return;
-      if (this.state.phase === "slot") { if (music) { music.accent("reset"); mood(this); } return; } // short, with a hand left: no fail sting
-      if (this.state.won) { setTimeout(S.win, 300); if (music) music.accent("win"); }
+      if (this.state.phase === "slot") { if (music) { music.accent("reset"); mood(this); setMood(this); } return; } // short, with a hand left: no fail sting
+      if (this.state.won) { setTimeout(S.win, 300); if (music) music.accent("win"); setMood(this); }
       else { setTimeout(S.fail, 300); if (music) music.accent("fail"); }
     });
     wrap(G, "purchase", function () { return this.state.coins; }, function (c) { if (this.state.coins < c) S.buy(); });
     wrap(G, "sellChip", function () { return this.state.coins; }, function (c) { if (this.state.coins > c) S.buy(); });
     wrap(G, "rerollShop", function () { return this.state.coins; }, function (c) { if (this.state.coins < c) S.reroll(); });
     wrap(G, "useConsumable", null, function () { S.buy(); });
-    wrap(G, "nextRound", null, function () { if (music) { music.accent("reset"); mood(this); } });
+    wrap(G, "nextRound", null, function () { if (music) { music.accent("reset"); mood(this); setMood(this); } });
+    wrap(G, "newRun", null, function () { combo = 0; setMood(this); });
   } else console.info("[sound] SlotchinkoGame not found; SFX hooks disabled");
 
   window.addEventListener("DOMContentLoaded", () => {
@@ -293,8 +379,13 @@
       });
     }
     el("mute-toggle")?.addEventListener("change", e => { unlock(); setMuted(e.target.checked); if (!muted) S.hold(true); });
+    el("speaker-toggle")?.addEventListener("change", e => { unlock(); setSmallSpeaker(e.target.checked); });
+    // The audio readout refreshes whenever Settings is opened.
+    for (const id of ["settings-button", "title-settings"]) el(id)?.addEventListener("click", () => setTimeout(syncUI, 0));
     setMuted(muted);
   });
-  window.SlotchinkoSound = { sfx: S, get zzfx() { return Z; }, get voices() { return active.length; }, get music() { return music; }, setMuted, get muted() { return muted; },
+  /* How the audio is keeping up on this device, for the readout in Settings. */
+  const stats = () => ({ ...(music && music.stats ? music.stats() : {}), cut: stolen, rate: ctx ? ctx.sampleRate : 0, state: ctx ? ctx.state : "off" });
+  window.SlotchinkoSound = { sfx: S, play, stats, syncMood: g => setMood(g), setSmallSpeaker, get smallSpeaker() { return small; }, get zzfx() { return Z; }, get voices() { return active.length; }, get music() { return music; }, setMuted, get muted() { return muted; },
     setVolume, get volume() { return { ...volume }; }, get nodes() { return { sfx, music: mus, master, stingers: sting }; } };
 })();

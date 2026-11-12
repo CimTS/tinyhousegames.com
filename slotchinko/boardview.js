@@ -39,7 +39,18 @@
         ctx.strokeStyle = "#a78bfa33"; ctx.lineWidth = 1; ctx.setLineDash([3, 5]); ctx.stroke(); ctx.setLineDash([]);
       }
       this._buckets(ph, now);
-      for (const peg of ph.pegs.values()) this._circle(peg, peg.render.fillStyle, "#dbe8ff", 0.55);
+      for (const peg of ph.pegs.values()) {
+        if (!peg.plugin.gold) { this._circle(peg, peg.render.fillStyle, "#dbe8ff", 0.55); continue; }
+        // Golden Peg: gold, with a ring so it reads at a glance.
+        this._circle(peg, "#ffd166", "#fff6cf", 1);
+        ctx.beginPath(); ctx.arc(peg.position.x, peg.position.y, peg.circleRadius + 3.5, 0, Math.PI * 2);
+        ctx.strokeStyle = "#ffd166cc"; ctx.lineWidth = 1; ctx.stroke();
+      }
+      for (const b of ph.bumpers || []) {
+        const lit = ph.clock - b.plugin.hitAt < 8 && !this.reducedMotion();
+        this._circle(b, lit ? "#c8fff8" : "#123b44", "#45f3e2", 1.6);
+        ctx.beginPath(); ctx.arc(b.position.x, b.position.y, 2.4, 0, Math.PI * 2); ctx.fillStyle = "#45f3e2"; ctx.fill();
+      }
       for (const mover of ph.movers) this._circle(mover, COLORS.hazard, "#ffd1e6", 1);
       for (const ball of ph.balls.values()) this._circle(ball, ball.render.fillStyle, "#ffffff", 1);
       this._floats(now);
@@ -57,13 +68,16 @@
       ph.bucketValues.forEach((value, i) => {
         const x0 = e[i], w = e[i + 1] - e[i], mid = x0 + w / 2, big = wide && i === 3;
         const drain = ph.drainPockets.includes(i), lit = now - (this.flashes.get(i) || -1e6);
-        ctx.fillStyle = drain ? "#ff4fa31f" : big ? "#ffd16630" : "#ffd16610"; ctx.fillRect(x0 + 1.5, top, w - 3, 37);
+        const my = ph.mystery && ph.mystery.index === i ? ph.mystery : null, die = ph.die === i && !my;
+        ctx.fillStyle = drain ? "#ff4fa31f" : my ? "#a78bfa38" : die ? "#45f3e22e" : big ? "#ffd16630" : "#ffd16610"; ctx.fillRect(x0 + 1.5, top, w - 3, 37);
+        if (my || die) { ctx.strokeStyle = my ? "#a78bfacc" : "#45f3e2cc"; ctx.lineWidth = 1; ctx.strokeRect(x0 + 2, top + 0.5, w - 4, 36); }
         if (big) { ctx.strokeStyle = "#ffd166aa"; ctx.lineWidth = 1; ctx.strokeRect(x0 + 2, top + 0.5, w - 4, 36); }
         if (lit < 260 && !this.reducedMotion()) { ctx.fillStyle = `rgba(255,209,102,${0.4 * (1 - lit / 260)})`; ctx.fillRect(x0 + 1.5, top, w - 3, 37); }
-        ctx.fillStyle = drain ? "#ff8cc4" : "#ffd166";
+        ctx.fillStyle = drain ? "#ff8cc4" : my ? "#d6c8ff" : die ? "#8ff8ec" : "#ffd166";
         // Narrow neighbours of a wide x4 get a smaller label so it still fits.
         ctx.font = `700 ${drain ? 11 : big ? 15 : w < 30 ? 10 : 13}px 'Barlow Condensed',sans-serif`;
-        ctx.fillText(drain ? "DRAIN" : `×${+(ph.pocketValue?.(i) ?? value).toFixed(2)}`, mid, ph.height - 14);
+        ctx.fillText(drain ? "DRAIN" : my && !my.shown ? "?" : `×${+(ph.pocketValue?.(i) ?? value).toFixed(2)}`, mid, ph.height - 14);
+        if (die) { ctx.font = "700 9px 'Barlow Condensed',sans-serif"; ctx.fillText("DIE ×2", mid, top + 8); }
         if (i) { ctx.fillStyle = "#34445f"; ctx.fillRect(x0 - 1.5, top, 3, 19); }
       });
     }

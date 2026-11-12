@@ -1,6 +1,7 @@
 /* DOM event wiring and the fixed-step loop. Game rules live in game.js. */
 (() => {
   "use strict";
+  const RELEASE="0.1"; // shown with the build code: V0.1.<build>
   const STEP_MS=1000/60,MAX_FRAME_MS=50;
   const $=id=>document.getElementById(id);
 
@@ -72,8 +73,10 @@
       if(info)view.toggleChip(info.dataset.info);
     });
     // The build code, so two devices can be compared at a glance.
-    document.querySelectorAll("[data-build]").forEach(el=>{el.textContent=window.SLOTCHINKO_BUILD?`BUILD ${window.SLOTCHINKO_BUILD}`:"";});
+    document.querySelectorAll("[data-build]").forEach(el=>{el.textContent=window.SLOTCHINKO_BUILD?`V${RELEASE}.${window.SLOTCHINKO_BUILD}`:`V${RELEASE}`;});
     $("aim-back").addEventListener("click",()=>{game.aimFlow.cancel();game.render();});
+    $("tilt-button").addEventListener("pointerdown",e=>e.stopPropagation());  // the board under it takes drags to aim
+    $("tilt-button").addEventListener("click",()=>game.tilt());
     $("loadout-open").addEventListener("click",()=>overlays.showLoadout(game));
     $("loadout-close").addEventListener("click",()=>overlays.closeLoadout());
     $("loadout-body").addEventListener("click",e=>{
@@ -146,4 +149,11 @@
   });
 })();
 // Offline play and install: a service worker for this folder only (same-origin cache, see sw.js).
-if("serviceWorker" in navigator&&location.protocol!=="file:")window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js",{scope:"./"}).catch(()=>{}));
+// When a newer copy of the game takes over while this page is open, the title screen and Settings offer a
+// reload. It is only ever offered: the page never reloads on its own, so a run is never interrupted.
+window.SlotchinkoUpdate={ready(){document.querySelectorAll("[data-update]").forEach(b=>{b.hidden=false;b.onclick=()=>location.reload();});}};
+if("serviceWorker" in navigator&&location.protocol!=="file:"){
+  const had=!!navigator.serviceWorker.controller; // a first visit has no older copy to replace
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(had)window.SlotchinkoUpdate.ready();});
+  window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js",{scope:"./"}).catch(()=>{}));
+}

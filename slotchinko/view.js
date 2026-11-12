@@ -45,7 +45,7 @@
       $("balls-preview").textContent=`${SUIT_GLYPHS[s.primarySuit]} ${plural(s.balls)}`;
       $("balls-left").textContent=`BALLS: ${s.ballsLeft+s.activeBalls}`;
       $("round-earned").textContent=`THIS DROP: ${s.roundScore.toLocaleString("en-US")}`;
-      const hn=BALANCE.HANDS_PER_BLIND;$("hand-count").textContent=window.SlotchinkoCopy.words(`HAND ${Math.min(hn,hn-(s.handsLeft||hn)+1)} OF ${hn} · TAP CARDS TO HOLD`);
+      const hn=s.handsMax||BALANCE.HANDS_PER_BLIND;$("tilt-button").hidden=!(s.phase==="drop"&&s.tiltReady);$("hand-count").textContent=window.SlotchinkoCopy.words(`HAND ${Math.min(hn,hn-(s.handsLeft||hn)+1)} OF ${hn} · TAP CARDS TO HOLD`);
       this.phaseText(s);
       this.buttons(s);
       this.cards(s);
@@ -60,7 +60,7 @@
 
     phaseText(s){
       const shop=s.phase==="roundEnd"&&s.won;
-      const need=Math.max(0,s.target-s.score).toLocaleString("en-US"),n=BALANCE.HANDS_PER_BLIND,at=n-(s.handsLeft||n)+1;
+      const need=Math.max(0,s.target-s.score).toLocaleString("en-US"),n=s.handsMax||BALANCE.HANDS_PER_BLIND,at=n-(s.handsLeft||n)+1;
       // The full how-to line shows on the very first hand only; after that the hint is just what is still needed.
       const first=s.round===1&&at===1,last=at>=n&&n>1?"Last hand. ":"";
       $("phase-label").textContent=s.phase==="slot"?(this.game.aimFlow?.aiming?"AIM YOUR DROP":"PREPARE YOUR HAND"):s.phase==="drop"?"THE DROP IS LIVE":s.victory?"YOU WIN":shop?"BLIND CLEARED":"RUN OVER";
@@ -84,11 +84,12 @@
       document.querySelectorAll(".reel").forEach((el,i)=>{
         const card=s.cards[i];if(!card)return;const red=card.suit==="heart"||card.suit==="diamond";
         const rank=el.querySelector(".card-rank"),symbol=el.querySelector(".symbol");
-        rank.textContent=card.label;rank.classList.toggle("red-card",red);
+        const as=card.joker?(window.SlotchinkoData.RANKS.find(r=>r.value===card.rank)?.label||""):"";
+        rank.textContent=card.joker?`★${as}`:card.label;rank.classList.toggle("red-card",red);el.classList.toggle("is-joker",!!card.joker);
         symbol.textContent=SUIT_GLYPHS[card.suit];symbol.className=`symbol suit-${card.suit}`;
         el.classList.toggle("held",s.held[i]);el.querySelector("small").textContent=s.held[i]?"HELD":"HOLD";
         el.disabled=s.phase!=="slot";el.setAttribute("aria-pressed",String(s.held[i]));
-        el.setAttribute("aria-label",`${card.label} of ${SUIT_NAMES[card.suit]}${s.held[i]?", held":""}`);
+        el.setAttribute("aria-label",`${card.joker?`Joker, playing as ${as}`:card.label} of ${SUIT_NAMES[card.suit]}${s.held[i]?", held":""}`);
       });
     }
 

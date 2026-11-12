@@ -316,3 +316,14 @@ body.aiming #aim-guide::after{content:"";position:absolute;left:50%;top:22px;wid
 .build-label{margin:0;font:500 12px 'DM Mono',monospace;letter-spacing:1.2px;color:#7d8aa7;text-align:center;user-select:text}
 .build-label:empty{display:none}
 .switch-row small{display:block;margin-top:2px;font-size:12px;line-height:1.35;color:#8c99b3;font-weight:400}
+/* Offered when a newer copy of the game has loaded in the background. */
+.update-ready{min-height:44px;padding:8px 12px;border:1px solid var(--gold);border-radius:10px;background:#2a2110;color:var(--gold);font:700 12px 'DM Mono',monospace;letter-spacing:1px}
+.update-ready[hidden]{display:none}
+
+/* Tilt: shown over the board for one drop after a Tilt is used. */
+.tilt-button{position:absolute;right:8px;top:8px;z-index:4;min-width:92px;min-height:48px;padding:0 14px;border:1px solid var(--cyan);border-radius:9px;background:#0b2a31ee;color:#c8fff8;font:800 17px/1 'Barlow Condensed',sans-serif;letter-spacing:1.5px;box-shadow:0 0 14px #45f3e255;touch-action:manipulation}
+.tilt-button[hidden]{display:none}
+.tilt-button:active{transform:translateY(1px)}
+/* Joker in hand: a star, then the card it is playing as. */
+.reel.is-joker{border-color:#a78bfa;background:linear-gradient(180deg,#2c2550,#16162c)}
+.reel.is-joker .card-rank{color:#d6c8ff}

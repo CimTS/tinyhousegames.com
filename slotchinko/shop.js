@@ -56,6 +56,7 @@
       }else if(item.kind==="card"){
         const m=s.deckMods;
         if(item.deck==="addAce")m.aces=(m.aces||0)+1;else m[item.deck]=true;
+        if(item.deck==="joker")this.toast("JOKER ADDED TO YOUR DECK");
       }else if(item.kind==="buff"){
         if(item.duration==="run")s.runBuffs.push({...item,instanceId:`run-${item.instanceId}`});
         else s.pendingBoosts.push({action:item.action,value:item.value,id:item.id});
@@ -69,7 +70,12 @@
     },
 
     /* Selling: half what the Chip cost, at least 1¢. A deck's starting Chip is part of the deck and cannot be sold. */
-    sellValue(chip){return chip&&!String(chip.instanceId).startsWith("deck-")?Math.max(1,Math.floor((chip.cost||0)*BALANCE.SELL_RATE)):0;},
+    sellValue(chip){
+      if(!chip||String(chip.instanceId).startsWith("deck-"))return 0;
+      // Pawn Ticket: every other Chip sells for what it cost. The ticket itself sells for half like anything else.
+      const full=chip.id!=="pawn-ticket"&&this.state.chips.some(c=>c.id==="pawn-ticket");
+      return Math.max(1,Math.floor((chip.cost||0)*(full?1:BALANCE.SELL_RATE)));
+    },
     canSell(){const s=this.state;return s.phase==="slot"||(s.phase==="roundEnd"&&s.won&&!s.victory);},
     /* Sells one copy of a Chip (the newest), while preparing a hand or in the shop. Never mid-drop. */
     sellChip(id){
@@ -77,7 +83,7 @@
       let index=-1;s.chips.forEach((c,i)=>{if(c.id===id&&this.sellValue(c)>0)index=i;});
       if(index<0)return;
       const [chip]=s.chips.splice(index,1),value=this.sellValue(chip);
-      s.coins+=value;if(s.phase==="slot")this.evaluateHand();
+      s.coins+=value;if(s.stats)s.stats.sold=(s.stats.sold||0)+1;if(s.phase==="slot")this.evaluateHand();
       this.toast(`${chip.name.toUpperCase()} SOLD · +${value}¢`);this.render();
     },
     _rerollCost(){return BALANCE.REROLL_BASE+this.state.shopRerolls+(this._ngHas("pricey-rerolls")?NG.REROLL_ADD:0);},

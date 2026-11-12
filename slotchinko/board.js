@@ -5,9 +5,11 @@
   const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
   const PlinkoPhysics = window.PlinkoPhysics, COLORS = PlinkoPhysics.COLORS;
 
+  // [row, peg from the left]; mirrored on the right.
+  PlinkoPhysics.BUMPER_SPOTS = [[6, 3]];
   PlinkoPhysics.prototype._buildBoard = function () {
     Composite.clear(this.world, false);
-    this.balls.clear(); this.pegs.clear(); this.movers = []; this.wells = [];
+    this.balls.clear(); this.pegs.clear(); this.movers = []; this.wells = []; this.bumpers = [];
     const w = this.width, h = this.height;
     const wallOpts = { isStatic: true, label: "wall", render: { fillStyle: "#26344d" }, collisionFilter: { category: 0x0002, mask: 0x0001 } };
     Composite.add(this.world, [
@@ -27,6 +29,15 @@
       for (let c = 0; c < count; c++) {
         const x = w / 2 - rowWidth / 2 + c * spacingX;
         if (x < 14 || x > w - 14) continue;
+        // Bumper buff: the two pegs above the pockets beside the x4 are swapped for bumpers. The middle lane stays clear.
+        if (this.bumperOn && (this.bumperSpots || PlinkoPhysics.BUMPER_SPOTS).some(s => s[0] === r && (s[1] === c || s[1] === count - 1 - c))) {
+          const b = Bodies.circle(x, top + r * spacingY, 6.5, {
+            isStatic: true, label: "bumper", restitution: 1, friction: 0,
+            render: { fillStyle: "#45f3e2", strokeStyle: "#ffffff", lineWidth: 1 },
+            collisionFilter: { category: 0x0002, mask: 0x0001 }, plugin: { hitAt: -1e6 }
+          });
+          this.bumpers.push(b); Composite.add(this.world, b); continue;
+        }
         const type = pegTypes[(r * 3 + c * 5 + this.round) % pegTypes.length];
         const hp = type === "spade" ? 3 : 2;
         const peg = Bodies.circle(x, top + r * spacingY, 3.25, {

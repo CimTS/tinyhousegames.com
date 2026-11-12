@@ -35,7 +35,7 @@
   /* Puts a saved run back exactly: state, RNG streams and the board for its blind. */
   function restore(game, d) {
     game.timers = []; game.state = d.state; game.rng.importState(d.rng);
-    if (game._ngHas) game.physics.drainRound = game._ngHas("hungry-drains") ? 2 : 0;
+    if (game._boardRules) game._boardRules();
     game.physics.setRound(d.state.round);game._bossRestore?.();
     game.render();
     return game;

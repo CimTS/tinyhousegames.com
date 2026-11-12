@@ -46,12 +46,12 @@
     constructor(prefs){this.prefs=prefs;this.open=null;this.onChange=()=>{};this.returnTo=null;}
     show(id){
       if(this.open)$(this.open).hidden=true;
-      this.open=id;const el=$(id);el.hidden=false;this.onChange();
+      this.open=id;const el=$(id);el.hidden=false;$("app").inert=true;this.onChange(); // the game behind a sheet cannot be tabbed to, clicked or read out
       el.querySelector("[data-focus]")?.focus({preventScroll:true});
     }
     hide(){
       if(!this.open)return;
-      $(this.open).hidden=true;this.open=null;this.onChange();
+      $(this.open).hidden=true;this.open=null;$("app").inert=false;this.onChange();
       // A finished run always ends on its summary: closing How to Play or any sheet opened over it brings it back
       // (as it was; the run is recorded once), so the game is never left with nothing to press.
       const s=window.slotchinko?.state;

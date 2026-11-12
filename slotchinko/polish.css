@@ -315,3 +315,4 @@ body.aiming #aim-guide::after{content:"";position:absolute;left:50%;top:22px;wid
 /* Build code on the title and settings screens. */
 .build-label{margin:0;font:500 12px 'DM Mono',monospace;letter-spacing:1.2px;color:#7d8aa7;text-align:center;user-select:text}
 .build-label:empty{display:none}
+.switch-row small{display:block;margin-top:2px;font-size:12px;line-height:1.35;color:#8c99b3;font-weight:400}

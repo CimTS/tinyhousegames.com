@@ -94,6 +94,8 @@
     // NEW RUN: straight in until decks unlock, then the deck select.
     const hasChoice=()=>prefs.data.ngUnlocked>0||window.SlotchinkoData.DECKS.some(k=>k.id!=="house"&&prefs.deckOpen(k.id));
     $("play-button").addEventListener("click",()=>hasChoice()?overlays.showDecks():newRun());
+    // TUTORIAL: a fresh run on the House Deck with Lou's tips on, whoever is playing.
+    $("title-tutorial").addEventListener("click",()=>{prefs.coachStart();newRun();});
     $("title-collection").addEventListener("click",()=>overlays.showCollection());
     $("collection-close").addEventListener("click",()=>overlays.showTitle());
     // The path between blinds, and event cards.

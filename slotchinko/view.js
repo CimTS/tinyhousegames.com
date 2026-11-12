@@ -46,13 +46,13 @@
       $("balls-left").textContent=`BALLS: ${s.ballsLeft+s.activeBalls}`;
       $("round-earned").textContent=`THIS DROP: ${s.roundScore.toLocaleString("en-US")}`;
       const hn=s.handsMax||BALANCE.HANDS_PER_BLIND;$("tilt-button").hidden=!(s.phase==="drop"&&s.tiltReady);$("hand-count").textContent=window.SlotchinkoCopy.words(`HAND ${Math.min(hn,hn-(s.handsLeft||hn)+1)} OF ${hn} · TAP CARDS TO HOLD`);
-      this.phaseText(s);this.coach(s);
+      this.phaseText(s);
       this.buttons(s);
       this.cards(s);
       const overlay=$("board-overlay");
       overlay.classList.toggle("hidden",s.phase==="drop"||!!game.aimFlow?.aiming);
       overlay.textContent=s.phase==="roundEnd"?(s.victory?"YOU BEAT THE HOUSE":s.won?"BLIND CLEARED":"RUN OVER"):"YOUR BOARD IS WAITING";
-      this.renderShop(s);this.renderInventory(s);this.renderAim();
+      this.renderShop(s);this.renderInventory(s);this.renderAim();this.coach(s);
       const next=`${s.phase}:${s.won}:${s.round}`;
       // With a tip showing on a phone, stay at the top: the tip sits just above the shop.
       if(this.changed("flow",next)&&s.phase==="roundEnd"&&s.won&&!s.victory){if(this.phone()&&document.body.classList.contains("coaching"))this.scrollTop();else this.scrollTo($("shop-ui"));}
@@ -72,14 +72,29 @@
     coach(s){
       const on=!!this.prefs.coachOn?.();
       if(on&&(s.round>1||s.victory||(s.phase==="roundEnd"&&!s.won)))this.prefs.coachDone();
-      const tip=on?window.SlotchinkoCoach.tip(s,!!this.game.aimFlow?.aiming):null;
+      // In the shop Lou goes one thing at a time: your coins, one Chip to buy, the way out.
+      const inShop=s.phase==="roundEnd"&&s.won&&!s.victory;
+      if(!on||!inShop)this.coachShop=null;
+      else{
+        const c=this.coachShop||(this.coachShop={step:0,owned:s.chips.length});
+        c.bought=s.chips.length>c.owned;
+        // Lou points at the cheapest Chip they can afford.
+        const p=c.bought?null:s.shopInventory.filter(x=>x.kind==="chip"&&x.cost<=s.coins).sort((a,b)=>a.cost-b.cost)[0];c.pick=p?{id:p.instanceId,cost:p.cost}:null;
+      }
+      const tip=on?window.SlotchinkoCoach.tip(s,!!this.game.aimFlow?.aiming,this.coachShop||{}):null;
       document.body.classList.toggle("coaching",!!tip);$("coach").hidden=!tip;document.body.dataset.coach=tip?tip.n:"";
+      // The shop redraws its cards, so the glow is put back every time; the words only when they change.
+      const find=t=>/^[.#\[]/.test(t)?document.querySelector(t):$(t),target=tip?find(tip.target):null;
+      document.querySelectorAll(".coach-glow").forEach(e=>{if(e!==target)e.classList.remove("coach-glow");});
+      target?.classList.add("coach-glow");
       if(!this.changed("coach",tip?tip.n+tip.text:""))return;
-      document.querySelectorAll(".coach-glow").forEach(e=>e.classList.remove("coach-glow"));
       if(!tip)return;
+      $("coach-next").hidden=!tip.next;
+      // Lou pins under the top bar in the shop on a phone (polish.css); the bar's height varies with the screen.
+      const bar=document.querySelector(".topbar");if(bar)document.body.style.setProperty("--bar-h",`${Math.round(bar.getBoundingClientRect().height)}px`);
+      if(inShop&&target&&tip.n===7)window.setTimeout(()=>target.scrollIntoView({behavior:this.scrollMode(),block:"nearest"}),160);
       if(!$("coach-face").firstChild)$("coach-face").innerHTML=window.SlotchinkoBossArt?.host||"";
       $("coach-step").textContent=`${window.SlotchinkoCoach.HOST} · ${tip.n} OF ${tip.of}`;$("coach-text").textContent=window.SlotchinkoCopy.words(tip.text);
-      $(tip.target)?.classList.add("coach-glow");
     }
 
     buttons(s){

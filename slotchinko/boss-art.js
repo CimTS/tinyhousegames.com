@@ -22,6 +22,12 @@
       [ICE,p("M60 16 L74 34 L60 52 L46 34 Z")+'<circle cx="60" cy="34" r="3"/>'+p("M60 68 L74 86 L60 104 L46 86 Z")+'<circle cx="60" cy="86" r="3"/>'],
       [WHITE,p("M36 50 L24 56 L10 48")+'<rect x="4" y="22" width="16" height="24" rx="3"/>'+p("M84 70 L96 64 L110 72")+'<rect x="100" y="74" width="16" height="24" rx="3"/>']
     ),
+    /* Lou the Dealer: a smiling man in a fedora. He talks a new player through the first round (coach.js). */
+    host:sign(
+      [GOLD,p("M10 50 Q60 34 110 50")+p("M32 42 C30 20 44 12 60 17 C76 12 90 20 88 42")+p("M52 16 q8 7 16 0")+p("M32 37 Q60 29 88 37")],
+      [WHITE,p("M38 52 C37 76 49 90 60 90 C71 90 83 76 82 52")+p("M46 62 q5 -6 10 0")+p("M64 62 q5 -6 10 0")+p("M47 72 Q60 86 73 72")],
+      [CYAN,p("M16 116 C18 102 34 98 47 93 L60 101 L73 93 C86 98 102 102 104 116")+p("M60 101 l-5 7 l5 8 l5 -8 Z")]
+    ),
     house:sign(
       [GOLD,'<rect x="26" y="46" width="68" height="68" rx="7"/>'+p("M26 46 L18 24 L42 35 L60 21 L78 35 L102 24 L94 46")+p("M52 114 V98 Q60 88 68 98 V114")],
       [CYAN,p("M30 3 l6 7 l-6 7 l-6 -7 Z")+p("M60 2 l6 7 l-6 7 l-6 -7 Z")+p("M90 3 l6 7 l-6 7 l-6 -7 Z")],

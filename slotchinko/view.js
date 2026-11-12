@@ -73,11 +73,12 @@
       const on=!!this.prefs.coachOn?.();
       if(on&&(s.round>1||s.victory||(s.phase==="roundEnd"&&!s.won)))this.prefs.coachDone();
       const tip=on?window.SlotchinkoCoach.tip(s,!!this.game.aimFlow?.aiming):null;
-      document.body.classList.toggle("coaching",!!tip);$("coach").hidden=!tip;
+      document.body.classList.toggle("coaching",!!tip);$("coach").hidden=!tip;document.body.dataset.coach=tip?tip.n:"";
       if(!this.changed("coach",tip?tip.n+tip.text:""))return;
       document.querySelectorAll(".coach-glow").forEach(e=>e.classList.remove("coach-glow"));
       if(!tip)return;
-      $("coach-step").textContent=`TIP ${tip.n} OF ${tip.of}`;$("coach-text").textContent=window.SlotchinkoCopy.words(tip.text);
+      if(!$("coach-face").firstChild)$("coach-face").innerHTML=window.SlotchinkoBossArt?.host||"";
+      $("coach-step").textContent=`${window.SlotchinkoCoach.HOST} · ${tip.n} OF ${tip.of}`;$("coach-text").textContent=window.SlotchinkoCopy.words(tip.text);
       $(tip.target)?.classList.add("coach-glow");
     }
 

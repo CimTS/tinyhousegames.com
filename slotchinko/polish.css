@@ -353,3 +353,18 @@ body.coaching .phase-banner>div:not(.coach),body.coaching .phase-banner>p{displa
 .howto-more[open]{padding-bottom:10px}.howto-more p+p{margin-top:7px}
 /* While tips show on a phone, pop-up messages move to the bottom so they never cover the tip. */
 @media(max-width:699px),(max-height:599px) and (max-width:999px){body.coaching #toast{top:auto;bottom:calc(84px + env(safe-area-inset-bottom))}}
+/* Lou the Dealer talks a new player through the first round: his portrait (boss sign style), a gold speech bubble,
+   a heavy glow on the thing to press, and everything else dimmed. */
+body.coaching .phase-banner{background:transparent;border:0;box-shadow:none;padding:0}
+.coach{gap:11px}
+.coach-face{width:58px;height:58px;filter:drop-shadow(0 0 3px #ffd16699) drop-shadow(0 0 8px #36f5e540)}
+.coach-bubble{position:relative;flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;padding:8px 11px;border-radius:12px;background:var(--gold);box-shadow:0 0 0 3px #ffd16633,0 6px 22px #ffd16633}
+.coach-bubble::before{content:"";position:absolute;left:-8px;top:50%;margin-top:-8px;border:8px solid transparent;border-left:0;border-right-color:var(--gold)}
+body.coaching .coach-step{align-self:flex-start;background:none;padding:0;color:#6a5210;font-size:12px}
+body.coaching .coach-text{color:#10151f;font-size:17px;font-weight:700;line-height:1.25}
+body.coaching .coach-skip{margin:0;color:#a3afc7}
+.coach-glow{outline-width:3px;box-shadow:0 0 0 7px #ffd16630,0 0 28px #ffd16699;position:relative;z-index:2}
+body.coaching:not([data-coach="5"]) #app .panel:not(:has(.coach-glow)):not(:has(#drop-button)){opacity:.28;transition:opacity .2s}
+@media(max-width:360px),(max-height:599px) and (max-width:999px){.coach{gap:9px}.coach-face{width:44px;height:44px}.coach-bubble{padding:6px 9px}body.coaching .coach-text{font-size:13.5px;line-height:1.2}body.coaching[data-stage="aim"] .coach-skip,body.coaching[data-stage="aim"] .coach-step{display:none}}
+.title-tutorial{display:flex;flex-direction:column;align-items:center;gap:2px}
+.title-tutorial small{font:500 11px/1.2 'DM Mono',monospace;letter-spacing:0;text-transform:none;color:#a9b6cf}

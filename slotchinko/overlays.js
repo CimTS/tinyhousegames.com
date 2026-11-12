@@ -24,8 +24,10 @@
     reset(){const motion=this.data.motion;this.data={...FRESH(),motion};write(this.data);}
     apply(){document.documentElement.classList.toggle("reduce-motion",this.reducedMotion());}
     /* First-hand tips: for someone who has never finished a run, until they finish the first blind or hide them. */
-    coachOn(){const d=this.data;return !d.coached&&!d.best&&!d.wins;}
-    coachDone(){if(this.data.coached)return;this.data.coached=true;write(this.data);}
+    coachOn(){const d=this.data;return !d.coached&&(!!d.coachAsked||(!d.best&&!d.wins));}
+    coachDone(){if(this.data.coached)return;this.data.coached=true;delete this.data.coachAsked;write(this.data);}
+    /* TUTORIAL on the title screen: anyone can ask for the tips again; they run for the next first round. */
+    coachStart(){this.data.coached=false;this.data.coachAsked=true;write(this.data);}
     /* Ids still locked in the unlock pool, for a new run. */
     locked(){return window.SlotchinkoData.UNLOCKS.map(u=>u.id).filter(id=>!this.data.found.includes(id));}
     deckOpen(id){return id==="house"||this.data.found.includes(id);}

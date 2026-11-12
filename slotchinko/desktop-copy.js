@@ -3,7 +3,7 @@
   "use strict";
   const mouse=window.matchMedia?.("(hover:hover) and (pointer:fine)").matches;
   const SWAPS=[[/drag or tap the board/g,"move the mouse over the board"],[/Drag across the board/g,"Move the mouse across the board"],
-    [/\btap (DROP|Drop)\b/g,"press Space"],[/Tap cards/g,"Click cards"],[/Tap the cards/g,"Click the cards"],[/Tap both/g,"Click both"],[/Tap BUY/g,"Click BUY"],[/Tap the board to pick/g,"Move the mouse to pick"],[/Tap a Chip/g,"Click a Chip"],[/TAP CARDS TO HOLD/g,"CLICK OR PRESS 1-5 TO HOLD"],
+    [/\btap (DROP|Drop)\b/g,"press Space"],[/Tap cards/g,"Click cards"],[/Tap the cards/g,"Click the cards"],[/Tap both/g,"Click both"],[/Tap BUY/g,"Click BUY"],[/Tap one of/g,"Click one of"],[/Tap the board to pick/g,"Move the mouse to pick"],[/Tap a Chip/g,"Click a Chip"],[/TAP CARDS TO HOLD/g,"CLICK OR PRESS 1-5 TO HOLD"],
     [/DRAG TO AIM · PRESS DROP/g,"MOUSE TO AIM · SPACE TO DROP"]];
   const words=text=>mouse?SWAPS.reduce((t,[from,to])=>t.replace(from,to),text):text;
   /* Static labels and How to Play; bold tags inside are left in place. */

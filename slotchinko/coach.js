@@ -2,7 +2,7 @@
    Pure: tip(state, aiming) returns { n, of, text, target } or null. view.js shows it; Prefs remembers it is done. */
 (() => {
   "use strict";
-  const OF=8,HOST="LOU - THE DEALER";
+  const OF=9,HOST="LOU - THE DEALER";
   /* shop: { step, bought, pick } from the view. step 0 shows the coins and waits for GOT IT; then one Chip to buy
      (pick: the first one the player can afford); then the way out. target is an element id, or a CSS selector. */
   function tip(s,aiming,shop={}){
@@ -26,5 +26,8 @@
     if(s.spins>0||s.held.some(Boolean))return t(2,"Now press DRAW to swap the other cards. Or press DROP HAND if you like these.","spin-button");
     return t(1,again?"Not enough yet. No sweat: you get 3 hands each round. Tap the cards you want to keep.":"Welcome in! Tap the cards you want to keep. Matching numbers are good.","reels");
   }
-  window.SlotchinkoCoach={tip,OF,HOST};
+  /* The last step lives on the Choose Your Path sheet (overlays.js): what can be picked, and what the boss box is. */
+  const PATH={n:9,of:OF,text:"Last step! Tap one of the glowing boxes to pick your next round. BLIND is the simple one.",
+    boss:(round,next)=>`The pink box is not a button. It is a warning: ${next?"your next round is":`at blind ${round} you meet`} this boss, and the last line is the rule it plays by.`};
+  window.SlotchinkoCoach={tip,OF,HOST,PATH};
 })();

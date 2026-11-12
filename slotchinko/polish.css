@@ -388,3 +388,24 @@ body.coaching:not([data-coach="5"]) #app .panel:not(:has(.coach-glow)):not(:has(
 .item-icon .coin,.owned-icon .coin,.col-icon .coin,.payout-icon .coin{margin:0;vertical-align:middle}
 /* The coin after the COINS number up top is gold, like the coins it counts. */
 #coins-value .coin{color:var(--gold);width:.8em;height:.8em;margin-left:.14em;vertical-align:-.06em}
+/* Choose Your Path: say which part is a warning and which part is the choice. In the tutorial the choices glow. */
+.path-label{margin:2px 0 -4px;font:800 12px/1 'Barlow Condensed',sans-serif;letter-spacing:1.6px;color:#8fa0bd;text-align:left}
+#path-boss-label{color:#ff8cb8}
+.path-boss{cursor:default}
+.path-boss-note{margin:-4px 0 0;padding:8px 11px;border-radius:10px;background:var(--gold);color:#10151f;font:700 14px/1.3 'Barlow Condensed',sans-serif;letter-spacing:.2px;text-align:left;position:relative}
+.path-boss-note::before{content:"";position:absolute;left:26px;top:-7px;border:7px solid transparent;border-top:0;border-bottom-color:var(--gold)}
+.path-coach{text-align:left}.path-coach .coach-step{align-self:flex-start;background:none;padding:0;color:#6a5210;font:800 12px/1 'Barlow Condensed',sans-serif;letter-spacing:1.2px}
+.path-coach .coach-text{color:#10151f;font:700 16px/1.25 'Barlow Condensed',sans-serif}
+.path-list.coach-pick .path-node{outline:3px solid var(--gold);outline-offset:2px;box-shadow:0 0 0 6px #ffd16626,0 0 22px #ffd16680;animation:coachPulse 1.4s ease-in-out infinite}
+.reduce-motion .path-list.coach-pick .path-node{animation:none}
+.path-list.coach-pick{gap:14px}
+/* On small phones the tutorial path sheet drops the extras so the first choice is on screen without scrolling. */
+@media(max-width:360px),(max-height:640px){
+  .path-card.is-coach{gap:8px;padding-top:12px}
+  .path-card.is-coach .market-kicker,.path-card.is-coach .path-boss em,.path-card.is-coach #path-sub{display:none}
+  .path-card.is-coach h2{font-size:22px;margin:0}
+  .path-card.is-coach .coach-face{width:44px;height:44px}
+  .path-card.is-coach .coach-text{font-size:14px;line-height:1.2}
+  .path-card.is-coach .path-boss .boss-art{width:46px;height:46px}
+  .path-card.is-coach .path-boss-note{font-size:13px;padding:6px 9px}
+}

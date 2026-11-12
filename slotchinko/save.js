@@ -43,7 +43,7 @@
 
   // Checkpoints: wrap the game actions so game.js stays logic-only.
   const G = window.SlotchinkoGame && window.SlotchinkoGame.prototype;
-  if (G) for (const name of ["toggleHold", "spin", "finishRound", "nextRound", "purchase", "sellChip", "rerollShop", "useConsumable", "newRun", "choosePath", "resolveEvent"]) {
+  if (G) for (const name of ["dealTutorialHand", "toggleHold", "spin", "finishRound", "nextRound", "purchase", "sellChip", "rerollShop", "useConsumable", "newRun", "choosePath", "resolveEvent"]) {
     const orig = G[name]; if (typeof orig !== "function") continue;
     G[name] = function (...args) { const r = orig.apply(this, args); if (this.autosave) write(this); return r; };
   }

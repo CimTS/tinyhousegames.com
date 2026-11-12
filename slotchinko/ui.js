@@ -90,7 +90,7 @@
     });
     game.autosave=true;
     const save=window.SlotchinkoSave;
-    const newRun=(opts={})=>{save.clear();game.newRun(nextSeed(),{ng:opts.ng??0,deckId:opts.deckId??"house",locked:prefs.locked()});overlays.hide();};
+    const newRun=(opts={})=>{save.clear();game.newRun(nextSeed(),{ng:opts.ng??0,deckId:opts.deckId??"house",locked:prefs.locked()});if(prefs.coachOn())game.dealTutorialHand();overlays.hide();};
     // NEW RUN: straight in until decks unlock, then the deck select.
     const hasChoice=()=>prefs.data.ngUnlocked>0||window.SlotchinkoData.DECKS.some(k=>k.id!=="house"&&prefs.deckOpen(k.id));
     $("play-button").addEventListener("click",()=>hasChoice()?overlays.showDecks():newRun());

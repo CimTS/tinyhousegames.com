@@ -166,6 +166,16 @@
         return `<button type="button" class="path-node is-${c.type}" data-path="${i}" ${i===0?"data-focus":""}><span class="path-icon">${n.icon}</span><span class="path-copy"><b>${n.name}</b><small>${e?`${e.name}. ${n.desc}`:n.desc}</small></span><i aria-hidden="true">›</i></button>`;}).join("");
       this.show("path-screen");
     }
+    /* Tapping the boss box does nothing in the game, so it answers instead: a shake, a line saying where the boss is,
+       and a flash on the things that can be picked. */
+    bossNudge(game){
+      const s=game.state,b=window.SlotchinkoData.BOSSES.find(x=>x.round>s.round),note=$("path-boss-note");if(!b)return;
+      const who=b.name;
+      note.textContent=b.round===s.round+1?`${who} is your next round. Pick one of the boxes below to go in.`:`${who} is waiting at blind ${b.round}. Pick a round below to get there.`;
+      note.hidden=false;
+      for(const el of [$("path-boss"),$("path-list")]){el.classList.remove("nudge");void el.offsetWidth;el.classList.add("nudge");}
+      window.clearTimeout(this._nudge);this._nudge=window.setTimeout(()=>{$("path-boss").classList.remove("nudge");$("path-list").classList.remove("nudge");},900);
+    }
     showEvent(game){
       const s=game.state,e=game.eventDef();if(!e)return;
       $("event-icon").textContent=e.icon;$("event-title").textContent=e.name;$("event-text").textContent=e.text;

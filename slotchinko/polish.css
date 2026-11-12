@@ -409,3 +409,10 @@ body.coaching:not([data-coach="5"]) #app .panel:not(:has(.coach-glow)):not(:has(
   .path-card.is-coach .path-boss .boss-art{width:46px;height:46px}
   .path-card.is-coach .path-boss-note{font-size:13px;padding:6px 9px}
 }
+/* A tap on the boss box gets an answer: the box shakes its head and the real choices flash. */
+@keyframes pathShake{20%{transform:translateX(-6px)}45%{transform:translateX(5px)}70%{transform:translateX(-3px)}100%{transform:none}}
+@keyframes pathFlash{0%,100%{outline-color:transparent}35%{outline-color:var(--gold)}}
+.path-boss.nudge{animation:pathShake .36s ease-out}
+.path-list.nudge .path-node{outline:3px solid transparent;outline-offset:2px;animation:pathFlash .85s ease-out}
+.reduce-motion .path-boss.nudge{animation:none}
+.reduce-motion .path-list.nudge .path-node{animation:none;outline-color:var(--gold)}

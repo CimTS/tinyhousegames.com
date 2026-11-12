@@ -152,6 +152,15 @@
       const next=s.round+1;
       $("path-sub").textContent=`Blind ${next} of ${D.BALANCE.FINAL_BLIND}`;
       window.SlotchinkoBossView.pathPreview(game);
+      $("path-boss-label").hidden=$("path-boss").hidden;
+      // Tutorial, last step: Lou says what can be picked (those glow) and what the boss box is for.
+      const C=window.SlotchinkoCoach,coach=!!this.prefs.coachOn?.()&&s.round===1,boss=D.BOSSES.find(x=>x.round>s.round),words=window.SlotchinkoCopy?.words||(x=>x);
+      $("path-coach").hidden=!coach;$("path-list").closest(".path-card").classList.toggle("is-coach",coach);$("path-list").classList.toggle("coach-pick",coach);$("path-boss-note").hidden=!(coach&&boss);
+      if(coach){
+        if(!$("path-coach-face").firstChild)$("path-coach-face").innerHTML=window.SlotchinkoBossArt?.host||"";
+        $("path-coach-step").textContent=`${C.HOST} · ${C.PATH.n} OF ${C.PATH.of}`;$("path-coach-text").textContent=words(C.PATH.text);
+        if(boss)$("path-boss-note").textContent=C.PATH.boss(boss.round,boss.round===next);
+      }
       const ev=id=>id&&game.eventDef(id);
       $("path-list").innerHTML=s.path.choices.map((c,i)=>{const n=D.NODES[c.type],e=c.type==="event"?ev(c.event):null;
         return `<button type="button" class="path-node is-${c.type}" data-path="${i}" ${i===0?"data-focus":""}><span class="path-icon">${n.icon}</span><span class="path-copy"><b>${n.name}</b><small>${e?`${e.name}. ${n.desc}`:n.desc}</small></span><i aria-hidden="true">›</i></button>`;}).join("");

@@ -299,7 +299,11 @@
         <div><dt>TOP CHIP</dt><dd id="end-chip">—</dd></div>
         <div><dt>BEST DROP</dt><dd id="end-drop">0</dd></div>
       </dl>
-      <div class="end-unlocks" id="end-unlocks" hidden><b>NEW UNLOCKS</b><ul id="end-unlock-list"></ul></div>
+      <div class="end-unlocks" id="end-unlocks" hidden>
+        <b>NEW UNLOCKS</b><small class="end-unlock-hint">TAP ONE TO SEE WHAT IT DOES</small>
+        <ul id="end-unlock-list"></ul>
+        <p id="end-unlock-desc" class="end-unlock-desc" aria-live="polite" hidden></p>
+      </div>
       <button id="ng-button" class="btn btn-primary overlay-button ng-button" type="button" hidden>ASCEND TO <span id="ng-button-level">1</span> →</button>
       <button id="restart-button" class="btn btn-primary overlay-button" type="button" data-focus>NEW RUN</button>
       <button id="deck-button" class="btn btn-secondary overlay-button" type="button" hidden>CHOOSE DECK</button>

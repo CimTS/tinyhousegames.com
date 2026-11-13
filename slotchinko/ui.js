@@ -100,6 +100,7 @@
     $("title-collection").addEventListener("click",()=>overlays.showCollection());
     $("collection-close").addEventListener("click",()=>overlays.showTitle());
     // The path between blinds, and event cards.
+    $("path-boss").addEventListener("click",()=>overlays.bossNudge(game));
     $("path-list").addEventListener("click",e=>{const b=e.target.closest("[data-path]");if(!b)return;
       game.choosePath(Number(b.dataset.path));if(game.state.event)overlays.showEvent(game);else overlays.hide();});
     $("path-back").addEventListener("click",()=>overlays.hide());

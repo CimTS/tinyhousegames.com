@@ -1,0 +1,61 @@
+/* Slotchinko tutorial: Lou the Dealer walks a new player through the first round (coach.js, view.js, overlays.js).
+   Everything here applies only while tips are showing (body.coaching, .coach-glow, .is-coach, .coach-pick),
+   except the Tutorial button on the title screen. Loaded after polish.css, before the phone, desktop and tablet layers. */
+
+/* Title screen button. */
+.title-tutorial{display:flex;flex-direction:column;align-items:center;gap:2px}
+.title-tutorial small{font:500 11px/1.2 'DM Mono',monospace;letter-spacing:0;text-transform:none;color:#a9b6cf}
+
+/* Lou's portrait (boss sign style) and his gold speech bubble. The status banner steps aside for him. */
+body.coaching .phase-banner{display:block!important;background:transparent;border:0;box-shadow:none;padding:0}
+body.coaching .phase-banner>div:not(.coach),body.coaching .phase-banner>p{display:none!important}
+.coach{display:flex;align-items:center;gap:11px}
+.coach[hidden]{display:none}
+.coach-face{width:58px;height:58px;filter:drop-shadow(0 0 3px #ffd16699) drop-shadow(0 0 8px #36f5e540)}
+.coach-bubble{position:relative;flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;padding:8px 11px;border-radius:12px;background:var(--gold);box-shadow:0 0 0 3px #ffd16633,0 6px 22px #ffd16633}
+.coach-bubble::before{content:"";position:absolute;left:-8px;top:50%;margin-top:-8px;border:8px solid transparent;border-left:0;border-right-color:var(--gold)}
+.coach-step{flex:none;align-self:flex-start;font:800 12px/1 'Barlow Condensed',sans-serif;letter-spacing:1.2px;color:#6a5210}
+.coach-text{flex:1;font:700 17px/1.25 'Barlow Condensed',sans-serif;letter-spacing:0;color:#10151f;text-transform:none}
+/* GOT IT, for the steps where there is nothing to press but Lou. */
+.coach-next{align-self:flex-start;min-height:44px;margin-top:5px;padding:0 16px;border:0;border-radius:9px;background:#10151f;color:var(--gold);font:800 15px/1 'Barlow Condensed',sans-serif;letter-spacing:1.4px}
+.coach-next[hidden]{display:none}
+.coach-skip{flex:none;min-height:44px;margin:0;padding:0 6px;border:0;background:transparent;color:#a3afc7;font:700 12px/1 'Barlow Condensed',sans-serif;letter-spacing:1px;text-decoration:underline;text-underline-offset:3px}
+
+/* The thing to press glows; the panels that are not needed for this step fade back (not while watching the drop). */
+.coach-glow{position:relative;z-index:2;outline:3px solid var(--gold);outline-offset:3px;border-radius:9px;box-shadow:0 0 0 7px #ffd16630,0 0 28px #ffd16699;animation:coachPulse 1.4s ease-in-out infinite}
+@keyframes coachPulse{50%{outline-color:#ffd16640}}
+.reduce-motion .coach-glow{animation:none}
+#coins-stat.coach-glow{border-radius:8px;outline-offset:5px}
+.shop-item.coach-glow{scroll-margin:190px 0 110px}
+body.coaching:not([data-coach="5"]) #app .panel:not(:has(.coach-glow)):not(:has(#drop-button)){opacity:.28;transition:opacity .2s}
+
+/* The last step, on the Choose Your Path sheet: Lou again, and the choices glow. */
+.path-coach{text-align:left}
+.path-list.coach-pick{gap:14px}
+.path-list.coach-pick .path-node{outline:3px solid var(--gold);outline-offset:2px;box-shadow:0 0 0 6px #ffd16626,0 0 22px #ffd16680;animation:coachPulse 1.4s ease-in-out infinite}
+.reduce-motion .path-list.coach-pick .path-node{animation:none}
+
+/* Phones (the same query as phone.css): pop-up messages move to the bottom so they never cover Lou,
+   and in the shop he stays pinned under the counters while the list scrolls to the thing he means. */
+@media(max-width:699px),(max-height:599px) and (max-width:999px){
+  body.coaching #toast{top:auto;bottom:calc(84px + env(safe-area-inset-bottom))}
+  body.coaching[data-stage="shop"] .phase-banner{position:sticky;top:var(--bar-h,62px);z-index:5;margin:0 calc(-1*var(--pad));padding:4px var(--pad) 8px;background:linear-gradient(180deg,#0a0e19 88%,#0a0e1900)}
+}
+/* The smallest and shortest screens: a smaller Lou, and during the aim step only his words, so DROP stays on screen. */
+@media(max-width:360px),(max-height:599px) and (max-width:999px){
+  .coach{gap:9px}
+  .coach-face{width:44px;height:44px}
+  .coach-bubble{padding:6px 9px}
+  .coach-text{font-size:13.5px;line-height:1.2}
+  body.coaching[data-stage="aim"] .coach-skip,body.coaching[data-stage="aim"] .coach-step{display:none}
+}
+/* Small phones: the tutorial path sheet drops the extras so the first choice is on screen without scrolling. */
+@media(max-width:360px),(max-height:640px){
+  .path-card.is-coach{gap:8px;padding-top:12px}
+  .path-card.is-coach .market-kicker,.path-card.is-coach .path-boss em,.path-card.is-coach #path-sub{display:none}
+  .path-card.is-coach h2{font-size:22px;margin:0}
+  .path-card.is-coach .coach-face{width:44px;height:44px}
+  .path-card.is-coach .coach-text{font-size:14px;line-height:1.2}
+  .path-card.is-coach .path-boss .boss-art{width:46px;height:46px}
+  .path-card.is-coach .path-boss-note{font-size:13px;padding:6px 9px}
+}

@@ -360,3 +360,5 @@ body.aiming #aim-guide::after{content:"";position:absolute;left:50%;top:22px;wid
 .path-list.nudge .path-node{outline:3px solid transparent;outline-offset:2px;animation:pathFlash .85s ease-out}
 .reduce-motion .path-boss.nudge{animation:none}
 .reduce-motion .path-list.nudge .path-node{animation:none;outline-color:var(--gold)}
+/* The board's name beside its heading, when the jackpot is not in the middle. */
+.board-layout{color:var(--gold);font:inherit;letter-spacing:inherit}

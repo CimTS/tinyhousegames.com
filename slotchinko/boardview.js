@@ -5,6 +5,24 @@
   const COLORS = window.PlinkoPhysics.COLORS;
   const FLOAT_MS = 800;
 
+  /* A pocket's background by what it is right now. The first match wins. */
+  function pocketFill({ smash, drain, my, die, big, jack }) {
+    if (smash) return "#c4d5ff2e";
+    if (drain) return "#ff4fa31f";
+    if (my) return "#a78bfa38";
+    if (die) return "#45f3e22e";
+    if (big) return "#ffd16630";
+    if (jack) return "#ffd16624";
+    return "#ffd16610";
+  }
+  /* ...and what is written in it. */
+  function pocketLabel({ smash, drain, my }, value) {
+    if (smash) return `♠×${window.SlotchinkoData.BALANCE.SPADE_EDGE}`;
+    if (drain) return "DRAIN";
+    if (my && !my.shown) return "?";
+    return `×${value}`;
+  }
+
   class BoardView {
     constructor(canvas, getPhysics, reducedMotion) {
       this.canvas = canvas;
@@ -58,6 +76,7 @@
         ctx.setLineDash([]);
       }
       this._buckets(ph, now);
+      if (ph.showHints) this._hints(ph);
       for (const peg of ph.pegs.values()) {
         if (!peg.plugin.gold) {
           this._circle(peg, peg.render.fillStyle, "#dbe8ff", 0.55);
@@ -95,6 +114,37 @@
       ctx.stroke();
     }
 
+    /* The aim hint: a gold marker at the top of the board where this hand's balls do best, with a faint line down.
+       A wide marker means "anywhere around here" (balls that scatter). */
+    _hints(ph) {
+      const { ctx } = this;
+      // The launcher's travel (game.js) and the marker's place: just under the "drag to aim" caption.
+      const MARGIN = 24,
+        TOP = 17,
+        TIP = 25;
+      for (const h of ph.aimHints || []) {
+        const x = MARGIN + h.aim * (ph.width - 2 * MARGIN),
+          half = h.wide ? 26 : 7,
+          foot = h.wide ? half - 6 : 0;
+        ctx.strokeStyle = "#ffd16655";
+        ctx.lineWidth = 1;
+        ctx.setLineDash([2, 6]);
+        ctx.beginPath();
+        ctx.moveTo(x, TIP + 2);
+        ctx.lineTo(x, ph.height - 40);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = "#ffd166";
+        ctx.beginPath();
+        ctx.moveTo(x - half, TOP);
+        ctx.lineTo(x + half, TOP);
+        ctx.lineTo(x + foot, TIP);
+        ctx.lineTo(x - foot, TIP);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
+
     _buckets(ph, now) {
       const { ctx } = this,
         top = ph.height - 37,
@@ -106,13 +156,26 @@
         const x0 = e[i],
           w = e[i + 1] - e[i],
           mid = x0 + w / 2,
-          big = wide && i === 3;
+          big = wide && ph.jackpots().includes(i);
         const drain = ph.drainPockets.includes(i),
           lit = now - (this.flashes.get(i) || -1e6);
         const my = ph.mystery && ph.mystery.index === i ? ph.mystery : null,
           die = ph.die === i && !my;
-        ctx.fillStyle = drain ? "#ff4fa31f" : my ? "#a78bfa38" : die ? "#45f3e22e" : big ? "#ffd16630" : "#ffd16610";
+        // A heavy (spade) hand smashes through the outer pockets: they pay their own value, drain or not.
+        const smash = !!ph.heavyHand && (i === 0 || i === 6) && !my;
+        const jack = !my && !drain && ph.jackpots().includes(i);
+        ctx.fillStyle = pocketFill({ smash, drain, my, die, big, jack });
         ctx.fillRect(x0 + 1.5, top, w - 3, 37);
+        // The jackpot wears a gold cap, so a moved jackpot is easy to spot.
+        if (jack) {
+          ctx.fillStyle = "#ffd166";
+          ctx.fillRect(x0 + 1.5, top, w - 3, 2.5);
+        }
+        if (smash) {
+          ctx.strokeStyle = "#c4d5ffcc";
+          ctx.lineWidth = 1;
+          ctx.strokeRect(x0 + 2, top + 0.5, w - 4, 36);
+        }
         if (my || die) {
           ctx.strokeStyle = my ? "#a78bfacc" : "#45f3e2cc";
           ctx.lineWidth = 1;
@@ -127,14 +190,11 @@
           ctx.fillStyle = `rgba(255,209,102,${0.4 * (1 - lit / 260)})`;
           ctx.fillRect(x0 + 1.5, top, w - 3, 37);
         }
-        ctx.fillStyle = drain ? "#ff8cc4" : my ? "#d6c8ff" : die ? "#8ff8ec" : "#ffd166";
+        ctx.fillStyle = smash ? "#dfe8ff" : drain ? "#ff8cc4" : my ? "#d6c8ff" : die ? "#8ff8ec" : "#ffd166";
         // Narrow neighbours of a wide x4 get a smaller label so it still fits.
-        ctx.font = `700 ${drain ? 11 : big ? 15 : w < 30 ? 10 : 13}px 'Barlow Condensed',sans-serif`;
-        ctx.fillText(
-          drain ? "DRAIN" : my && !my.shown ? "?" : `×${+(ph.pocketValue?.(i) ?? value).toFixed(2)}`,
-          mid,
-          ph.height - 14
-        );
+        ctx.font = `700 ${smash ? 13 : drain ? 11 : big ? 15 : w < 30 ? 10 : 13}px 'Barlow Condensed',sans-serif`;
+        const label = pocketLabel({ smash, drain, my }, +(ph.pocketValue?.(i) ?? value).toFixed(2));
+        ctx.fillText(label, mid, ph.height - 14);
         if (die) {
           ctx.font = "700 9px 'Barlow Condensed',sans-serif";
           ctx.fillText("DIE ×2", mid, top + 8);

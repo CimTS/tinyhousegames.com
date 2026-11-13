@@ -93,12 +93,12 @@
 
     <section id="hand-management" class="hand-note">
       <div class="hand-note-icon">✧</div>
-      <div><b>SUIT = ELEMENT</b><p>♥ Split · ♠ Heavy · ♦ Fortune · ♣ Sticky</p></div>
+      <div><b>SUIT = ELEMENT</b><p>♥ Splits in two · ♠ Heavy: outer pockets pay ×4 · ♦ Fortune: pockets pay +40% · ♣ Sticky: lands where you aim</p></div>
       <div class="hand-note-right" id="balls-preview">1 BALL</div>
     </section>
 
     <section id="plinko-section" class="panel board-panel">
-      <div class="section-heading"><span>02 / THE DROP</span><span class="micro">DRAG TO AIM · PRESS DROP</span></div>
+      <div class="section-heading"><span>02 / THE DROP<b id="board-layout" class="board-layout" hidden></b></span><span class="micro">DRAG TO AIM · PRESS DROP</span></div>
       <div id="boss-panel" class="boss-panel" hidden></div>
       <div id="plinko-canvas">
         <canvas id="game-canvas"></canvas>
@@ -155,7 +155,8 @@
       <details class="howto-more">
         <summary>MORE RULES</summary>
         <p><b>Rounds:</b> every blind starts from zero. Each hand you don't need pays 1¢. Miss with your last hand and the run ends. Clear all 16 blinds to win.</p>
-        <p><b>Your most common suit sets the ball type:</b> ♥ splits · ♠ heavy, breaks pegs · ♦ bonus bucket value · ♣ sticky.</p>
+        <p><b>Your most common suit sets the ball type, and where to aim:</b> ♥ splits in two · ♠ heavy: the two outer pockets pay ×4 for it, even when they are drains · ♦ fortune: every pocket pays 40% more · ♣ sticky: lands close to where you aim.</p>
+        <p><b>Boards:</b> from blind 6 the jackpot can sit left or right, or split into two smaller jackpots. The path screen names the next board, and the jackpot wears a gold cap.</p>
         <p><b>Shop:</b> Chips last the whole run. Bag items are used once. Tap a Chip you own, or View All, to see what it does or sell it for half its price.</p>
         <p><b>Sets:</b> two different Chips with matching tags form a set: heart + split · diamond + fortune · spade + gravity · club + control · economy + combo · element + synergy.</p>
         <p><b>Drains:</b> from blind 3 the two outer pockets pay nothing.</p>
@@ -188,6 +189,8 @@
       </div>
       <label class="switch-row"><span>Mute all sound</span><input id="mute-toggle" type="checkbox" role="switch"></label>
       <label class="switch-row"><span>Phone speaker mode <small>trims deep bass a small speaker can't play</small></span><input id="speaker-toggle" type="checkbox" role="switch"></label>
+      <label class="switch-row"><span>Lou's tips <small>one line the first time something new shows up</small></span><input id="tips-toggle" type="checkbox" role="switch"></label>
+      <label class="switch-row"><span>Aim hint <small>marks where this hand's balls do best</small></span><input id="hint-toggle" type="checkbox" role="switch"></label>
       <div class="danger-zone">
         <button id="clear-save" class="btn clear-save" type="button">CLEAR SAVE DATA</button>
         <div id="clear-confirm" class="clear-confirm" hidden>
@@ -300,6 +303,7 @@
   <script src="rng.js"></script>
   <script src="data.js"></script>
   <script src="bosses-data.js"></script>
+  <script src="lanes.js"></script>
   <script src="poker.js"></script>
   <script src="scoring.js"></script>
   <script src="shop.js"></script>

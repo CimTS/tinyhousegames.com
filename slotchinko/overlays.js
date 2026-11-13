@@ -61,6 +61,29 @@
     apply() {
       document.documentElement.classList.toggle("reduce-motion", this.reducedMotion());
     }
+    /* Lou's one-line tips after the tutorial, and the aim hint on the board: both on unless switched off in Settings. */
+    tipsOn() {
+      return this.data.tips !== false;
+    }
+    setTips(on) {
+      this.data.tips = !!on;
+      write(this.data);
+    }
+    seenTips() {
+      return this.data.tipsSeen || [];
+    }
+    tipSeen(id) {
+      if (this.seenTips().includes(id)) return;
+      this.data.tipsSeen = [...this.seenTips(), id];
+      write(this.data);
+    }
+    hintsOn() {
+      return this.data.hints !== false;
+    }
+    setHints(on) {
+      this.data.hints = !!on;
+      write(this.data);
+    }
     /* First-hand tips: for someone who has never finished a run, until they finish the first blind or hide them. */
     coachOn() {
       const d = this.data;
@@ -192,6 +215,8 @@
     }
     showSettings() {
       this.settingsReturn = this.open && this.open !== "settings-screen" ? this.open : null;
+      $("tips-toggle").checked = this.prefs.tipsOn();
+      $("hint-toggle").checked = this.prefs.hintsOn();
       this.show("settings-screen");
     }
     closeSettings() {
@@ -355,7 +380,9 @@
       if (!s.path) return;
       if (s.event) return this.showEvent(game);
       const next = s.round + 1;
-      $("path-sub").textContent = `Blind ${next} of ${D.BALANCE.FINAL_BLIND}`;
+      // A blind whose jackpot has moved says so before you commit to it.
+      const board = game._layoutFor(next) === "classic" ? "" : ` · Board: ${game.layoutName(next)}`;
+      $("path-sub").textContent = `Blind ${next} of ${D.BALANCE.FINAL_BLIND}${board}`;
       window.SlotchinkoBossView.pathPreview(game);
       $("path-boss-label").hidden = $("path-boss").hidden;
       // Tutorial, last step: Lou says what can be picked (those glow) and what the boss box is for.

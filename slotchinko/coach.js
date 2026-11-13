@@ -65,5 +65,57 @@
       (next ? "your next round is" : `at blind ${round} you meet`) +
       " this boss, and the last line is the rule it plays by."
   };
-  window.SlotchinkoCoach = { tip, OF, HOST, PATH };
+  /* One-line tips after the tutorial: the first time something new is on screen, Lou says what it is, once.
+     Board news comes before suit news. Each entry: when(state, rules) and text(state, rules). */
+  const pct = x => Math.round((x - 1) * 100);
+  const MOMENTS = [
+    {
+      id: "boss",
+      when: s => !!s.boss,
+      text: () => "Boss round. Its rule is in the pink box over the board. Read it before you drop."
+    },
+    {
+      id: "moved",
+      when: s => !s.boss && (s.layout === "left" || s.layout === "right"),
+      text: s => `The jackpot moved to the ${s.layout} this round. Look for the gold cap and aim there.`
+    },
+    {
+      id: "twin",
+      when: s => !s.boss && s.layout === "twin",
+      text: (s, r) => `Two jackpots this round, ×${r.twin} each, with gold caps. The middle pocket only pays ×1.`
+    },
+    {
+      id: "drain",
+      when: (s, r) => s.round >= r.drainRound,
+      text: () => "New from here: the two outer pockets are drains. A ball that lands in one scores nothing."
+    },
+    {
+      id: "spade",
+      when: s => s.primarySuit === "spade",
+      text: (s, r) => `Mostly spades: heavy balls. Aim at an edge. The outer pockets pay ×${r.spadeEdge} for them.`
+    },
+    {
+      id: "club",
+      when: s => s.primarySuit === "club",
+      text: () => "Mostly clubs: sticky balls. They land where you aim, so aim at the jackpot."
+    },
+    {
+      id: "heart",
+      when: s => s.primarySuit === "heart",
+      text: () => "Mostly hearts: each ball splits in two. They scatter, so aim near the middle."
+    },
+    {
+      id: "diamond",
+      when: s => s.primarySuit === "diamond",
+      text: (s, r) => `Mostly diamonds: every pocket pays them ${pct(r.fortune)}% more. Aim near the middle.`
+    }
+  ];
+  /* The tip to show now, or null. seen: ids already shown. Never during the tutorial's own blind. */
+  function moment(s, seen = [], rules = {}) {
+    if (!s || s.phase !== "slot" || s.round < 2 || s.victory) return null;
+    const m = MOMENTS.find(x => !seen.includes(x.id) && x.when(s, rules));
+    return m ? { id: m.id, text: m.text(s, rules), next: true } : null;
+  }
+
+  window.SlotchinkoCoach = { tip, moment, MOMENTS: MOMENTS.map(m => m.id), OF, HOST, PATH };
 })();

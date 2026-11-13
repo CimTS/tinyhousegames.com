@@ -81,4 +81,8 @@
   #plinko-canvas{width:100%;height:auto;max-width:calc(var(--tab-board-h)*340/270)}
   body:not([data-stage="shop"]) .synergy-line{display:none}
   .owned-chip{min-height:36px;min-width:32px;padding:3px 5px}
+  /* Short screens: the Choose Your Path sheet tightens up so it fits without scrolling. */
+  .path-card{gap:8px;padding-top:12px;padding-bottom:12px}
+  .path-card .market-kicker{display:none}
+  .path-card .path-node{min-height:64px;padding-top:8px;padding-bottom:8px}
 }

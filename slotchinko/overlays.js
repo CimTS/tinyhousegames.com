@@ -327,6 +327,38 @@
     closeLoadout() {
       if (this.open === "loadout-screen") this.hide();
     }
+    /* What the run just unlocked, with the words shown when a chip on the Run Over screen is tapped. */
+    _unlockInfo(rec, d) {
+      const D = window.SlotchinkoData,
+        items = [...D.CHIP_CATALOG, ...D.CARD_CATALOG, ...D.BUFF_CATALOG, ...D.CONSUMABLE_CATALOG],
+        mod = D.NG.MODS[d.ngUnlocked - 1];
+      const list = rec.fresh.map(id => {
+        const deck = D.UNLOCKS.find(x => x.id === id).kind === "deck",
+          it = deck ? D.DECKS.find(k => k.id === id) : items.find(x => x.id === id),
+          kind = deck ? "Deck · pick it when you start a run" : "Now turns up in the shop";
+        return { icon: it.icon, name: it.name, kind, desc: it.desc };
+      });
+      if (rec.ascended)
+        list.unshift({
+          asc: true,
+          icon: "♛",
+          name: `Ascension ${d.ngUnlocked}`,
+          kind: "Harder run · pick it when you start a run",
+          desc: `Adds ${mod.name}: ${mod.desc}`
+        });
+      return list;
+    }
+    /* A tapped unlock chip shows what it does under the chips; tapping it again puts it away. */
+    toggleUnlock(i) {
+      const u = this.unlockInfo[i],
+        box = $("end-unlock-desc"),
+        buttons = [...$("end-unlock-list").querySelectorAll("button")],
+        open = box.hidden || box.dataset.at !== String(i);
+      buttons.forEach((b, n) => b.setAttribute("aria-expanded", String(open && n === +i)));
+      box.hidden = !open;
+      box.dataset.at = i;
+      if (open) box.innerHTML = `<b>${u.name}</b><small>${u.kind}</small><span>${u.desc}</span>`;
+    }
     /* Collection: every Chip by family, the other items, sets found and decks. Locked tiles show their milestone. */
     showCollection() {
       const d = this.prefs.data,
@@ -487,19 +519,14 @@
       const deck = D.DECKS.find(k => k.id === (s.deckId || "house"));
       $("end-ng").hidden = false;
       $("end-ng").textContent = `${deck.name.toUpperCase()}${s.ng ? ` · ASCENSION ${s.ng}` : ""}`;
-      const names = rec.fresh.map(id => {
-        const u = D.UNLOCKS.find(x => x.id === id),
-          it =
-            u.kind === "deck"
-              ? D.DECKS.find(k => k.id === id)
-              : [...D.CHIP_CATALOG, ...D.CARD_CATALOG, ...D.BUFF_CATALOG, ...D.CONSUMABLE_CATALOG].find(
-                  x => x.id === id
-                );
-        return `<li><span>${it.icon}</span>${it.name}</li>`;
-      });
-      if (rec.ascended) names.unshift(`<li class="is-asc"><span>♛</span>Ascension ${d.ngUnlocked}</li>`);
-      $("end-unlocks").hidden = !names.length;
-      $("end-unlock-list").innerHTML = names.join("");
+      this.unlockInfo = this._unlockInfo(rec, d);
+      const chip = (u, i) => {
+        const face = `<span>${u.icon}</span>${u.name}`;
+        return `<li${u.asc ? ' class="is-asc"' : ""}><button type="button" data-unlock="${i}" aria-expanded="false">${face}</button></li>`;
+      };
+      $("end-unlocks").hidden = !this.unlockInfo.length;
+      $("end-unlock-list").innerHTML = this.unlockInfo.map(chip).join("");
+      $("end-unlock-desc").hidden = true;
       const canNg = s.victory && (s.ng || 0) < D.NG.MAX;
       $("ng-button").hidden = !canNg;
       if (canNg) $("ng-button-level").textContent = `${(s.ng || 0) + 1}`;

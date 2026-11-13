@@ -120,6 +120,10 @@
       game.render();
     });
     $("feat").addEventListener("click", () => view.closeFeat());
+    $("end-unlock-list").addEventListener("click", e => {
+      const b = e.target.closest("[data-unlock]");
+      if (b) overlays.toggleUnlock(b.dataset.unlock);
+    });
     $("tips-toggle").addEventListener("change", e => {
       prefs.setTips(e.target.checked);
       game.render();

@@ -51,7 +51,11 @@
     let name,
       category,
       tiebreak = [];
-    if (flush && straightHigh === 14 && unique[1] === 13) {
+    if (groups[0][1] === 5) {
+      name = "The Cinco";
+      category = 10;
+      tiebreak = [groups[0][0]];
+    } else if (flush && straightHigh === 14 && unique[1] === 13) {
       name = "Royal Flush";
       category = 9;
       tiebreak = [14];
@@ -125,6 +129,7 @@
 
   function describeHand(name, vector) {
     const rankName = v => ({ 14: "Ace", 13: "King", 12: "Queen", 11: "Jack" })[v] || String(v);
+    if (name === "The Cinco") return `Five ${rankName(vector[0])}s`;
     if (name === "Royal Flush") return "A-K-Q-J-10 · same suit";
     if (name === "Straight Flush") return `${rankName(vector[0])}-high · same suit`;
     if (name === "Straight") return `${rankName(vector[0])}-high straight`;

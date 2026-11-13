@@ -68,7 +68,18 @@
   /* One-line tips after the tutorial: the first time something new is on screen, Lou says what it is, once.
      Board news comes before suit news. Each entry: when(state, rules) and text(state, rules). */
   const pct = x => Math.round((x - 1) * 100);
+  const aces = s => s.cards.filter(c => c && c.rank === 14).length;
   const MOMENTS = [
+    {
+      id: "glitch",
+      when: s => s.cards.some(c => c && c.glitch),
+      text: () => "That Ace keeps changing suit. It plays as whatever suit it shows when you press Drop Hand."
+    },
+    {
+      id: "cinco",
+      when: s => aces(s) === 4 && s.spins < s.maxSpins && s.deck.some(c => c.rank === 14 || c.joker),
+      text: () => "Four Aces, and a fifth is still in your deck. Hold all four and draw. Five Aces is The Cinco."
+    },
     {
       id: "boss",
       when: s => !!s.boss,

@@ -119,6 +119,7 @@
       else if (view.momentId) prefs.tipSeen(view.momentId);
       game.render();
     });
+    $("feat").addEventListener("click", () => view.closeFeat());
     $("tips-toggle").addEventListener("change", e => {
       prefs.setTips(e.target.checked);
       game.render();
@@ -179,7 +180,11 @@
     });
     $("continue-button").addEventListener("click", () => {
       const d = save.read();
-      if (d) save.restore(game, d);
+      if (d) {
+        save.restore(game, d);
+        // A run saved by an older build does not know about unlocks added since; keep those locked.
+        game.state.locked = [...new Set([...(game.state.locked || []), ...prefs.locked()])];
+      }
       if (game.state.event) overlays.showEvent(game);
       else overlays.hide();
     });
@@ -266,9 +271,16 @@
       if (document.hidden && game.state.phase === "drop") overlays.showPause();
     });
     let last = 0,
-      bank = 0;
+      bank = 0,
+      glitch = 0;
     const frame = now => {
       if (!overlays.pausing && !document.hidden) {
+        // The Glitched Ace changes suit while the hand is being chosen; Drop Hand (aiming) freezes it.
+        glitch = game.aimFlow.aiming ? 0 : glitch + Math.min(now - last, MAX_FRAME_MS);
+        if (glitch >= window.SlotchinkoData.BALANCE.GLITCH_MS) {
+          glitch = 0;
+          if (game.glitchTick()) game.render();
+        }
         bank += Math.min(now - last, MAX_FRAME_MS);
         while (bank >= STEP_MS) {
           game.step();

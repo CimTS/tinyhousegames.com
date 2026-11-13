@@ -23,7 +23,9 @@
     "Full House":     { power:4,   balls:7,  bonus:"×4 base power" },
     "Four of a Kind": { power:5,   balls:8,  bonus:"×5 base power" },
     "Straight Flush": { power:7,   balls:9,  bonus:"×7 base power" },
-    "Royal Flush":    { power:9,   balls:10, bonus:"ROYAL JACKPOT ×9" }
+    "Royal Flush":    { power:9,   balls:10, bonus:"ROYAL JACKPOT ×9" },
+    // Five of a kind. Only possible once the deck holds a fifth Ace (Ace Up the Sleeve, the Ace High deck, a Joker).
+    "The Cinco":      { power:12,  balls:12, bonus:"THE CINCO ×12" }
   };
 
 
@@ -65,7 +67,8 @@
     { id:"ace-sleeve", name:"Ace Up the Sleeve", icon:"A", rarity:"common", kind:"card", cost:4, maxStack:3, desc:"Add an extra Ace to your deck (suits rotate ♥ ♠ ♦ ♣).", deck:"addAce" },
     { id:"trim-deck", name:"Trim the Deck", icon:"✂", rarity:"uncommon", kind:"card", cost:6, maxStack:1, desc:"Remove every 2 from your deck. Fewer junk draws.", deck:"trim" },
     { id:"gold-leaf", name:"Gold Leaf", icon:"✪", rarity:"rare", kind:"card", cost:9, maxStack:1, desc:"Upgrade your Aces to gold: each gold card in a hand adds +0.25 base power.", deck:"gold" },
-    { id:"joker", name:"Joker", icon:"★", rarity:"rare", kind:"card", cost:8, maxStack:1, desc:"Add a Joker to your deck. It plays as whatever card makes your best hand.", deck:"joker" }
+    { id:"joker", name:"Joker", icon:"★", rarity:"rare", kind:"card", cost:8, maxStack:1, desc:"Add a Joker to your deck. It plays as whatever card makes your best hand.", deck:"joker" },
+    { id:"glitched-ace", name:"The Glitched Ace", icon:"Ⱥ", rarity:"rare", kind:"card", cost:8, maxStack:1, desc:"Add a glitched Ace to your deck. Its suit keeps changing: it plays as the suit it shows when you press Drop Hand. In a High Card hand: +50% power and double balls.", deck:"glitch" }
   ];
 
   // Pachinko buffs: board changes for the next drop, or for the whole run.
@@ -101,7 +104,7 @@
   const BALANCE={
     FINAL_BLIND:BLIND_TARGETS.length, BLIND_TARGETS,
     HANDS_PER_BLIND:3, SPARE_HAND_PAY:1, SELL_RATE:0.5, ELITE_CLIMB:1.5, START_COINS:7, BLIND_PAY:3, BASE_BALL_SCORE:25, HEART_SPLIT_HIT:3, DRAIN_ROUND:3,
-    REROLL_BASE:2, SHOP_SLOTS:{chip:3,card:2,consumable:2,buff:2}, CROUPIER_CAP:3, FUNNEL_MULT:1.25, GOLD_POWER:0.25, MAX_CHIPS:12, MAX_BAG:3, MAX_HAND_BALLS:24,
+    REROLL_BASE:2, SHOP_SLOTS:{chip:3,card:2,consumable:2,buff:2}, CROUPIER_CAP:3, FUNNEL_MULT:1.25, GOLD_POWER:0.25, GLITCH_POWER:1.5, GLITCH_BALLS:2, GLITCH_MS:800, MAX_CHIPS:12, MAX_BAG:3, MAX_HAND_BALLS:24,
     PRESS_STEP:500, PRESS_CAP:3, CLUB_COIN_HITS:5, DIAMOND_BONUS:35, GLASS_MULT:1.5,
     BUMP_BONUS:0.25, BUMP_CAP:4, SPADE_EDGE:4, FORTUNE_BUCKET:1.4, LAUNCH_JITTER:0.10, DIE_MULT:2, GOLD_PEG_MULT:2, MYSTERY:[[0,1],[0.5,1],[1,2],[2,3],[3,2],[5,1.5],[8,1]]
   };
@@ -175,6 +178,8 @@
     { kind:"item", id:"bumper", hint:"Score 12,000 in a single drop.", test:m=>m.bestDrop>=12000 },
     { kind:"item", id:"double-nothing", hint:"Win at Ascension 1 or higher.", test:m=>m.victory&&m.ng>=1 },
     { kind:"item", id:"tilt", hint:"Win at Ascension 2 or higher.", test:m=>m.victory&&m.ng>=2 },
+    // now: granted the moment it happens, with its own banner, instead of at the end of the run.
+    { kind:"item", id:"glitched-ace", now:true, title:"THE CINCO", feat:"Five Aces in one hand", hint:"Drop five Aces in one hand.", test:m=>(m.hands["The Cinco"]||0)>0 },
     { kind:"deck", id:"mint", hint:"Earn 200¢ in one run.", test:m=>m.coinsEarned>=200 },
     { kind:"deck", id:"rubber", hint:"Clear blind 6.", test:m=>m.blinds>=6 },
     { kind:"deck", id:"ace-high", hint:"Drop Four of a Kind.", test:m=>m.bestRank>=7 },

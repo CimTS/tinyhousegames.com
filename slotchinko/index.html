@@ -107,6 +107,16 @@
         <button id="tilt-button" class="tilt-button" type="button" hidden>⇆ TILT</button>
         <div id="payout-board" class="payout-stack payout-stack-board" aria-hidden="true"></div>
         <div id="target-flash" class="target-flash" aria-hidden="true">TARGET HIT!</div>
+        <div id="feat" class="feat" role="status" hidden>
+          <button id="feat-close" class="feat-close" type="button" aria-label="Close">✕</button>
+          <small>ACHIEVEMENT</small>
+          <b id="feat-title"></b>
+          <span class="feat-cards" aria-hidden="true"><i>A<u>♥</u></i><i>A<u>♠</u></i><i>A<u>♦</u></i><i>A<u>♣</u></i><i>A<u>♥</u></i></span>
+          <span id="feat-what"></span>
+          <em>UNLOCKED</em>
+          <span id="feat-prize" class="feat-prize"></span>
+          <span class="feat-where">Now in the shop</span>
+        </div>
       </div>
       <div class="board-footer"><span id="balls-left">BALLS: 0</span><span id="round-earned">THIS DROP: 0</span></div>
     </section>

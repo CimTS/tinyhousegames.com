@@ -95,7 +95,7 @@
         lastEvaluation: null,
         diamondHits: 0,
         runBuffs: [],
-        deckMods: { aces: 0, trim: false, gold: false, joker: false },
+        deckMods: { aces: 0, trim: false, gold: false, joker: false, glitch: false },
         croupierPaid: 0,
         grinBonus: 0,
         coinsEarnedThisBlind: 0,
@@ -293,12 +293,12 @@
           instanceId: "deck-pachinko"
         });
     }
-    /* The standard deck plus the run's bought deck cards (extra Aces, trimmed 2s/3s, gold Aces). */
+    /* The standard deck plus the run's bought deck cards (extra Aces, trimmed 2s, gold Aces, Joker, Glitched Ace). */
     _buildDeck() {
       const m = this.state.deckMods || {},
         rnd = this.rng.stream("deck");
       let deck = createDeck(rnd);
-      if (!m.aces && !m.trim && !m.gold && !m.deckAces && !m.joker) return deck; // same order as before deck cards existed
+      if (!m.aces && !m.trim && !m.gold && !m.deckAces && !m.joker && !m.glitch) return deck; // same order as before deck cards existed
       for (let i = 0; i < (m.deckAces || 0); i++) {
         const suit = SUITS[i % 4];
         deck.push({ id: `14-${suit}-d${i}`, rank: 14, label: "A", suit });
@@ -307,6 +307,7 @@
         const suit = SUITS[i % 4];
         deck.push({ id: `14-${suit}-x${i}`, rank: 14, label: "A", suit });
       }
+      if (m.glitch) deck.push({ id: "14-spade-glitch", rank: 14, label: "A", suit: "spade", glitch: true });
       if (m.trim) deck = deck.filter(c => c.rank > 2);
       if (m.gold) deck = deck.map(c => (c.rank === 14 ? { ...c, gold: true } : c));
       if (m.joker) deck.push({ id: "joker", rank: 0, label: "★", suit: "spade", joker: true });
@@ -406,10 +407,19 @@
       const gold = s.cards.filter(c => c.gold).length;
       s.goldBonus = gold * BALANCE.GOLD_POWER;
       s.power += s.goldBonus;
+      // The Glitched Ace only works in a High Card hand, where it is by definition the only Ace.
+      s.glitched = result.name === "High Card" && s.cards.some(c => c.glitch);
+      if (s.glitched) {
+        s.power *= BALANCE.GLITCH_POWER;
+        s.handDetail = `${result.description} · GLITCHED ACE: +50% power, double balls`;
+      }
       s.grinBonus = fx.grinBalls && (result.name === "High Card" || result.name === "One Pair") ? fx.grinBalls : 0;
       s.balls = Math.min(
         BALANCE.MAX_HAND_BALLS,
-        result.balls + fx.extraBalls + s.grinBonus + this._boost(s.pendingBoosts, "balls")
+        result.balls * (s.glitched ? BALANCE.GLITCH_BALLS : 1) +
+          fx.extraBalls +
+          s.grinBonus +
+          this._boost(s.pendingBoosts, "balls")
       );
       const NGT = window.SlotchinkoData.NG;
       if (
@@ -453,6 +463,33 @@
       j.suit = pick.suit;
     }
 
+    /* The Glitched Ace in hand moves on to its next suit. The page calls this on a timer while the player is still
+       choosing (ui.js); pressing Drop Hand stops the timer, so the suit showing then is the suit it plays as. */
+    glitchTick() {
+      const s = this.state,
+        card = s.phase === "slot" && s.cards.find(c => c && c.glitch);
+      if (!card) return false;
+      card.suit = SUITS[(SUITS.indexOf(card.suit) + 1) % SUITS.length];
+      this.evaluateHand();
+      return true;
+    }
+
+    /* Milestones marked `now` are granted the moment they happen, not at the end of the run. The run's locked
+       list comes from the save, so each fires once per save; a game with no save has nothing locked. */
+    _grantNow() {
+      const s = this.state,
+        due = window.SlotchinkoData.UNLOCKS.filter(u => u.now && s.locked.includes(u.id));
+      if (!due.length) return;
+      const m = this.summary();
+      for (const u of due.filter(u => u.test(m))) {
+        s.locked = s.locked.filter(id => id !== u.id);
+        this.achieved(u.id);
+      }
+    }
+    achieved(id) {
+      this.view?.achieved(id);
+    }
+
     _boost(list, action) {
       return list.reduce((sum, b) => sum + (b.action === action ? b.value : 0), 0);
     }
@@ -487,7 +524,17 @@
         }
         st.hands[s.hand] = (st.hands[s.hand] || 0) + 1;
         for (const x of this._effects().synergies) if (!st.sets.includes(x)) st.sets.push(x);
+        this._grantNow();
       }
+      if (s.glitched)
+        this.payout({
+          id: "glitched-ace",
+          icon: "Ⱥ",
+          name: "GLITCHED ACE",
+          amount: s.lastEvaluation.balls * (BALANCE.GLITCH_BALLS - 1),
+          unit: "BALL",
+          kind: "ball"
+        });
       if (s.grinBonus)
         this.payout({
           id: "grinning-ace",

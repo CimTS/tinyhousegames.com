@@ -24,6 +24,8 @@
   const STING = 0.9 * 0.55;
   const PENTA = [0, 3, 5, 7, 10, 12, 15, 17, 19, 22, 24, 27]; // A minor pentatonic, matches music
   const hz = s => 440 * Math.pow(2, s / 12);
+  const FEAT_RUN = [3, 7, 10, 15, 19],
+    FEAT_CHORD = [3, 10, 15, 19, 22]; // C major, up through two octaves, then held
   let ctx = null,
     master,
     sfx,
@@ -488,6 +490,10 @@
     win() {
       [0, 4, 7, 12, 16].forEach((s, i) => zplay("note", { t: i * 0.08, vel: 0.07, rate: hz(s + 3 - 12) / 220 }));
     },
+    feat() {
+      FEAT_RUN.forEach((s, i) => zplay("note", { t: i * 0.11, vel: 0.07, rate: hz(s - 12) / 220 }));
+      FEAT_CHORD.forEach(s => zplay("note", { t: 0.62, vel: 0.05, rate: hz(s - 12) / 220 }));
+    },
     fail() {
       [7, 3, 0, -5].forEach((s, i) => zplay("note", { t: i * 0.22, vel: 0.06, rate: hz(s - 12) / 220 }));
     },
@@ -562,6 +568,14 @@
         [0, 4, 7, 12, 16].forEach((s, i) =>
           tone(hz(s + 3 - 12), { t: i * 0.08, dur: 0.9, vel: 0.07, type: "triangle", attack: 0.01 })
         );
+    },
+    /* An achievement: five rising notes (one per Ace of The Cinco), then a held chord. */
+    feat() {
+      if (!ok()) return;
+      FEAT_RUN.forEach((s, i) =>
+        tone(hz(s - 12), { t: i * 0.11, dur: 0.5, vel: 0.07, type: "triangle", attack: 0.01 })
+      );
+      FEAT_CHORD.forEach(s => tone(hz(s - 12), { t: 0.62, dur: 1.8, vel: 0.05, type: "triangle", attack: 0.02 }));
     },
     fail() {
       if (ok()) [7, 3, 0, -5].forEach((s, i) => tone(hz(s - 12), { t: i * 0.22, dur: 0.8, vel: 0.06, attack: 0.04 }));
@@ -808,6 +822,9 @@
         if (this.state.coins < c) S.reroll();
       }
     );
+    wrap(G, "achieved", null, function () {
+      S.feat();
+    });
     wrap(G, "useConsumable", null, function () {
       S.buy();
     });

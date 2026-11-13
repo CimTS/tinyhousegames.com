@@ -101,6 +101,13 @@
       this.data.coachAsked = true;
       write(this.data);
     }
+    /* Opens one unlock right away (a milestone met mid-run). True only the first time on this save. */
+    find(id) {
+      if (this.data.found.includes(id)) return false;
+      this.data.found.push(id);
+      write(this.data);
+      return true;
+    }
     /* Ids still locked in the unlock pool, for a new run. */
     locked() {
       return window.SlotchinkoData.UNLOCKS.map(u => u.id).filter(id => !this.data.found.includes(id));
@@ -197,7 +204,8 @@
         "Full House": "7 7 7 · K K",
         "Four of a Kind": "7 7 7 7",
         "Straight Flush": "5 6 7 8 9, one suit",
-        "Royal Flush": "10 J Q K A, one suit"
+        "Royal Flush": "10 J Q K A, one suit",
+        "The Cinco": "A A A A A"
       };
       $("hand-chart").tBodies[0].innerHTML = Object.entries(window.SlotchinkoData.HANDS)
         .map(

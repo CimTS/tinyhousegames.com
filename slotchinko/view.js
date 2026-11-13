@@ -218,16 +218,21 @@
         rank.textContent = card.joker ? `★${as}` : card.label;
         rank.classList.toggle("red-card", red);
         el.classList.toggle("is-joker", !!card.joker);
+        el.classList.toggle("is-glitch", !!card.glitch);
+        // The Glitched Ace changes suit on a timer (game.glitchTick); each change gets a short jolt (polish.css).
+        const jolt = card.glitch && symbol.textContent !== SUIT_GLYPHS[card.suit];
         symbol.textContent = SUIT_GLYPHS[card.suit];
         symbol.className = `symbol suit-${card.suit}`;
+        if (jolt) {
+          void symbol.offsetWidth;
+          symbol.classList.add("jolt");
+        }
         el.classList.toggle("held", s.held[i]);
         el.querySelector("small").textContent = s.held[i] ? "HELD" : "HOLD";
         el.disabled = s.phase !== "slot";
         el.setAttribute("aria-pressed", String(s.held[i]));
-        el.setAttribute(
-          "aria-label",
-          `${card.joker ? `Joker, playing as ${as}` : card.label} of ${SUIT_NAMES[card.suit]}${s.held[i] ? ", held" : ""}`
-        );
+        const name = card.joker ? `Joker, playing as ${as}` : card.glitch ? "Glitched Ace" : card.label;
+        el.setAttribute("aria-label", `${name} of ${SUIT_NAMES[card.suit]}${s.held[i] ? ", held" : ""}`);
       });
     }
 
@@ -264,6 +269,29 @@
       el.classList.add("show");
       this.vibrate([30, 40, 30]);
       window.setTimeout(() => el.classList.remove("show"), 1300);
+    }
+    /* A milestone met mid-run: saved at once, and announced the first time on this save only. */
+    achieved(id) {
+      if (!this.prefs.find(id)) return;
+      const D = window.SlotchinkoData,
+        u = D.UNLOCKS.find(x => x.id === id),
+        item = D.CARD_CATALOG.find(x => x.id === id),
+        el = $("feat");
+      $("feat-title").textContent = u.title;
+      $("feat-what").textContent = u.feat;
+      $("feat-prize").textContent = item.name;
+      el.hidden = false;
+      el.classList.remove("show");
+      void el.offsetWidth;
+      el.classList.add("show");
+      this.vibrate([40, 60, 40, 60, 120]);
+      window.clearTimeout(this.featTimer);
+      this.featTimer = window.setTimeout(() => this.closeFeat(), 5000);
+    }
+    /* The banner goes by itself; a tap closes it sooner. */
+    closeFeat() {
+      window.clearTimeout(this.featTimer);
+      $("feat").hidden = true;
     }
     runEnded() {
       window.setTimeout(() => this.overlays.showEnd(this.game.state), this.prefs.reducedMotion() ? 150 : 800);

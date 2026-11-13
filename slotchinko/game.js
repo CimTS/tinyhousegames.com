@@ -175,6 +175,29 @@
       this.physics.die = null;
       this.physics.mystery = null;
     }
+    /* Which jackpot layout a blind plays on. Worked out from the run's seed and the blind number alone, so it can be
+       shown before the blind starts and survives a save. Early blinds and bosses keep the centre jackpot. */
+    _layoutFor(round) {
+      const T = window.SlotchinkoData.BOSS_TUNE;
+      if (round < T.LAYOUT_FROM || this._bossFor(round)) return "classic";
+      const ids = Object.keys(T.LAYOUTS);
+      const pick = r => ids[window.SlotchinkoRNG.hash(`${this.rng.seed}:layout:${r}`) % ids.length];
+      // Never the same board twice running: step to the next layout if it would repeat the blind before.
+      const before = round - 1 >= T.LAYOUT_FROM && !this._bossFor(round - 1) ? this._layoutFor(round - 1) : "classic";
+      const mine = pick(round);
+      return mine === before ? ids[(ids.indexOf(mine) + 1) % ids.length] : mine;
+    }
+    /* Where this hand's balls do best on this board: a list of { aim, wide } (lanes.js). */
+    aimHints() {
+      const ph = this.physics;
+      if (!this.state.primarySuit || !ph.jackpots) return [];
+      return window.SlotchinkoLanes.hint(this.state.primarySuit, ph.jackpots(), ph.width);
+    }
+    /* The player-facing name of a blind's board ("Left jackpot"); this blind's when no round is given. */
+    layoutName(round) {
+      const id = round == null ? this.state.layout || "classic" : this._layoutFor(round);
+      return window.SlotchinkoData.BOSS_TUNE.LAYOUT_NAMES[id];
+    }
     /* Hands this blind gives: three, or one fewer with High Roller. */
     _handsPerBlind() {
       return Math.max(1, BALANCE.HANDS_PER_BLIND - (this._effects().fewerHands ? 1 : 0));
@@ -183,11 +206,14 @@
     _dropGambles(fx) {
       const s = this.state,
         ph = this.physics,
-        rnd = this.rng.stream("gamble");
+        rnd = this.rng.stream("gamble"),
+        jack = ph.jackpots?.() || [3];
       const free = () =>
         (ph.bucketValues || [])
           .map((v, i) => i)
-          .filter(i => i !== 3 && !(ph.drainPockets || []).includes(i) && i !== ph.die && i !== ph.mystery?.index);
+          .filter(
+            i => !jack.includes(i) && !(ph.drainPockets || []).includes(i) && i !== ph.die && i !== ph.mystery?.index
+          );
       ph.die = null;
       ph.mystery = null;
       if (fx.loadedDie) {
@@ -393,6 +419,9 @@
       )
         s.balls = Math.max(1, s.balls - 1);
       s.primarySuit = this._dominantSuit();
+      // The board marks the outer pockets for a heavy hand and can show where this hand does best (boardview.js).
+      this.physics.heavyHand = s.primarySuit === "spade";
+      this.physics.aimHints = this.aimHints();
       return result;
     }
 
@@ -500,7 +529,9 @@
         return;
       }
       const fx = this._effects();
-      const spread = (this.rng.random("launch") - 0.5) * fx.launchSpread * this.physics.width;
+      // Every ball leaves a little to one side of the aim line. Without this, a few hair-thin lanes between the pegs
+      // scored far better than their neighbours, and nobody could find them (docs/slotchinko/BOARDS.md).
+      const spread = (this.rng.random("launch") - 0.5) * (fx.launchSpread + BALANCE.LAUNCH_JITTER) * this.physics.width;
       s.ballsLeft--;
       s.activeBalls++;
       this.physics.drop(this._ballOptions(24 + s.aim * (this.physics.width - 48) + spread, fx));
@@ -609,7 +640,12 @@
       }
       if (result.nudged)
         this.payout({ id: "nudge", icon: "⇥", name: "NUDGE SAVE", amount: 1, unit: "BALL", kind: "ball" });
-      if (fx.croupier && result.index === 3 && !result.drained && s.croupierPaid < BALANCE.CROUPIER_CAP * fx.croupier) {
+      if (
+        fx.croupier &&
+        (this.physics.jackpots?.() || [3]).includes(result.index) &&
+        !result.drained &&
+        s.croupierPaid < BALANCE.CROUPIER_CAP * fx.croupier
+      ) {
         s.croupierPaid++;
         s.coins++;
         this.payout({ id: "croupier-cut", icon: "♠", name: "CROUPIER'S CUT", amount: 1, unit: "¢", kind: "coin" });
@@ -812,6 +848,7 @@
       s.round++;
       s.node = node;
       s.boss = bossDef?.id || null;
+      s.layout = this._layoutFor(s.round);
       s.blindPayMult = blindPay;
       s.path = null;
       // Every blind starts from zero: the target is what this blind alone asks for.
@@ -823,6 +860,7 @@
       );
       s.maxSpins = s.baseSpins || 2;
       if (bossDef) this.toast(`BOSS BLIND · ${bossDef.name.toUpperCase()}`);
+      else if (s.layout !== "classic" && node !== "elite") this.toast(`NEW BOARD · ${this.layoutName().toUpperCase()}`);
       else if (node === "elite") this.toast("ELITE BLIND · +6¢ AND A RARE CHIP");
       s.phase = "slot";
       s.won = false;

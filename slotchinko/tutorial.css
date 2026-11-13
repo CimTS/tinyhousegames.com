@@ -21,13 +21,14 @@ body.coaching .phase-banner>div:not(.coach),body.coaching .phase-banner>p{displa
 .coach-next[hidden]{display:none}
 .coach-skip{flex:none;min-height:44px;margin:0;padding:0 6px;border:0;background:transparent;color:#a3afc7;font:700 12px/1 'Barlow Condensed',sans-serif;letter-spacing:1px;text-decoration:underline;text-underline-offset:3px}
 
-/* The thing to press glows; the panels that are not needed for this step fade back (not while watching the drop). */
+/* The thing to press glows; the panels that are not needed for this step fade back (not while watching the drop,
+   and not for the one-line tips later in a run, which only inform). */
 .coach-glow{position:relative;z-index:2;outline:3px solid var(--gold);outline-offset:3px;border-radius:9px;box-shadow:0 0 0 7px #ffd16630,0 0 28px #ffd16699;animation:coachPulse 1.4s ease-in-out infinite}
 @keyframes coachPulse{50%{outline-color:#ffd16640}}
 .reduce-motion .coach-glow{animation:none}
 #coins-stat.coach-glow{border-radius:8px;outline-offset:5px}
 .shop-item.coach-glow{scroll-margin:190px 0 110px}
-body.coaching:not([data-coach="5"]) #app .panel:not(:has(.coach-glow)):not(:has(#drop-button)){opacity:.28;transition:opacity .2s}
+body.coaching:not([data-coach="5"]):not([data-coach="tip"]) #app .panel:not(:has(.coach-glow)):not(:has(#drop-button)){opacity:.28;transition:opacity .2s}
 
 /* The last step, on the Choose Your Path sheet: Lou again, and the choices glow. */
 .path-coach{text-align:left}
@@ -41,13 +42,14 @@ body.coaching:not([data-coach="5"]) #app .panel:not(:has(.coach-glow)):not(:has(
   body.coaching #toast{top:auto;bottom:calc(84px + env(safe-area-inset-bottom))}
   body.coaching[data-stage="shop"] .phase-banner{position:sticky;top:var(--bar-h,62px);z-index:5;margin:0 calc(-1*var(--pad));padding:4px var(--pad) 8px;background:linear-gradient(180deg,#0a0e19 88%,#0a0e1900)}
 }
-/* The smallest and shortest screens: a smaller Lou, and during the aim step only his words, so DROP stays on screen. */
+/* The smallest and shortest screens: a smaller Lou, and during the aim step only his words, so DROP stays on screen
+   (a one-line tip is marked as read when the hand is dropped, so its GOT IT is not needed there). */
 @media(max-width:360px),(max-height:599px) and (max-width:999px){
   .coach{gap:9px}
   .coach-face{width:44px;height:44px}
   .coach-bubble{padding:6px 9px}
   .coach-text{font-size:13.5px;line-height:1.2}
-  body.coaching[data-stage="aim"] .coach-skip,body.coaching[data-stage="aim"] .coach-step{display:none}
+  body.coaching[data-stage="aim"] .coach-skip,body.coaching[data-stage="aim"] .coach-step,body.coaching[data-stage="aim"] .coach-next{display:none}
 }
 /* Small phones: the tutorial path sheet drops the extras so the first choice is on screen without scrolling. */
 @media(max-width:360px),(max-height:640px){

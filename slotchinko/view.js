@@ -7,6 +7,8 @@
     AIM_INSET = 24;
   const plural = n => `${n} BALL${n === 1 ? "" : "S"}`;
 
+  // Height of the pocket row at the bottom of the board, in board units (boardview.js draws it).
+  const POCKET_ROW = 37;
   class GameView {
     constructor(prefs, overlays) {
       this.prefs = prefs;
@@ -66,6 +68,11 @@
         `HAND ${Math.min(hn, hn - (s.handsLeft || hn) + 1)} OF ${hn} · TAP CARDS TO HOLD`
       );
       this.phaseText(s);
+      // The aim hint shows while a hand is being chosen or aimed, if it is switched on in Settings.
+      this.game.physics.showHints = s.phase === "slot" && this.prefs.hintsOn();
+      const board = s.layout && s.layout !== "classic" && !s.boss ? this.game.layoutName() : "";
+      $("board-layout").hidden = !board;
+      if (this.changed("board-layout", board)) $("board-layout").textContent = board ? ` · ${board.toUpperCase()}` : "";
       this.buttons(s);
       this.cards(s);
       const overlay = $("board-overlay");
@@ -113,18 +120,25 @@
           : s.shopInventory.filter(x => x.kind === "chip" && x.cost <= s.coins).sort((a, b) => a.cost - b.cost)[0];
         c.pick = p ? { id: p.instanceId, cost: p.cost } : null;
       }
-      const tip = on ? window.SlotchinkoCoach.tip(s, !!this.game.aimFlow?.aiming, this.coachShop || {}) : null;
+      const Coach = window.SlotchinkoCoach;
+      const tutorial = on ? Coach.tip(s, !!this.game.aimFlow?.aiming, this.coachShop || {}) : null;
+      // After the tutorial: one line the first time something new shows up. It counts as read once the hand is dropped.
+      if (this.momentId && s.phase === "drop") this.prefs.tipSeen(this.momentId);
+      const moment =
+        !tutorial && this.prefs.tipsOn() ? Coach.moment(s, this.prefs.seenTips(), this.coachRules()) : null;
+      this.momentId = moment ? moment.id : null;
+      const tip = tutorial || moment;
       document.body.classList.toggle("coaching", !!tip);
       $("coach").hidden = !tip;
-      document.body.dataset.coach = tip ? tip.n : "";
+      document.body.dataset.coach = tutorial ? tutorial.n : moment ? "tip" : "";
       // The shop redraws its cards, so the glow is put back every time; the words only when they change.
       const find = t => (/^[.#\[]/.test(t) ? document.querySelector(t) : $(t)),
-        target = tip ? find(tip.target) : null;
+        target = tip && tip.target ? find(tip.target) : null;
       document.querySelectorAll(".coach-glow").forEach(e => {
         if (e !== target) e.classList.remove("coach-glow");
       });
       target?.classList.add("coach-glow");
-      if (!this.changed("coach", tip ? tip.n + tip.text : "")) return;
+      if (!this.changed("coach", tip ? (tip.n || tip.id) + tip.text : "")) return;
       if (!tip) return;
       $("coach-next").hidden = !tip.next;
       // Lou pins under the top bar in the shop on a phone (polish.css); the bar's height varies with the screen.
@@ -133,8 +147,42 @@
       if (inShop && target && tip.n === 7)
         window.setTimeout(() => target.scrollIntoView({ behavior: this.scrollMode(), block: "nearest" }), 160);
       if (!$("coach-face").firstChild) $("coach-face").innerHTML = window.SlotchinkoBossArt?.host || "";
-      $("coach-step").textContent = `${window.SlotchinkoCoach.HOST} · ${tip.n} OF ${tip.of}`;
+      $("coach-step").textContent = `${Coach.HOST} · ${tip.n ? `${tip.n} OF ${tip.of}` : "TIP"}`;
       $("coach-text").textContent = window.SlotchinkoCopy.words(tip.text);
+    }
+
+    /* A tap on the pocket row: say what that pocket is (lanes.js). Taps anywhere else on the board only aim. */
+    pocketTapped(e, canvas) {
+      const ph = this.game.physics,
+        rect = canvas.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      const x = ((e.clientX - rect.left) / rect.width) * ph.width,
+        y = ((e.clientY - rect.top) / rect.height) * ph.height;
+      if (y < ph.height - POCKET_ROW) return;
+      const i = ph.pocketAt(Math.max(0, Math.min(ph.width - 0.01, x)));
+      this.game.toast(this.pocketLine(i));
+    }
+    pocketLine(i) {
+      const ph = this.game.physics;
+      return window.SlotchinkoLanes.describe({
+        value: ph.pocketValue(i),
+        drain: ph.drainPockets.includes(i),
+        jackpot: ph.jackpots().includes(i),
+        heavyHand: !!ph.heavyHand,
+        edge: i === 0 || i === 6,
+        spadeEdge: window.SlotchinkoData.BALANCE.SPADE_EDGE
+      });
+    }
+
+    /* The numbers Lou's one-line tips quote, read from the game's own tables. */
+    coachRules() {
+      const B = window.SlotchinkoData.BALANCE;
+      return {
+        spadeEdge: B.SPADE_EDGE,
+        fortune: B.FORTUNE_BUCKET,
+        twin: Math.max(...window.SlotchinkoData.BOSS_TUNE.LAYOUTS.twin),
+        drainRound: this.game.physics.drainRound || B.DRAIN_ROUND
+      };
     }
 
     buttons(s) {

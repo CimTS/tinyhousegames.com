@@ -10,7 +10,6 @@
   const MAX_BALLS = 22;
   const MAX_SPEED = 11,
     BUCKET_LIP = 6,
-    FORTUNE_BUCKET = 1.15,
     WELL_MAX_PULL = 0.7;
   const PEG_COOLDOWN_STEPS = 9,
     STUCK_NUDGE_STEPS = 75,
@@ -292,10 +291,20 @@
       const bw = this.width / 7,
         e = [0, 1, 2, 3, 4, 5, 6, 7].map(i => i * bw);
       if (wide) {
-        e[3] = 2.5 * bw;
-        e[4] = 4.5 * bw;
+        // Each jackpot pocket takes room from its neighbours: half a pocket a side, shared out if there are two.
+        const jack = this.jackpots(),
+          grow = (0.5 / jack.length) * bw;
+        for (const j of jack) {
+          e[j] -= grow;
+          e[j + 1] += grow;
+        }
       }
       return e;
+    }
+    /* The pocket, or pockets, holding the board's top value. */
+    jackpots() {
+      const top = Math.max(...this.bucketValues);
+      return this.bucketValues.map((v, i) => (v === top ? i : -1)).filter(i => i >= 0);
     }
     pocketAt(x, wide = this.wideCenter) {
       const e = this.pocketEdges(wide);
@@ -310,7 +319,7 @@
       if (this.mystery && i === this.mystery.index) return this.mystery.value;
       // Loaded Die doubles its pocket, but never whichever pocket holds the top value.
       const die = i === this.die && v < Math.max(...this.bucketValues) ? window.SlotchinkoData.BALANCE.DIE_MULT : 1;
-      return (i === 3 ? v * m : v) * die;
+      return (this.jackpots().includes(i) ? v * m : v) * die;
     }
     /* Turns Wide Jackpot on or off for the board: moves the two centre dividers to the new edges. */
     setWideCenter(on) {
@@ -333,9 +342,11 @@
         pocket += pocket < 3 ? 1 : -1;
         nudged = true;
       }
-      const drained = this.drainPockets.includes(pocket);
-      let value = this.pocketValue(pocket, p);
-      if (!drained && p.fortune) value *= FORTUNE_BUCKET;
+      // Heavy balls smash through the outer pockets: no drain, and a payout of their own.
+      const smash = !!p.heavy && (pocket === 0 || pocket === 6);
+      const drained = !smash && this.drainPockets.includes(pocket);
+      let value = smash ? window.SlotchinkoData.BALANCE.SPADE_EDGE : this.pocketValue(pocket, p);
+      if (!drained && p.fortune) value *= window.SlotchinkoData.BALANCE.FORTUNE_BUCKET;
       value *= p.multiplier || 1;
       if (!drained && p.charge) value *= 1 + Math.min(0.15, p.charge * 0.05);
       this.callbacks.onBucket?.({ ball, index: pocket, multiplier: value, drained, nudged, element: p.element });

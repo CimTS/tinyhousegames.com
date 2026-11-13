@@ -8,7 +8,8 @@
 
   function bindAim(game, canvas) {
     let active = false,
-      startedFromSlot = false;
+      startedFromSlot = false,
+      downAt = null;
     const setAim = e => {
       const rect = canvas.getBoundingClientRect();
       if (!rect.width) return;
@@ -19,6 +20,7 @@
       if (game.state.phase !== "slot" && game.state.phase !== "drop") return;
       active = true;
       startedFromSlot = game.state.phase === "slot";
+      downAt = { x: e.clientX, y: e.clientY };
       if (canvas.setPointerCapture) canvas.setPointerCapture(e.pointerId);
       if (e.cancelable) e.preventDefault();
       setAim(e);
@@ -33,8 +35,12 @@
       if (!active) return;
       if (e.cancelable) e.preventDefault();
       setAim(e);
+      // A tap (not a drag) on a pocket also says what that pocket is.
+      const tap = downAt && Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y) < 8;
+      if (tap) game.view.pocketTapped(e, canvas);
       active = false;
       startedFromSlot = false;
+      downAt = null;
       game.aimFlow.boardRelease();
       game.view.render(game); // releasing only sets the aim; DROP confirms
     });
@@ -101,12 +107,24 @@
     });
     $("tilt-button").addEventListener("pointerdown", e => e.stopPropagation()); // the board under it takes drags to aim
     $("tilt-button").addEventListener("click", () => game.tilt());
+    // HIDE TIPS ends the tutorial, or, on a one-line tip later in the run, switches those off (Settings has the switch).
     $("coach-skip").addEventListener("click", () => {
-      prefs.coachDone();
+      if (view.momentId) prefs.setTips(false);
+      else prefs.coachDone();
       game.render();
     });
+    // GOT IT moves the shop tutorial on, or marks a one-line tip as read.
     $("coach-next").addEventListener("click", () => {
       if (view.coachShop) view.coachShop.step = 1;
+      else if (view.momentId) prefs.tipSeen(view.momentId);
+      game.render();
+    });
+    $("tips-toggle").addEventListener("change", e => {
+      prefs.setTips(e.target.checked);
+      game.render();
+    });
+    $("hint-toggle").addEventListener("change", e => {
+      prefs.setHints(e.target.checked);
       game.render();
     });
     $("loadout-open").addEventListener("click", () => overlays.showLoadout(game));

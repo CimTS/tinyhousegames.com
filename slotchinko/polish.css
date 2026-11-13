@@ -246,7 +246,7 @@ html.reduce-motion .target-flash.show{opacity:1}
 .path-card{gap:10px}
 .path-card h2{margin:0}
 .path-card .overlay-lead{margin:-4px 0 2px}
-.path-boss{margin:0;padding:9px 11px;border-radius:10px;border:1px solid #6a3048;background:#22101a;text-align:left;font-size:12px;line-height:1.4;color:#f0c4d6}
+.path-boss{margin:0;padding:9px 11px;border-radius:10px;border:1px solid #6a3048;background:#22101a;text-align:left;font-size:12px;line-height:1.4;color:#f0c4d6;cursor:default}
 .path-boss span{margin-right:6px;color:var(--pink)}.path-boss b{color:#ff8cb8;letter-spacing:.6px;margin-right:4px}
 .path-list{display:flex;flex-direction:column;gap:9px}
 .path-node{display:grid;grid-template-columns:48px 1fr 14px;align-items:center;gap:12px;min-height:76px;padding:12px 14px;border-radius:12px;border:1px solid #33405a;background:linear-gradient(150deg,#1a2437,#111827);color:var(--text);text-align:left;cursor:pointer;touch-action:manipulation;animation:pathIn .28s ease-out both;transition:transform .12s,border-color .12s}
@@ -267,7 +267,7 @@ html.reduce-motion .target-flash.show{opacity:1}
 .event-coins{font:800 14px 'Barlow Condensed',sans-serif;letter-spacing:1px;color:var(--gold)}
 .event-icon{display:grid;place-items:center;width:72px;height:72px;margin:4px auto 0;border-radius:50%;background:radial-gradient(circle,#3a2a66,#1b1430);border:1px solid #5a47a0;font:900 32px 'Barlow Condensed',sans-serif;color:#e0d2ff;box-shadow:0 0 28px #7a5cff44;animation:eventPop .35s cubic-bezier(.2,1.4,.4,1) both}
 @keyframes eventPop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
-.event-card h2{margin:0}
+.event-card h2{margin:0;text-transform:uppercase;letter-spacing:1px}
 .event-text{margin:0 0 4px;font-size:14px;line-height:1.5;color:#d7dceb;font-style:italic}
 .event-options{display:flex;flex-direction:column;gap:9px}
 .event-option{display:flex;flex-direction:column;gap:3px;min-height:64px;padding:11px 14px;border-radius:12px;border:1px solid #33405a;background:#162033;color:var(--text);text-align:left;cursor:pointer;touch-action:manipulation;transition:transform .12s}
@@ -286,7 +286,6 @@ html.reduce-motion .target-flash.show{opacity:1}
 html.reduce-motion .path-node,html.reduce-motion .event-icon,html.reduce-motion .end-unlocks{animation:none}
 .sheet-head.is-stacked{flex-direction:column;align-items:flex-start;gap:2px}
 .collection-card>.btn{flex-shrink:0}
-.event-card h2{text-transform:uppercase;letter-spacing:1px}
 .ng-mods li.ng-older{font-size:11px;color:#9d8fae}.ng-mods li.ng-older b{font-weight:600;color:#d9a6c4}
 .kofi-link{align-self:center;margin-top:2px;padding:6px 10px;font:600 11px 'DM Mono',monospace;letter-spacing:.3px;color:#8d9bb8;text-decoration:none;border-radius:8px}
 .kofi-link:hover,.kofi-link:focus-visible{color:var(--gold);text-decoration:underline}
@@ -328,19 +327,6 @@ body.aiming #aim-guide::after{content:"";position:absolute;left:50%;top:22px;wid
 .reel.is-joker{border-color:#a78bfa;background:linear-gradient(180deg,#2c2550,#16162c)}
 .reel.is-joker .card-rank{color:#d6c8ff}
 
-/* First-hand tips: one instruction at a time in the banner, gold so it reads as help. */
-.coach{display:flex;align-items:center;gap:10px}
-.coach[hidden]{display:none}
-.coach-step{flex:none;font:800 12px/1 'Barlow Condensed',sans-serif;letter-spacing:1.2px;color:#07131a;background:var(--gold);border-radius:5px;padding:4px 7px}
-.coach-text{flex:1;font:500 14px/1.35 inherit;font-family:inherit;letter-spacing:0;color:#eef4ff;text-transform:none}
-/* The button keeps a 44px touch area but spills over the banner's padding, so it never makes the banner taller. */
-.coach-skip{flex:none;min-height:44px;margin:-10px -6px -10px 0;padding:0 6px;border:0;background:transparent;color:#a3afc7;font:700 12px/1 'Barlow Condensed',sans-serif;letter-spacing:1px;text-decoration:underline;text-underline-offset:3px}
-@media(max-width:699px),(max-height:599px) and (max-width:999px){.coach{gap:8px}.coach-text{font-size:13px;line-height:1.3}}
-body.coaching .phase-banner{border-left-color:var(--gold);display:block!important}
-body.coaching .phase-banner>div:not(.coach),body.coaching .phase-banner>p{display:none!important}
-.coach-glow{outline:2px solid var(--gold);outline-offset:3px;border-radius:9px;animation:coachPulse 1.4s ease-in-out infinite}
-@keyframes coachPulse{50%{outline-color:#ffd16640}}
-.reduce-motion .coach-glow{animation:none}
 /* How to Play: four steps, the hand chart, and the rest folded away. */
 .howto-sub{margin:4px 0 0;font:800 13px/1 'Barlow Condensed',sans-serif;letter-spacing:1.6px;color:var(--cyan)}
 .hand-chart{width:100%;border-collapse:collapse;font-size:13px}
@@ -351,37 +337,11 @@ body.coaching .phase-banner>div:not(.coach),body.coaching .phase-banner>p{displa
 .howto-more{border:1px solid #25334a;border-radius:8px;padding:0 10px}
 .howto-more summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font:800 13px/1 'Barlow Condensed',sans-serif;letter-spacing:1.6px;color:#c4cfe3}
 .howto-more[open]{padding-bottom:10px}.howto-more p+p{margin-top:7px}
-/* While tips show on a phone, pop-up messages move to the bottom so they never cover the tip. */
-@media(max-width:699px),(max-height:599px) and (max-width:999px){body.coaching #toast{top:auto;bottom:calc(84px + env(safe-area-inset-bottom))}}
-/* Lou the Dealer talks a new player through the first round: his portrait (boss sign style), a gold speech bubble,
-   a heavy glow on the thing to press, and everything else dimmed. */
-body.coaching .phase-banner{background:transparent;border:0;box-shadow:none;padding:0}
-.coach{gap:11px}
-.coach-face{width:58px;height:58px;filter:drop-shadow(0 0 3px #ffd16699) drop-shadow(0 0 8px #36f5e540)}
-.coach-bubble{position:relative;flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;padding:8px 11px;border-radius:12px;background:var(--gold);box-shadow:0 0 0 3px #ffd16633,0 6px 22px #ffd16633}
-.coach-bubble::before{content:"";position:absolute;left:-8px;top:50%;margin-top:-8px;border:8px solid transparent;border-left:0;border-right-color:var(--gold)}
-body.coaching .coach-step{align-self:flex-start;background:none;padding:0;color:#6a5210;font-size:12px}
-body.coaching .coach-text{color:#10151f;font-size:17px;font-weight:700;line-height:1.25}
-body.coaching .coach-skip{margin:0;color:#a3afc7}
-.coach-glow{outline-width:3px;box-shadow:0 0 0 7px #ffd16630,0 0 28px #ffd16699;position:relative;z-index:2}
-body.coaching:not([data-coach="5"]) #app .panel:not(:has(.coach-glow)):not(:has(#drop-button)){opacity:.28;transition:opacity .2s}
-@media(max-width:360px),(max-height:599px) and (max-width:999px){.coach{gap:9px}.coach-face{width:44px;height:44px}.coach-bubble{padding:6px 9px}body.coaching .coach-text{font-size:13.5px;line-height:1.2}body.coaching[data-stage="aim"] .coach-skip,body.coaching[data-stage="aim"] .coach-step{display:none}}
-.title-tutorial{display:flex;flex-direction:column;align-items:center;gap:2px}
-.title-tutorial small{font:500 11px/1.2 'DM Mono',monospace;letter-spacing:0;text-transform:none;color:#a9b6cf}
 /* The shop says what you have to spend, in gold, before anything else. */
 .shop-wallet{display:flex;align-items:baseline;gap:9px;margin:8px 0;padding:7px 11px;border:1px solid #ffd16655;border-radius:9px;background:#1a160a}
 .shop-wallet span{font:800 13px/1 'Barlow Condensed',sans-serif;letter-spacing:1.4px;color:#ffe2a1}
 .shop-wallet b{font:800 22px/1 'Barlow Condensed',sans-serif;color:var(--gold)}
 .shop-wallet small{margin-left:auto;font:500 12px/1.2 'DM Mono',monospace;color:#a9b6cf;text-align:right}
-/* Lou's GOT IT button, for the steps where there is nothing to press but him. */
-.coach-next{align-self:flex-start;min-height:44px;margin-top:5px;padding:0 16px;border:0;border-radius:9px;background:#10151f;color:var(--gold);font:800 15px/1 'Barlow Condensed',sans-serif;letter-spacing:1.4px}
-.coach-next[hidden]{display:none}
-#coins-stat.coach-glow{border-radius:8px;outline-offset:5px}
-/* In the shop on a phone Lou stays pinned under the counters while the list scrolls to the thing he means. */
-@media(max-width:699px),(max-height:599px) and (max-width:999px){
-  body.coaching[data-stage="shop"] .phase-banner{position:sticky;top:var(--bar-h,62px);z-index:5;margin:0 calc(-1*var(--pad));padding:4px var(--pad) 8px;background:linear-gradient(180deg,#0a0e19 88%,#0a0e1900)}
-}
-.shop-item.coach-glow{scroll-margin:190px 0 110px}
 /* The coin icon (coin.js) sits in the text like a letter and takes the text's colour. */
 .coin{display:inline-block;width:.92em;height:.92em;margin:0 .04em 0 .1em;vertical-align:-.11em;line-height:0}
 .coin svg{display:block;width:100%;height:100%}
@@ -391,24 +351,8 @@ body.coaching:not([data-coach="5"]) #app .panel:not(:has(.coach-glow)):not(:has(
 /* Choose Your Path: say which part is a warning and which part is the choice. In the tutorial the choices glow. */
 .path-label{margin:2px 0 -4px;font:800 12px/1 'Barlow Condensed',sans-serif;letter-spacing:1.6px;color:#8fa0bd;text-align:left}
 #path-boss-label{color:#ff8cb8}
-.path-boss{cursor:default}
 .path-boss-note{margin:-4px 0 0;padding:8px 11px;border-radius:10px;background:var(--gold);color:#10151f;font:700 14px/1.3 'Barlow Condensed',sans-serif;letter-spacing:.2px;text-align:left;position:relative}
 .path-boss-note::before{content:"";position:absolute;left:26px;top:-7px;border:7px solid transparent;border-top:0;border-bottom-color:var(--gold)}
-.path-coach{text-align:left}.path-coach .coach-step{align-self:flex-start;background:none;padding:0;color:#6a5210;font:800 12px/1 'Barlow Condensed',sans-serif;letter-spacing:1.2px}
-.path-coach .coach-text{color:#10151f;font:700 16px/1.25 'Barlow Condensed',sans-serif}
-.path-list.coach-pick .path-node{outline:3px solid var(--gold);outline-offset:2px;box-shadow:0 0 0 6px #ffd16626,0 0 22px #ffd16680;animation:coachPulse 1.4s ease-in-out infinite}
-.reduce-motion .path-list.coach-pick .path-node{animation:none}
-.path-list.coach-pick{gap:14px}
-/* On small phones the tutorial path sheet drops the extras so the first choice is on screen without scrolling. */
-@media(max-width:360px),(max-height:640px){
-  .path-card.is-coach{gap:8px;padding-top:12px}
-  .path-card.is-coach .market-kicker,.path-card.is-coach .path-boss em,.path-card.is-coach #path-sub{display:none}
-  .path-card.is-coach h2{font-size:22px;margin:0}
-  .path-card.is-coach .coach-face{width:44px;height:44px}
-  .path-card.is-coach .coach-text{font-size:14px;line-height:1.2}
-  .path-card.is-coach .path-boss .boss-art{width:46px;height:46px}
-  .path-card.is-coach .path-boss-note{font-size:13px;padding:6px 9px}
-}
 /* A tap on the boss box gets an answer: the box shakes its head and the real choices flash. */
 @keyframes pathShake{20%{transform:translateX(-6px)}45%{transform:translateX(5px)}70%{transform:translateX(-3px)}100%{transform:none}}
 @keyframes pathFlash{0%,100%{outline-color:transparent}35%{outline-color:var(--gold)}}

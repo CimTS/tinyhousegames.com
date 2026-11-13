@@ -7,8 +7,14 @@
   try {
     if (localStorage.getItem(KEY)) return;
     fetch("https://geode-lb.tinyhousegames.workers.dev/v1/visit", {
-      method: "POST", body: '{"site":"slotchinko"}', keepalive: true, credentials: "omit", referrerPolicy: "no-referrer"
+      method: "POST",
+      body: '{"site":"slotchinko"}',
+      keepalive: true,
+      credentials: "omit",
+      referrerPolicy: "no-referrer"
     }).catch(() => {});
     localStorage.setItem(KEY, "1");
-  } catch { /* storage blocked: skip counting */ }
+  } catch {
+    /* storage blocked: skip counting */
+  }
 })();

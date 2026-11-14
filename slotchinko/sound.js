@@ -57,7 +57,7 @@
   })();
   let bassCut = [];
   const CUT = { small: 105, full: 24 };
-  const MAX_VOICES = 5,
+  const MAX_VOICES = 8,
     active = [],
     lastHit = new Map();
   let lastPeg = 0,
@@ -66,6 +66,8 @@
   let combo = 0,
     lastBig = -9,
     stolen = 0;
+  // The count-up run after a scoring ball starts an octave under A4 (owner, listening test 2026-11-14).
+  const TALLY_SHIFT = -12;
   // highest scoring note, in semitones above A4 (C7, 2093 Hz): above this a phone speaker turns notes into chirps
   const TOP = 27;
   // How a scoring ball sounds. ?score= picks one to compare: classic (the original: a fixed bright sound per pocket),
@@ -292,59 +294,70 @@
   }
   const ok = () => ctx && !muted && volume.sfx > 0 && !document.hidden && ctx.state === "running";
 
-  // Voice pool: at most MAX_VOICES sfx at once; the oldest fades out quickly to make room.
-  // ?keep=1: scoring notes are never the ones cut.
-  const KEEP = typeof location !== "undefined" && /[?&]keep=1(?:&|$)/.test(location.search);
-  let keepNext = false;
-  function addVoice(src, g, at, peak) {
-    const v = { src, g, at, peak, keep: KEEP && keepNext };
+  // Voice pool: at most MAX_VOICES effects sounding at once. A sound scheduled for later takes no room until it
+  // starts (one landing ball schedules up to nine). When a new sound would not fit, the least important one gives
+  // way: ticks, tally blips and peg pings first, the pocket thump last. A new sound that is itself the least
+  // important is simply not played. Cutting the thump a few milliseconds in was the crackle on scoring balls.
+  const RANK = { bucket: 3, note: 2, drain: 2, buy: 2, hold: 2, tone: 2, peg: 1, tally: 1, tick: 1 };
+  const STEAL_FADE = 0.03;
+  const soundingAt = at => active.filter(v => v.at <= at + 0.002 && v.end > at);
+  /* Makes room for a sound of this rank lasting from `at` to `end`. False: there is none, do not play it.
+     Sounds can be scheduled out of order, so every moment in its span where another sound starts is checked. */
+  function room(at, end, rank) {
+    for (let guard = 0; guard < 16; guard++) {
+      const starts = active.filter(v => v.at > at && v.at < end).map(v => v.at),
+        full = [at, ...starts].sort((a, b) => a - b).find(when => soundingAt(when).length >= MAX_VOICES);
+      if (full === undefined) return true;
+      // the least important sounding then, and of those the one with the least left to play
+      const victim = soundingAt(full).reduce((a, b) =>
+        b.rank < a.rank || (b.rank === a.rank && b.end < a.end) ? b : a
+      );
+      if (victim.rank > rank || (victim.rank === rank && rank < 2)) return false;
+      steal(victim, full);
+    }
+    return false;
+  }
+  function addVoice(src, g, at, end, rank) {
+    const v = { src, g, at, end, rank };
     active.push(v);
     src.onended = () => {
       const i = active.indexOf(v);
       if (i >= 0) active.splice(i, 1);
     };
-    while (active.length > MAX_VOICES + (KEEP ? 3 : 0)) {
-      let i = active.findIndex(x => !x.keep && x !== v);
-      if (i < 0) i = 0;
-      steal(active.splice(i, 1)[0]);
-      stolen++;
-    }
   }
-  function steal(v) {
-    const now = ctx.currentTime,
-      p = v.g.gain;
-    if (v.at > now) {
-      p.cancelScheduledValues(now);
-      p.setValueAtTime(0, now);
-      try {
-        v.src.stop(now);
-      } catch (e) {
-        /* stopped */
-      }
-      return;
-    }
+  /* Fades a sounding voice out from `at` and ends it. */
+  function steal(v, at) {
+    const p = v.g.gain;
+    // from here it is fading out, so it no longer takes room
+    v.end = at;
+    // counted once, even if a later sound moves its cut earlier
+    if (!v.cut) stolen++;
+    v.cut = true;
     // Hold the envelope where it is. Never read p.value: before the next render quantum it can still be the
     // node default of 1.0, which made stolen notes spike to full volume during bursts.
-    if (p.cancelAndHoldAtTime) p.cancelAndHoldAtTime(now);
+    if (p.cancelAndHoldAtTime) p.cancelAndHoldAtTime(at);
     else {
-      p.cancelScheduledValues(now);
-      p.setValueAtTime(Math.min(p.value, v.peak), now);
+      p.cancelScheduledValues(at);
+      p.setValueAtTime(p.value, at);
     }
-    p.linearRampToValueAtTime(0, now + 0.015);
+    p.linearRampToValueAtTime(0, at + STEAL_FADE);
     try {
-      v.src.stop(now + 0.02);
+      v.src.stop(at + STEAL_FADE + 0.005);
     } catch (e) {
       /* already stopped */
     }
   }
 
   // One gentle tone: sine/triangle with soft envelope.
-  function tone(freq, { t = 0, dur = 0.25, vel = 0.2, type = "sine", pan = 0, attack = 0.006, bend = 0 } = {}) {
+  function tone(freq, opts = {}) {
+    const { t = 0, dur = 0.25, type = "sine", pan = 0, attack = 0.006, bend = 0, rank = RANK.tone } = opts;
+    let vel = opts.vel ?? 0.2;
     const at = ctx.currentTime + t,
       key = type + Math.round(freq),
       prev = lastHit.get(key);
     // same sound retriggered within 30 ms
     if (prev !== undefined && Math.abs(at - prev) < 0.03) return;
+    if (!room(at, at + dur + 0.05, rank)) return;
     lastHit.set(key, at);
     // keep stacked voices from summing hot
     vel *= Math.min(1, Math.sqrt(2 / (active.length + 1)));
@@ -366,12 +379,13 @@
     node.connect(sfx);
     o.start(at);
     o.stop(at + dur + 0.05);
-    addVoice(o, g, at, vel);
+    addVoice(o, g, at, at + dur + 0.05, rank);
   }
   function noiseTick(t, vel, freq) {
     const at = ctx.currentTime + t,
-      len = Math.floor(ctx.sampleRate * 0.02),
-      b = ctx.createBuffer(1, len, ctx.sampleRate),
+      len = Math.floor(ctx.sampleRate * 0.02);
+    if (!room(at, at + 0.035, RANK.tick)) return;
+    const b = ctx.createBuffer(1, len, ctx.sampleRate),
       d = b.getChannelData(0);
     for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len) ** 3;
     const s = ctx.createBufferSource(),
@@ -388,7 +402,7 @@
     s.connect(f).connect(g).connect(sfx);
     s.start(at);
     s.stop(at + 0.035);
-    addVoice(s, g, at, vel);
+    addVoice(s, g, at, at + 0.035, RANK.tick);
   }
 
   // ZzFX params: [volume, randomness, frequency, attack, sustain, release, shape, shapeCurve, slide, deltaSlide,
@@ -434,6 +448,7 @@
       prev = lastHit.get(key);
     // same sound retriggered within 30 ms
     if (prev !== undefined && Math.abs(at - prev) < 0.03) return;
+    if (!room(at, at + buf.duration / rate + 0.02, RANK[name])) return;
     lastHit.set(key, at);
     vel *= Math.min(1, Math.sqrt(2 / (active.length + 1)));
     const s = ctx.createBufferSource(),
@@ -454,7 +469,7 @@
     node.connect(sfx);
     s.start(at);
     s.stop(end + 0.02);
-    addVoice(s, g, at, vel);
+    addVoice(s, g, at, end + 0.02, RANK[name]);
   }
   // ZzFX noise is full-band; the default ticks are band-passed, so scale to a similar level
   const TICK = 0.35;
@@ -463,7 +478,7 @@
       const now = performance.now(),
         gap = now - lastPeg;
       pegRate = pegRate * 0.9 + (gap < 120 ? 1 : 0) * 0.1 * 10;
-      if (gap < 25 || active.length > MAX_VOICES) return;
+      if (gap < 25) return;
       lastPeg = now;
       const col = Math.round((1 - y01) * 6 + x01 * 3) % PENTA.length;
       zplay("peg", { rate: hz(PENTA[col] + 12) / 440, vel: 0.11 / (1 + pegRate * 0.35), pan: (x01 - 0.5) * 0.8 });
@@ -495,15 +510,13 @@
       }
       // one note; a x2 pocket adds a second, a x4 a third
       const n = scoreNotes(mult);
-      keepNext = true;
       zplay("bucket", { vel: 0.1, rate: hz(n[0]) / 440 });
       if (mult >= 2) zplay("bucket", { t: 0.05, vel: 0.06, rate: hz(n[1]) / 440 });
       if (mult >= 4) zplay("bucket", { t: 0.1, vel: 0.05, rate: hz(n[2]) / 440 });
-      keepNext = false;
     },
     tally(steps) {
       for (let i = 0; i < steps; i++)
-        zplay("tally", { t: i * 0.06, vel: 0.05, rate: hz(PENTA[i % PENTA.length]) / 440 });
+        zplay("tally", { t: i * 0.06, vel: 0.05, rate: hz(PENTA[i % PENTA.length] + TALLY_SHIFT) / 440 });
     },
     win() {
       [0, 4, 7, 12, 16].forEach((s, i) => zplay("note", { t: i * 0.08, vel: 0.07, rate: hz(s + 3 - 12) / 220 }));
@@ -529,12 +542,12 @@
       const now = performance.now(),
         gap = now - lastPeg;
       pegRate = pegRate * 0.9 + (gap < 120 ? 1 : 0) * 0.1 * 10;
-      if (gap < 25 || active.length > MAX_VOICES) return;
+      if (gap < 25) return;
       lastPeg = now;
       const col = Math.round((1 - y01) * 6 + x01 * 3) % PENTA.length;
       const vel = 0.11 / (1 + pegRate * 0.35);
-      tone(hz(PENTA[col] + 12), { dur: 0.22, vel, type: "triangle", pan: (x01 - 0.5) * 0.8 });
-      tone(hz(PENTA[col] + 24), { dur: 0.09, vel: vel * 0.25, pan: (x01 - 0.5) * 0.8 });
+      tone(hz(PENTA[col] + 12), { dur: 0.22, vel, type: "triangle", pan: (x01 - 0.5) * 0.8, rank: RANK.peg });
+      tone(hz(PENTA[col] + 24), { dur: 0.09, vel: vel * 0.25, pan: (x01 - 0.5) * 0.8, rank: RANK.peg });
     },
     reel(count) {
       if (!ok()) return;
@@ -543,7 +556,13 @@
         noiseTick(t, 0.25 - i * 0.02, 2400 - i * 90);
       }
       for (let i = 0; i < count; i++)
-        tone(hz(PENTA[(i * 2) % PENTA.length]), { t: 0.42 + i * 0.05, dur: 0.12, vel: 0.06, type: "triangle" });
+        tone(hz(PENTA[(i * 2) % PENTA.length]), {
+          t: 0.42 + i * 0.05,
+          dur: 0.12,
+          vel: 0.06,
+          type: "triangle",
+          rank: RANK.tally
+        });
     },
     hold(on) {
       if (ok()) {
@@ -574,12 +593,15 @@
         return;
       }
       const n = scoreNotes(mult);
-      tone(hz(n[0]), { dur: 0.35, vel: 0.1, type: mult < 1 ? "sine" : "triangle" });
-      if (mult >= 2) tone(hz(n[1]), { t: 0.05, dur: 0.3, vel: 0.06 });
-      if (mult >= 4) tone(hz(n[2]), { t: 0.1, dur: 0.5, vel: 0.05 });
+      const rank = RANK.bucket;
+      tone(hz(n[0]), { dur: 0.35, vel: 0.1, type: mult < 1 ? "sine" : "triangle", rank });
+      if (mult >= 2) tone(hz(n[1]), { t: 0.05, dur: 0.3, vel: 0.06, rank });
+      if (mult >= 4) tone(hz(n[2]), { t: 0.1, dur: 0.5, vel: 0.05, rank });
     },
     tally(steps) {
-      if (ok()) for (let i = 0; i < steps; i++) tone(hz(PENTA[i % PENTA.length]), { t: i * 0.06, dur: 0.2, vel: 0.05 });
+      if (!ok()) return;
+      for (let i = 0; i < steps; i++)
+        tone(hz(PENTA[i % PENTA.length] + TALLY_SHIFT), { t: i * 0.06, dur: 0.2, vel: 0.05, rank: RANK.tally });
     },
     win() {
       if (ok())
@@ -909,8 +931,9 @@
     get zzfx() {
       return Z;
     },
+    /* Effects sounding right now (scheduled ones not yet started do not count). */
     get voices() {
-      return active.length;
+      return ctx ? soundingAt(ctx.currentTime).length : 0;
     },
     get music() {
       return music;

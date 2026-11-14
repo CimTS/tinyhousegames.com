@@ -26,7 +26,6 @@
       const s = this.state;
       const layout = !s.boss && T.LAYOUTS[s.layout];
       this.physics.bucketValues = [...(s.boss === "undertow" ? T.TIDE_POCKETS : layout || T.NORMAL_POCKETS)];
-      this.physics.aimHints = this.aimHints();
     },
     _bossDropStart() {
       this.state.dropFx = freshDrop();

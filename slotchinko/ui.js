@@ -128,10 +128,6 @@
       prefs.setTips(e.target.checked);
       game.render();
     });
-    $("hint-toggle").addEventListener("change", e => {
-      prefs.setHints(e.target.checked);
-      game.render();
-    });
     $("loadout-open").addEventListener("click", () => overlays.showLoadout(game));
     $("loadout-close").addEventListener("click", () => overlays.closeLoadout());
     $("loadout-body").addEventListener("click", e => {

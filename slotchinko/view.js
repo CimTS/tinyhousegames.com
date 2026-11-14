@@ -68,8 +68,6 @@
         `HAND ${Math.min(hn, hn - (s.handsLeft || hn) + 1)} OF ${hn} · TAP CARDS TO HOLD`
       );
       this.phaseText(s);
-      // The aim hint shows while a hand is being chosen or aimed, if it is switched on in Settings.
-      this.game.physics.showHints = s.phase === "slot" && this.prefs.hintsOn();
       const board = s.layout && s.layout !== "classic" && !s.boss ? this.game.layoutName() : "";
       $("board-layout").hidden = !board;
       if (this.changed("board-layout", board)) $("board-layout").textContent = board ? ` · ${board.toUpperCase()}` : "";

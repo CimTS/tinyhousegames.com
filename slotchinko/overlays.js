@@ -61,7 +61,7 @@
     apply() {
       document.documentElement.classList.toggle("reduce-motion", this.reducedMotion());
     }
-    /* Lou's one-line tips after the tutorial, and the aim hint on the board: both on unless switched off in Settings. */
+    /* Lou's one-line tips after the tutorial: on unless switched off in Settings. */
     tipsOn() {
       return this.data.tips !== false;
     }
@@ -75,13 +75,6 @@
     tipSeen(id) {
       if (this.seenTips().includes(id)) return;
       this.data.tipsSeen = [...this.seenTips(), id];
-      write(this.data);
-    }
-    hintsOn() {
-      return this.data.hints !== false;
-    }
-    setHints(on) {
-      this.data.hints = !!on;
       write(this.data);
     }
     /* First-hand tips: for someone who has never finished a run, until they finish the first blind or hide them. */
@@ -224,7 +217,6 @@
     showSettings() {
       this.settingsReturn = this.open && this.open !== "settings-screen" ? this.open : null;
       $("tips-toggle").checked = this.prefs.tipsOn();
-      $("hint-toggle").checked = this.prefs.hintsOn();
       this.show("settings-screen");
     }
     closeSettings() {

@@ -1,94 +1,49 @@
-/* Slotchinko scoring: sums owned Chips into effect totals and scores each ball.
+/* Slotchinko scoring: sums owned Chips and the family steps they reach into effect totals, and scores each ball.
    Numbers add between copies, except scoreMult, which multiplies. */
 (() => {
   "use strict";
   const { BALANCE } = window.SlotchinkoData;
-  const SYNERGIES = [
-    {
-      need: ["heart", "split"],
-      label: "HEART CIRCUIT +10%",
-      apply: t => {
-        t.scoreMult *= 1.1;
-      }
-    },
-    {
-      need: ["diamond", "fortune"],
-      label: "PRISM LUCK +15%",
-      apply: t => {
-        t.fortune += 0.15;
-      }
-    },
-    {
-      need: ["spade", "gravity"],
-      label: "SINGULARITY +12%",
-      apply: t => {
-        t.wellPull += 0.5;
-        t.scoreMult *= 1.12;
-      }
-    },
-    {
-      need: ["club", "control"],
-      label: "ROOT NETWORK +8%",
-      apply: t => {
-        t.scoreMult *= 1.08;
-      }
-    },
-    {
-      need: ["economy", "combo"],
-      label: "CASH LOOP +1¢",
-      apply: t => {
-        t.coinsPerBlind += 1;
-      }
-    },
-    {
-      need: ["bounce", "launch"],
-      label: "TRICK SHOT +10%",
-      apply: t => {
-        t.scoreMult *= 1.1;
-      }
-    },
-    {
-      need: ["wild", "economy"],
-      label: "HOUSE FAVOR +1¢",
-      apply: t => {
-        t.coinsPerBlind += 1;
-      }
-    },
-    {
-      need: ["bucket", "gravity"],
-      label: "SINKHOLE +10%",
-      apply: t => {
-        t.scoreMult *= 1.1;
-      }
-    },
-    {
-      need: ["element", "synergy"],
-      label: "ELEMENTAL OVERDRIVE +10%",
-      apply: t => {
-        t.allElementScore += 0.1;
-      }
-    },
-    {
-      need: ["bounce", "gravity"],
-      label: "PINBALL WIZARD +12%",
-      apply: t => {
-        t.scoreMult *= 1.12;
-      }
-    },
-    {
-      need: ["wild", "balls"],
-      label: "LOADED TABLE +1 BALL",
-      apply: t => {
-        t.extraBalls += 1;
-      }
+  const { FAMILIES } = window.SlotchinkoData;
+
+  /* Adds one effect (a Chip's, or a family step's) into the totals. */
+  function add(totals, effect) {
+    for (const [key, value] of Object.entries(effect || {})) {
+      if (key === "scoreMult") totals[key] *= value;
+      else if (typeof value === "number") totals[key] = (totals[key] || 0) + value;
+      else if (value === true) totals[key] = true;
     }
-  ];
+  }
 
-  /* A set needs two different Chips: one carrying each tag. */
-  const setActive = (chips, [a, b]) =>
-    chips.some(x => x.tags?.includes(a) && chips.some(y => y.id !== x.id && y.tags?.includes(b)));
+  /* Family sets: for each family with Chips owned, how many (copies count) and how many steps that reaches. */
+  function familySets(chips) {
+    return FAMILIES.map(f => {
+      const count = chips.filter(c => c.family === f.id).length;
+      return { family: f, count, step: BALANCE.SET_STEPS.filter(n => count >= n).length };
+    }).filter(x => x.count > 0);
+  }
 
-  window.SlotchinkoSets = SYNERGIES;
+  /* Where a family stands, in words: "HEARTS 3 · REGULAR · VIP AT 4". Shown on shop cards and in the Loadout. */
+  function standing(set) {
+    const { SET_STEPS, SET_TIERS } = BALANCE,
+      next = SET_STEPS[set.step];
+    return [
+      `${set.family.name.toUpperCase()} ${set.count}`,
+      set.step ? SET_TIERS[set.step - 1] : "",
+      next ? `${SET_TIERS[set.step]} AT ${next}` : "TOP STEP"
+    ]
+      .filter(Boolean)
+      .join(" · ");
+  }
+
+  /* The run's build: the family furthest along once it reaches VIP, or The Nuts for a deck stacked with Aces. */
+  function build(sets, aces) {
+    const best = [...sets].sort((a, b) => b.step - a.step || b.count - a.count)[0];
+    if (best && best.step >= 2)
+      return { name: best.family.build, tier: BALANCE.SET_TIERS[best.step - 1], icon: best.family.icon };
+    return aces >= BALANCE.NUTS_ACES ? { name: "The Nuts", tier: "", icon: "A" } : null;
+  }
+
+  window.SlotchinkoSets = { familySets, standing, build };
   window.SlotchinkoScoring = {
     _effects() {
       const totals = {
@@ -107,6 +62,13 @@
         reactor: 0,
         plating: 0,
         stickPower: 0,
+        heartScore: 0,
+        heartBalls: 0,
+        clubGrind: 0,
+        steady: false,
+        diamondCoins: 0,
+        spadeEdge: 0,
+        discount: 0,
         launchSpread: 0,
         coinsPerBlind: 0,
         pressCoins: 0,
@@ -124,18 +86,15 @@
         mystery: 0,
         bumper: 0
       };
-      for (const chip of [...this._chipsInPlay(), ...(this.state.runBuffs || []), ...this._trophyItems()]) {
-        for (const [key, value] of Object.entries(chip.effect || {})) {
-          if (key === "scoreMult") totals[key] *= value;
-          else if (typeof value === "number") totals[key] = (totals[key] || 0) + value;
-          else if (value === true) totals[key] = true;
-        }
-      }
+      for (const chip of [...this._chipsInPlay(), ...(this.state.runBuffs || []), ...this._trophyItems()])
+        add(totals, chip.effect);
+      // Each family step reached adds its effect, and counts as one set (bosses and trophies count sets).
+      totals.sets = familySets(this.state.chips);
       totals.synergies = [];
-      for (const set of SYNERGIES)
-        if (setActive(this.state.chips, set.need)) {
-          set.apply(totals);
-          totals.synergies.push(set.label);
+      for (const set of totals.sets)
+        for (let i = 0; i < set.step; i++) {
+          add(totals, set.family.steps[i].effect);
+          totals.synergies.push(`${set.family.name.toUpperCase()} ${BALANCE.SET_TIERS[i]}`);
         }
       return totals;
     },
@@ -148,14 +107,16 @@
         has = x => suits.includes(x);
       let synergy = 1 + fx.allElementScore;
       if (has("diamond")) synergy += fx.fortune + fx.diamondScore;
-      if (has("club")) synergy += fx.clubScore;
+      if (has("heart")) synergy += fx.heartScore;
+      if (has("club")) synergy += fx.clubScore + Math.min(BALANCE.GRIND_CAP, fx.clubGrind * (p.pegHits || 0));
       if (has("spade")) synergy += fx.spadeScore;
       if (p.parentId) synergy += fx.splitBonus;
       if (s.lastEvaluation && s.lastEvaluation.flush) synergy += fx.flushBonus;
       const distinct = new Set(s.cards.map(c => c.suit)).size;
       synergy += distinct * fx.suitDiversity;
       if (distinct === 4) synergy += fx.fourSuitBonus;
-      synergy += 0.4 * this._boost(s.activeBoosts || [], "bounce"); // Rubber Pegs: +10% at 0.25 bounce
+      // Rubber Pegs: +10% at 0.25 bounce
+      synergy += 0.4 * this._boost(s.activeBoosts || [], "bounce");
       const drainFactor = drained ? (fx.drainHalf ? 0.5 : 0) : 1;
       return Math.round(
         BALANCE.BASE_BALL_SCORE *
@@ -170,5 +131,4 @@
       );
     }
   };
-  window.SlotchinkoSynergies = SYNERGIES;
 })();

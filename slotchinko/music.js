@@ -8,87 +8,102 @@
 (() => {
   "use strict";
   const A = 220,
-    BPM = 79; // was 88; slowed ~10% (owner, 2026-11-01)
+    // was 88; slowed ~10% (owner, 2026-11-01)
+    BPM = 79;
   const hz = semi => A * Math.pow(2, semi / 12);
   // Progressions in A minor (semitones from A3). Chords as triads + bass root.
   const PROGS = [
+    // Am  F  C  G
     [
       [0, 3, 7],
       [-4, 0, 3],
       [3, 7, 10],
       [-2, 2, 5]
-    ], // Am  F  C  G
+    ],
+    // Am  Dm F  G(sus)
     [
       [0, 3, 7],
       [5, 8, 12],
       [-4, 0, 3],
       [-2, 2, 7]
-    ], // Am  Dm F  G(sus)
+    ],
+    // F   C  G  Am
     [
       [-4, 0, 3],
       [3, 7, 10],
       [-2, 2, 5],
       [0, 3, 7]
-    ], // F   C  G  Am
+    ],
+    // Am  C  F  G
     [
       [0, 3, 7],
       [3, 7, 10],
       [-4, 0, 3],
       [-2, 2, 5]
-    ], // Am  C  F  G
+    ],
+    // Am  G  F  Em
     [
       [0, 3, 7],
       [-2, 2, 5],
       [-4, 0, 3],
       [-5, -2, 2]
-    ], // Am  G  F  Em
+    ],
+    // Dm  G  C  Am
     [
       [5, 8, 12],
       [-2, 2, 5],
       [3, 7, 10],
       [0, 3, 7]
-    ] // Dm  G  C  Am
+    ]
   ];
   // Boss blinds stay on the minor side and never settle on C.
   const BOSS_PROGS = [
+    // Am  Am F  Em
     [
       [0, 3, 7],
       [0, 3, 7],
       [-4, 0, 3],
       [-5, -2, 2]
-    ], // Am  Am F  Em
+    ],
+    // Am  F  Dm Em
     [
       [0, 3, 7],
       [-4, 0, 3],
       [5, 8, 12],
       [-5, -2, 2]
-    ] // Am  F  Dm Em
+    ]
   ];
   // The shop is a lounge: seventh chords, no drums.
   const SHOP_PROGS = [
+    // Cmaj7 Fmaj7 Dm7 G7
     [
       [3, 7, 10, 14],
       [-4, 0, 3, 7],
       [5, 8, 12, 15],
       [-2, 2, 5, 10]
-    ], // Cmaj7 Fmaj7 Dm7 G7
+    ],
+    // Fmaj7 Cmaj7 Am7 G7
     [
       [-4, 0, 3, 7],
       [3, 7, 10, 14],
       [0, 3, 7, 10],
       [-2, 2, 5, 10]
-    ] // Fmaj7 Cmaj7 Am7 G7
+    ]
   ];
   const progsFor = mood => (mood === "boss" ? BOSS_PROGS : mood === "shop" ? SHOP_PROGS : PROGS);
   // Arpeggio shapes: which chord tone the k-th step plays, for a chord of n tones.
   const ARPS = [
-    (k, n) => (k * (k % 3 === 2 ? 2 : 1)) % n, // the original skip pattern
-    (k, n) => k % n, // up
-    (k, n) => n - 1 - (k % n), // down
+    // the original skip pattern
+    (k, n) => (k * (k % 3 === 2 ? 2 : 1)) % n,
+    // up
+    (k, n) => k % n,
+    // down
+    (k, n) => n - 1 - (k % n),
+    // up and back
     (k, n) => {
       const p = k % (2 * n - 2);
       return p < n ? p : 2 * n - 2 - p;
-    } // up and back
+    }
   ];
   // Lead rhythms: [beat, length in beats].
   const LEAD_RHYTHMS = [
@@ -110,8 +125,10 @@
       [3, 1]
     ]
   ];
-  const WIN_CHORD = [3, 7, 10, 15]; // C major lift
-  const PENTA = [0, 3, 5, 7, 10, 12, 15, 17, 19, 22]; // A minor pentatonic
+  // C major lift
+  const WIN_CHORD = [3, 7, 10, 15];
+  // A minor pentatonic
+  const PENTA = [0, 3, 5, 7, 10, 12, 15, 17, 19, 22];
 
   function build(ctx, out) {
     const bus = ctx.createGain();
@@ -204,7 +221,8 @@
     g.gain.linearRampToValueAtTime(peak, t + a);
     g.gain.setValueAtTime(peak, t + a + hold);
     g.gain.exponentialRampToValueAtTime(0.0001, t + a + hold + r);
-    g.gain.linearRampToValueAtTime(0, t + a + hold + r + 0.01); // land on true zero before the source stops
+    // land on true zero before the source stops
+    g.gain.linearRampToValueAtTime(0, t + a + hold + r + 0.01);
   }
 
   // fx (optional): { out, on() } — event stingers (big-hand chord, win flourish/chord, riser) are effects,
@@ -256,11 +274,14 @@
       !/[?&]music=(live|vice)(&|$)/.test(location.search) &&
       typeof OfflineAudioContext !== "undefined";
     const PR_AHEAD = 3,
-      PR_FADE = 0.015; // bars rendered ahead (was 2: a busy phone main thread made chunks late)
-    const PR_TAIL = 5; // seconds after the bar: pad release (2.6 s) and the ping-pong delay die out
+      // bars rendered ahead (was 2: a busy phone main thread made chunks late)
+      PR_FADE = 0.015;
+    // seconds after the bar: pad release (2.6 s) and the ping-pong delay die out
+    const PR_TAIL = 5;
     let prBusy = false,
       prFlush = false;
-    const chunks = []; // bars rendered and waiting to play: { T, s, snap }
+    // bars rendered and waiting to play: { T, s, snap }
+    const chunks = [];
     const SNAP = ["bar", "prog", "seed", "intensity", "fq", "drum", "arp", "motif", "rhythm", "pendingBig"];
     const snapshot = () => {
       const o = { lv: { ...(st.lv || {}) } };
@@ -304,13 +325,15 @@
       st.nextBar = T + barLen;
       st.gT = T;
       const oc = new OfflineAudioContext(2, Math.ceil(sr * (barLen + PR_TAIL)), sr);
-      create(oc, oc.destination, st).renderTimeline(0.05 + barLen - 0.001); // exactly one bar at local 0.05
+      // exactly one bar at local 0.05
+      create(oc, oc.destination, st).renderTimeline(0.05 + barLen - 0.001);
       st.gT = null;
       oc.startRendering()
         .then(buf => {
           if (began) st.slow = Math.max(st.slow || 0, Math.round(performance.now() - began));
           st.bars = (st.bars || 0) + 1;
-          const fl = Math.floor(sr * 0.1); // 100 ms fade on the (already near-silent) tail end
+          // 100 ms fade on the (already near-silent) tail end
+          const fl = Math.floor(sr * 0.1);
           for (let c = 0; c < buf.numberOfChannels; c++) {
             const d = buf.getChannelData(c);
             for (let i = 0; i < fl; i++) d[d.length - 1 - i] *= i / fl;
@@ -538,16 +561,20 @@
         const busy = i > 0.55;
         for (let k = 0; k < 4; k++) {
           if (st.drum === 2 && busy)
-            kick(t + k * b, k % 2 ? 0.6 : 0.85); // four on the floor
-          else if (k === 0 || (k === 2 && busy && st.drum === 0)) kick(t + k * b, 0.85); // the original
+            // four on the floor
+            kick(t + k * b, k % 2 ? 0.6 : 0.85);
+          // the original
+          else if (k === 0 || (k === 2 && busy && st.drum === 0)) kick(t + k * b, 0.85);
           if (k === 1 || k === 3) snare(t + k * b, boss ? 0.22 : 0.18);
         }
+        // pushed
         if (st.drum === 1 && busy) {
           kick(t + b * 1.5, 0.55);
           kick(t + b * 2.5, 0.7);
-        } // pushed
+        }
         if (i > 0.75 && st.drum !== 2) kick(t + b * 2.5, 0.5);
-        if (st.bar % 8 === 7 && i > 0.5) for (let k = 0; k < 4; k++) snare(t + (3 + k * 0.25) * b, 0.07 + k * 0.035); // fill
+        // fill
+        if (st.bar % 8 === 7 && i > 0.5) for (let k = 0; k < 4; k++) snare(t + (3 + k * 0.25) * b, 0.07 + k * 0.035);
         const hatStep = i > 0.75 ? 0.25 : 0.5;
         for (let x = 0; x < 4; x += hatStep)
           hat(
@@ -664,7 +691,8 @@
         if (type === "big") {
           sweep(t);
           if (!fx) st.pendingBig = 1;
-          else if (fxOn()) riser(t + 0.1, FX); // live: the riser plays right away as an effect
+          // live: the riser plays right away as an effect
+          else if (fxOn()) riser(t + 0.1, FX);
           if (fxOn()) WIN_CHORD.forEach(s => pluck(t, s + 12, 1.2, 0.09, FX, "sine"));
         } else if (type === "sweep") {
           sweep(t);

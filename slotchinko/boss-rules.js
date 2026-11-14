@@ -70,9 +70,13 @@
       const own = this.state.trophies || [];
       return D.BOSSES.map(b => b.trophy).filter(t => own.includes(t.id));
     },
+    /* The House's shields fall to committed sets: a family at VIP breaks one, a Whale breaks two. */
+    _shieldBreaks(fx = this._effects()) {
+      return fx.sets.reduce((n, x) => n + Math.max(0, x.step - 1), 0);
+    },
     _shieldMult(fx = this._effects()) {
       const m = T.SHIELDS[this._bossTier()];
-      return m[Math.min(fx.synergies.length, m.length - 1)];
+      return m[Math.min(this._shieldBreaks(fx), m.length - 1)];
     },
 
     /* Scores a landed ball: trophy pocket bonuses, then ballScore, then the Mirror Shard repeat, then the boss. */
@@ -161,7 +165,7 @@
       if (b.id === "house") {
         const fx = this._effects(),
           all = T.SHIELDS[tier].length - 1;
-        live = `SHIELDS BROKEN ${Math.min(fx.synergies.length, all)}/${all} · SCORE ×${this._shieldMult(fx)}`;
+        live = `SHIELDS BROKEN ${Math.min(this._shieldBreaks(fx), all)}/${all} · SCORE ×${this._shieldMult(fx)}`;
       } else if (b.id === "mirror") {
         const n = new Map();
         s.chips.forEach(c => n.set(c.id, (n.get(c.id) || 0) + 1));

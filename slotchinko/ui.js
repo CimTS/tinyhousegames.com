@@ -1,14 +1,14 @@
 /* DOM event wiring and the fixed-step loop. Game rules live in game.js. */
 (() => {
   "use strict";
-  const RELEASE = "0.1"; // shown with the build code: V0.1.<build>
+  // shown with the build code: V0.1.<build>
+  const RELEASE = "0.1";
   const STEP_MS = 1000 / 60,
     MAX_FRAME_MS = 50;
   const $ = id => document.getElementById(id);
 
   function bindAim(game, canvas) {
     let active = false,
-      startedFromSlot = false,
       downAt = null;
     const setAim = e => {
       const rect = canvas.getBoundingClientRect();
@@ -19,14 +19,14 @@
     canvas.addEventListener("pointerdown", e => {
       if (game.state.phase !== "slot" && game.state.phase !== "drop") return;
       active = true;
-      startedFromSlot = game.state.phase === "slot";
       downAt = { x: e.clientX, y: e.clientY };
       if (canvas.setPointerCapture) canvas.setPointerCapture(e.pointerId);
       if (e.cancelable) e.preventDefault();
       setAim(e);
     });
     canvas.addEventListener("pointermove", e => {
-      const hover = e.pointerType === "mouse" && (game.aimFlow.aiming || game.state.phase === "drop"); // a mouse aims without a button held
+      // a mouse aims without a button held
+      const hover = e.pointerType === "mouse" && (game.aimFlow.aiming || game.state.phase === "drop");
       if (!active && !hover) return;
       if (e.cancelable) e.preventDefault();
       setAim(e);
@@ -39,14 +39,13 @@
       const tap = downAt && Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y) < 8;
       if (tap) game.view.pocketTapped(e, canvas);
       active = false;
-      startedFromSlot = false;
       downAt = null;
       game.aimFlow.boardRelease();
-      game.view.render(game); // releasing only sets the aim; DROP confirms
+      // releasing only sets the aim; DROP confirms
+      game.view.render(game);
     });
     const cancel = () => {
       active = false;
-      startedFromSlot = false;
     };
     canvas.addEventListener("pointercancel", cancel);
     canvas.addEventListener("lostpointercapture", cancel);
@@ -105,7 +104,8 @@
       game.aimFlow.cancel();
       game.render();
     });
-    $("tilt-button").addEventListener("pointerdown", e => e.stopPropagation()); // the board under it takes drags to aim
+    // the board under it takes drags to aim
+    $("tilt-button").addEventListener("pointerdown", e => e.stopPropagation());
     $("tilt-button").addEventListener("click", () => game.tilt());
     // HIDE TIPS ends the tutorial, or, on a one-line tip later in the run, switches those off (Settings has the switch).
     $("coach-skip").addEventListener("click", () => {
@@ -310,7 +310,8 @@ window.SlotchinkoUpdate = {
   }
 };
 if ("serviceWorker" in navigator && location.protocol !== "file:") {
-  const had = !!navigator.serviceWorker.controller; // a first visit has no older copy to replace
+  // a first visit has no older copy to replace
+  const had = !!navigator.serviceWorker.controller;
   navigator.serviceWorker.addEventListener("controllerchange", () => {
     if (had) window.SlotchinkoUpdate.ready();
   });

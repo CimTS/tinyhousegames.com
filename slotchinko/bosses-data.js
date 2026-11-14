@@ -20,10 +20,10 @@
       line:"I see you've been repeating yourself.", winLine:"Funny. I didn't see that coming.",
       trophy:{ id:"mirror-shard", name:"Mirror Shard", rarity:"rare", desc:"The first Chip bonus each hand repeats 25%.", effect:{firstChipRepeat:0.25} } },
     { id:"house", round:16, name:"The House", icon:"♛", tagline:"The house always wins. Unless you brought a better house.", ruleName:"THREE SHIELDS",
-      rules:["3 SHIELDS · EACH SET BREAKS ONE · ×0.4 ×0.6 ×0.8 · ALL BROKEN ×2","4 SHIELDS · EACH SET BREAKS ONE · ×0.25 ×0.5 ×0.75 ×1 · ALL BROKEN ×2","4 SHIELDS · ×0.25 ×0.5 ×0.75 ×1 · ALL BROKEN ×2 · TARGET CLIMBS 50% FURTHER"],
-      hint:"Bring sets. Every set breaks a shield.",
+      rules:["3 SHIELDS · A VIP SET BREAKS ONE, A WHALE TWO · ×0.4 ×0.6 ×0.8 · ALL BROKEN ×2","4 SHIELDS · A VIP SET BREAKS ONE, A WHALE TWO · ×0.25 ×0.5 ×0.75 ×1 · ALL BROKEN ×2","4 SHIELDS · ×0.25 ×0.5 ×0.75 ×1 · ALL BROKEN ×2 · TARGET CLIMBS 50% FURTHER"],
+      hint:"Bring a build. A VIP set breaks a shield; a Whale breaks two.",
       line:"You've had your fun. Now let's settle up.", winLine:"Snacks are on the house. All of them, apparently.",
-      trophy:{ id:"house-key", name:"House Key", rarity:"legendary", desc:"+0.1× to pocket values per active set.", effect:{keyPerSet:0.1} } }
+      trophy:{ id:"house-key", name:"House Key", rarity:"legendary", desc:"+0.1× to pocket values per set step reached.", effect:{keyPerSet:0.1} } }
   ];
   D.BOSS_TUNE={
     HEART_SUIT_BONUS:1.25, HEART_NEXT_CUT:0.9, BEAT_BALLS:3,

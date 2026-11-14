@@ -57,7 +57,8 @@
       e.preventDefault();
       return;
     }
-    if (e.repeat) return; // holding Space must not aim and drop in one press
+    // holding Space must not aim and drop in one press
+    if (e.repeat) return;
     if (k === "Escape") overlays.showPause();
     else if (digit(k) >= 0) {
       if (shop) document.querySelectorAll("[data-buy]")[digit(k)]?.click();
@@ -73,7 +74,8 @@
 
   function bind(game, overlays) {
     window.addEventListener("keydown", e => {
-      if (e.ctrlKey || e.metaKey || e.altKey) return; // Ctrl+R, Alt+Left and friends stay the browser's
+      // Ctrl+R, Alt+Left and friends stay the browser's
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
       if (overlays.open) overlayKey(e, overlays);
       else playKey(e, game, overlays);
     });

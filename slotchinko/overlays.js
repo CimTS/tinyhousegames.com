@@ -27,6 +27,9 @@
   const family = (icon, title, note, body) =>
     `<section class="col-family"><h3><span>${icon}</span>${title}${note}</h3>${body}</section>`;
   const small = text => `<small>${text}</small>`;
+  const COL_LEAD =
+    "Chips of one family form a set: 2 is Regular, 4 is VIP, 6 is Whale. Reach VIP and your run has a build. " +
+    "Locked items open from milestones.";
 
   const FRESH = () => ({ best: 0, bestRound: 0, wins: 0, ngUnlocked: 0, found: [], deckBest: {}, setsFound: [] });
   class Prefs {
@@ -146,7 +149,8 @@
       const el = $(id);
       el.hidden = false;
       $("app").inert = true;
-      this.onChange(); // the game behind a sheet cannot be tabbed to, clicked or read out
+      // the game behind a sheet cannot be tabbed to, clicked or read out
+      this.onChange();
       el.querySelector("[data-focus]")?.focus({ preventScroll: true });
     }
     hide() {
@@ -299,21 +303,28 @@
       const buffs = (s.runBuffs || [])
         .map(c => tile({ classes: `rarity-${c.rarity}`, icon: c.icon, name: c.name, desc: c.desc }))
         .join("");
-      const sets = game
-        ._effects()
-        .synergies.map(x => `<li class="is-found"><b>${x}</b></li>`)
-        .join("");
+      // Each family owned: where it stands, what its reached steps do, and what the next one adds.
+      const Sets = window.SlotchinkoSets,
+        does = (x, i) => x.family.steps[i].text,
+        setRow = x => {
+          const have = x.family.steps.slice(0, x.step).map((_, i) => does(x, i)),
+            next = x.step < x.family.steps.length ? `Next: ${does(x, x.step)}` : "";
+          const words = [...have, next].filter(Boolean).join(" · ");
+          return `<li class="${x.step ? "is-found" : ""}"><b>${x.family.icon} ${Sets.standing(x)}</b><small>${words}</small></li>`;
+        };
+      const sets = game._effects().sets.map(setRow).join(""),
+        build = game.build();
       $("loadout-sheet-count").textContent = `${s.chips.length}/${B.MAX_CHIPS} CHIPS · ${s.coins}¢`;
       const chipList = stacks.size
         ? `<ul class="col-grid">${[...stacks.values()].map(row).join("")}</ul>`
         : `<p class="loadout-empty">No Chips yet. Buy them in the shop after a blind.</p>`;
       const setList = sets
-        ? `<ul class="col-sets">${sets}</ul>`
-        : `<p class="loadout-empty">No sets yet. Pair two different Chips with matching tags.</p>`;
+        ? `<ul class="col-sets is-rows">${sets}</ul>`
+        : `<p class="loadout-empty">No sets yet. Two Chips of one family make a set.</p>`;
       $("loadout-body").innerHTML =
         family("✦", "Chips", small(can ? "Sells for half its price" : "Sell when the drop is over"), chipList) +
         (buffs ? family("◍", "Whole-run buffs", "", `<ul class="col-grid">${buffs}</ul>`) : "") +
-        family("∞", "Active sets", "", setList);
+        family("∞", build ? `Sets · ${build.name}` : "Sets", small("2 Regular · 4 VIP · 6 Whale"), setList);
       if (this.open !== "loadout-screen") this.show("loadout-screen");
     }
     closeLoadout() {
@@ -351,7 +362,7 @@
       box.dataset.at = i;
       if (open) box.innerHTML = `<b>${u.name}</b><small>${u.kind}</small><span>${u.desc}</span>`;
     }
-    /* Collection: every Chip by family, the other items, sets found and decks. Locked tiles show their milestone. */
+    /* Collection: the builds, every Chip by family, the other items and decks. Locked tiles show their milestone. */
     showCollection() {
       const d = this.prefs.data,
         D = window.SlotchinkoData,
@@ -369,11 +380,10 @@
         });
       const itemTile = it => lockable(`rarity-${it.rarity} `, it, isOpen(it));
       const grid = list => `<ul class="col-grid">${list.map(itemTile).join("")}</ul>`;
-      const famOf = c => D.FAMILIES.find(f => (c.tags || []).some(t => f.tags.includes(t)))?.id || "chaos";
       const all = [...D.CHIP_CATALOG, ...D.CARD_CATALOG, ...D.BUFF_CATALOG, ...D.CONSUMABLE_CATALOG];
       const openCount = all.filter(isOpen).length;
       const fams = D.FAMILIES.map(f => {
-        const items = D.CHIP_CATALOG.filter(c => famOf(c) === f.id);
+        const items = D.CHIP_CATALOG.filter(c => c.family === f.id);
         if (!items.length) return "";
         return family(f.icon, f.name, small(openOf(items)), grid(items));
       }).join("");
@@ -384,22 +394,23 @@
       ]
         .map(([name, list, icon]) => family(icon, name, small(openOf(list)), grid(list)))
         .join("");
-      const sets = (window.SlotchinkoSets || [])
-        .map(x => {
-          const got = (d.setsFound || []).includes(x.label);
-          const label = got ? x.label : "? ? ?";
-          return `<li class="${got ? "is-found" : ""}"><b>${label}</b><small>${x.need.join(" + ")}</small></li>`;
-        })
-        .join("");
+      // Builds: each family's set, with the highest step this save has reached.
+      const tiers = D.BALANCE.SET_TIERS,
+        label = (f, i) => `${f.name.toUpperCase()} ${tiers[i]}`,
+        reached = f => tiers.filter((_, i) => (d.setsFound || []).includes(label(f, i))).length;
+      const sets = D.FAMILIES.map(f => {
+        const n = reached(f),
+          best = n ? `Reached ${tiers[n - 1]}` : "Not found yet";
+        return `<li class="${n ? "is-found" : ""}"><b>${f.icon} ${f.build}</b><small>${f.name} · ${best}</small></li>`;
+      }).join("");
       const decks = D.DECKS.map(k => {
         return lockable("", k, this.prefs.deckOpen(k.id));
       }).join("");
-      const setsFound = (d.setsFound || []).length,
-        setsTotal = (window.SlotchinkoSets || []).length;
+      const setsFound = D.FAMILIES.reduce((n, f) => n + reached(f), 0),
+        setsTotal = D.FAMILIES.length * tiers.length;
       $("collection-count").textContent = `${openCount}/${all.length} ITEMS · ${setsFound}/${setsTotal} SETS`;
-      $("collection-body").innerHTML =
-        `<p class="col-lead">Two different Chips with matching tags form a set. Locked items open from milestones.</p>
-        <section class="col-family"><h3><span>✦</span>Sets found</h3><ul class="col-sets">${sets}</ul></section>
+      $("collection-body").innerHTML = `<p class="col-lead">${COL_LEAD}</p>
+        <section class="col-family"><h3><span>✦</span>Builds</h3><ul class="col-sets">${sets}</ul></section>
         ${fams}${other}
         <section class="col-family"><h3><span>♠</span>Decks</h3><ul class="col-grid">${decks}</ul></section>`;
       $("collection-body").scrollTop = 0;
@@ -510,7 +521,9 @@
       $("end-drop").textContent = num(sum.bestDrop);
       const deck = D.DECKS.find(k => k.id === (s.deckId || "house"));
       $("end-ng").hidden = false;
-      $("end-ng").textContent = `${deck.name.toUpperCase()}${s.ng ? ` · ASCENSION ${s.ng}` : ""}`;
+      const build = game.build(),
+        played = build ? ` · ${build.name.toUpperCase()}${build.tier ? ` (${build.tier})` : ""}` : "";
+      $("end-ng").textContent = `${deck.name.toUpperCase()}${s.ng ? ` · ASCENSION ${s.ng}` : ""}${played}`;
       this.unlockInfo = this._unlockInfo(rec, d);
       const chip = (u, i) => {
         const face = `<span>${u.icon}</span>${u.name}`;

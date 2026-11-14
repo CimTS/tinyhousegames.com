@@ -4,7 +4,7 @@
    CACHE_VERSION is a hash of the precached files (tools/slotchinko-sw-version.mjs); a new version
    installs a fresh cache and deletes the old one, so updates arrive on the next visit.
    The code in this file is not part of that hash, so a change here refills the same cache in place. */
-self.CACHE_VERSION = "a451b28b2e1f";
+self.CACHE_VERSION = "a554b2341a8e";
 self.PRECACHE = ["./","aimflow.js","board.js","boardview.js","boss-art.js","boss-rules.js","boss-view.js","bosses-data.js","bosses.css","coach.js","coin.js","data.js","desktop-copy.js","desktop.css","favicon.svg","fonts/barlow-condensed-latin-500-normal.woff2","fonts/barlow-condensed-latin-700-normal.woff2","fonts/barlow-condensed-latin-800-normal.woff2","fonts/barlow-condensed-latin-900-normal.woff2","fonts/dm-mono-latin-400-normal.woff2","fonts/dm-mono-latin-500-normal.woff2","fonts/fonts.css","game.js","icon-180.png","icon-192.png","icon-512.png","icon-maskable-512.png","index.html","keys.js","lanes.js","manifest.webmanifest","music.js","overlays.js","path.js","payouts.js","phone.css","physics.js","poker.js","polish.css","rng.js","save.js","scoring.js","shop.js","site-bar.css","sound-hooks.js","sound.js","status.js","style.css","tablet.css","tutorial.css","ui.js","vendor/matter.min.js","vendor/zzfx/zzfx-build.js","vice-voices.js","view-shop.js","view.js","visit.js","version.js"];
 const CACHE = "slotchinko-" + self.CACHE_VERSION;
 
@@ -33,6 +33,7 @@ self.addEventListener("activate", (event) => {
 });
 self.addEventListener("fetch", (event) => {
   const req = event.request;
-  if (req.method !== "GET" || new URL(req.url).origin !== self.location.origin) return; // not ours: leave it alone
+  // not ours: leave it alone
+  if (req.method !== "GET" || new URL(req.url).origin !== self.location.origin) return;
   event.respondWith(caches.open(CACHE).then((c) => c.match(req, { ignoreSearch: true }).then((hit) => hit || fetch(req))));
 });

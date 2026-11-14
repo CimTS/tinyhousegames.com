@@ -97,6 +97,7 @@
         runBuffs: [],
         deckMods: { aces: 0, trim: false, gold: false, joker: false, glitch: false },
         croupierPaid: 0,
+        compPaid: 0,
         grinBonus: 0,
         coinsEarnedThisBlind: 0,
         activeBoosts: [],
@@ -298,7 +299,8 @@
       const m = this.state.deckMods || {},
         rnd = this.rng.stream("deck");
       let deck = createDeck(rnd);
-      if (!m.aces && !m.trim && !m.gold && !m.deckAces && !m.joker && !m.glitch) return deck; // same order as before deck cards existed
+      // same order as before deck cards existed
+      if (!m.aces && !m.trim && !m.gold && !m.deckAces && !m.joker && !m.glitch) return deck;
       for (let i = 0; i < (m.deckAces || 0); i++) {
         const suit = SUITS[i % 4];
         deck.push({ id: `14-${suit}-d${i}`, rank: 14, label: "A", suit });
@@ -347,7 +349,8 @@
         next = ["13-diamond", "5-heart", "10-club"].map(take);
       if ([...hand, ...next].some(c => !c)) return;
       s.cards = hand;
-      s.deck = [...all, ...next.reverse()]; // draws come off the end, so the King is first
+      // draws come off the end, so the King is first
+      s.deck = [...all, ...next.reverse()];
       s.held = [false, false, false, false, false];
       s.tutorial = true;
       this.evaluateHand();
@@ -418,6 +421,7 @@
         BALANCE.MAX_HAND_BALLS,
         result.balls * (s.glitched ? BALANCE.GLITCH_BALLS : 1) +
           fx.extraBalls +
+          (this._dominantSuit() === "heart" ? fx.heartBalls : 0) +
           s.grinBonus +
           this._boost(s.pendingBoosts, "balls")
       );
@@ -429,8 +433,9 @@
       )
         s.balls = Math.max(1, s.balls - 1);
       s.primarySuit = this._dominantSuit();
-      // The board marks the outer pockets for a heavy hand (boardview.js).
+      // The board marks the outer pockets for a heavy hand, with what they pay it (boardview.js).
       this.physics.heavyHand = s.primarySuit === "spade";
+      this.physics.spadeEdge = BALANCE.SPADE_EDGE + fx.spadeEdge;
       return result;
     }
 
@@ -473,6 +478,13 @@
       return true;
     }
 
+    /* The run's named build, or null before one has formed (scoring.js). */
+    build() {
+      const m = this.state.deckMods || {},
+        aces = 4 + (m.aces || 0) + (m.deckAces || 0) + (m.glitch ? 1 : 0);
+      return window.SlotchinkoSets.build(this._effects().sets, aces);
+    }
+
     /* Milestones marked `now` are granted the moment they happen, not at the end of the run. The run's locked
        list comes from the save, so each fires once per save; a game with no save has nothing locked. */
     _grantNow() {
@@ -512,6 +524,7 @@
       s.roundScore = 0;
       s.diamondHits = 0;
       s.croupierPaid = 0;
+      s.compPaid = 0;
       this._bossDropStart();
       const st = s.stats;
       if (st) {
@@ -577,7 +590,9 @@
       const fx = this._effects();
       // Every ball leaves a little to one side of the aim line. Without this, a few hair-thin lanes between the pegs
       // scored far better than their neighbours, and nobody could find them (docs/slotchinko/BOARDS.md).
-      const spread = (this.rng.random("launch") - 0.5) * (fx.launchSpread + BALANCE.LAUNCH_JITTER) * this.physics.width;
+      // Dead Aim: a club hand launches exactly where it is aimed.
+      const loose = fx.steady && s.primarySuit === "club" ? 0 : fx.launchSpread + BALANCE.LAUNCH_JITTER,
+        spread = (this.rng.random("launch") - 0.5) * loose * this.physics.width;
       s.ballsLeft--;
       s.activeBalls++;
       this.physics.drop(this._ballOptions(24 + s.aim * (this.physics.width - 48) + spread, fx));
@@ -696,6 +711,17 @@
         s.coins++;
         this.payout({ id: "croupier-cut", icon: "♠", name: "CROUPIER'S CUT", amount: 1, unit: "¢", kind: "coin" });
       }
+      if (
+        fx.diamondCoins &&
+        (this.physics.jackpots?.() || [3]).includes(result.index) &&
+        !result.drained &&
+        p.suits?.includes("diamond") &&
+        s.compPaid < BALANCE.COMP_CAP * fx.diamondCoins
+      ) {
+        s.compPaid++;
+        s.coins++;
+        this.payout({ id: "comp", icon: "✉", name: "COMP", amount: 1, unit: "¢", kind: "coin" });
+      }
       if (fx.pressCoins > 0) {
         const earned = Math.min(BALANCE.PRESS_CAP, Math.floor(s.roundScore / BALANCE.PRESS_STEP)) * fx.pressCoins;
         if (earned > s.coinsEarnedThisBlind) {
@@ -731,8 +757,11 @@
           amount > 0 && this.payout({ id, icon, name, amount, unit: "¢", kind: "coin", fromBlind: true });
       coin("pocket-change", "¢", "POCKET CHANGE", n("pocket-change"));
       coin("golden-touch", "✦", "GOLDEN TOUCH", 5 * n("golden-touch"));
-      if (fx.synergies.some(x => x.startsWith("CASH LOOP"))) coin("cash-loop", "∞", "CASH LOOP", 1);
-      if (fx.synergies.some(x => x.startsWith("HOUSE FAVOR"))) coin("house-favor", "Ⓐ", "HOUSE FAVOR", 1);
+      // The Coin family's set steps pay here too, under the build's name.
+      const bank = fx.sets.find(x => x.family.id === "coin"),
+        steps = bank ? bank.family.steps.slice(0, bank.step) : [],
+        extra = steps.reduce((sum, x) => sum + (x.effect.coinsPerBlind || 0), 0);
+      coin("coin-set", "¢", bank?.family.build.toUpperCase(), extra);
     }
     _onSplit() {
       const fx = this._effects();
@@ -797,7 +826,7 @@
         hands: { ...(st.hands || {}) },
         maxBag: st.maxBag || 0,
         sets: [...(st.sets || [])],
-        chipTags: s.chips.flatMap(c => c.tags || []),
+        chipFamilies: s.chips.map(c => c.family),
         topChip: pay ? { name: name(pay[0]), times: pay[1] } : owned ? { name: owned.name, times: 0 } : null,
         bestDrop: st.bestDrop || 0,
         ng: s.ng,
@@ -888,7 +917,8 @@
     nextRound(node = "blind", extra = {}) {
       const s = this.state;
       if (s.phase !== "roundEnd" || !s.won || s.victory) return;
-      if (s.event) return; // an event card is waiting for its choice
+      // an event card is waiting for its choice
+      if (s.event) return;
       const { climb = 1, blindPay = 1 } = extra,
         bossDef = this._bossFor(s.round + 1);
       s.round++;

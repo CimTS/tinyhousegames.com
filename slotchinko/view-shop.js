@@ -84,9 +84,11 @@
       s.consumables.map(bagItem).join("") || '<span class="empty-inventory">Consumables appear here.</span>';
     $("consumable-count").textContent = `${s.consumables.length}/${this.game._bagMax()}`;
     const fx = this.game._effects();
+    const build = this.game.build(),
+      named = build ? [`BUILD: ${build.name.toUpperCase()}`] : [];
     $("synergy-line").textContent = fx.synergies.length
-      ? fx.synergies.join("  ·  ")
-      : "No sets yet. Pair two different Chips with matching tags.";
+      ? [...named, ...fx.sets.filter(x => x.step).map(x => window.SlotchinkoSets.standing(x))].join("  ·  ")
+      : NO_SETS;
   };
 
   const KIND_LABEL = item =>
@@ -106,7 +108,16 @@
     { tab: "consumable", label: "BAG", icon: "▣", hint: "One use, any hand" },
     { tab: "buff", label: "BUFFS", icon: "◍", hint: "Bend the board" }
   ];
-  const tagText = item => (item.tags || []).join(" · ");
+  const NO_SETS = "No sets yet. Two Chips of one family make a set.";
+  /* A Chip card says which family it belongs to and how far along you are in it. */
+  const familyLine = (item, s) => {
+    const { FAMILIES } = window.SlotchinkoData,
+      Sets = window.SlotchinkoSets,
+      family = FAMILIES.find(f => f.id === item.family);
+    if (!family) return "";
+    const set = Sets.familySets(s.chips).find(x => x.family === family) || { family, count: 0, step: 0 };
+    return `<small class="item-family">${family.icon} ${Sets.standing(set)}</small>`;
+  };
   const itemCard = (item, index, s) => `
     <article class="shop-item rarity-${item.rarity} is-${item.kind}" style="--card-index:${index}">
       <div class="item-top">
@@ -117,7 +128,7 @@
         <b class="item-name">${item.name}</b>
         <p>${item.desc}</p>
         ${item.flavor ? `<q class="item-flavor">${item.flavor.replace(/^"|"$/g, "")}</q>` : ""}
-        ${item.tags ? `<small class="item-tags">${tagText(item)}</small>` : ""}
+        ${familyLine(item, s)}
       </div>
       <div class="item-bottom">
         <span class="item-kind">${KIND_LABEL(item)}</span>

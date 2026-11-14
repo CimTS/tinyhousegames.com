@@ -32,34 +32,45 @@
   // Shop catalog. Definitions are immutable; owned items are separate instances,
   // allowing legitimate duplicate stacking for stackable Chips.
   const CHIP_CATALOG = [
-    { id:"pocket-change", name:"Pocket Change", icon:"¢", rarity:"common", kind:"chip", cost:3, stackable:true, maxStack:5, tags:["economy"], desc:"+1 coin after each cleared blind.", effect:{coinsPerBlind:1} },
-    { id:"extra-plating", name:"Extra Plating", icon:"▦", rarity:"common", kind:"chip", cost:3, stackable:true, maxStack:3, tags:["defense"], desc:"+8% score. Balls bounce 8% less off pegs.", effect:{scoreMult:1.08,plating:0.08} },
-    { id:"heart-reactor", name:"Heart Reactor", icon:"♥", rarity:"common", kind:"chip", cost:4, stackable:true, maxStack:2, tags:["heart","split"], desc:"Heart balls split on their first peg hit. Each copy adds +1 split.", effect:{reactor:1} },
-    { id:"moss-circuit", name:"Moss Circuit", icon:"♣", rarity:"common", kind:"chip", cost:4, stackable:true, maxStack:3, tags:["club","control"], desc:"+3% score. Club balls stick 30% harder to pegs and drift less.", effect:{stickPower:0.3,scoreMult:1.03} },
-    { id:"lucky-charm", name:"Lucky Charm", icon:"✧", rarity:"common", kind:"chip", cost:4, stackable:true, maxStack:4, tags:["diamond","fortune"], desc:"Diamond balls gain +12% bucket value.", effect:{fortune:0.12} },
-    { id:"wide-launcher", name:"Wide Launcher", icon:"↔", rarity:"common", kind:"chip", cost:4, stackable:true, maxStack:3, tags:["launch"], desc:"+6% score. Balls launch with a small random spread.", effect:{scoreMult:1.06,launchSpread:0.06} },
-    { id:"glass-cannon", name:"Glass Cannon", icon:"◇", rarity:"uncommon", kind:"chip", cost:6, stackable:true, maxStack:2, tags:["glass","risk"], desc:"+20% score. In each drop, the first ball to hit a peg scores ×1.5.", effect:{scoreMult:1.20,glass:1} },
-    { id:"black-hole", name:"Black Hole", icon:"●", rarity:"uncommon", kind:"chip", cost:7, stackable:true, maxStack:2, tags:["spade","gravity"], desc:"Spade balls deal +1 peg damage and gain +25% score.", effect:{spadeDamage:1,spadeScore:0.25} },
-    { id:"echo-chamber", name:"Echo Chamber", icon:"◎", rarity:"uncommon", kind:"chip", cost:7, stackable:true, maxStack:2, tags:["balls","echo"], desc:"+1 ball for every hand.", effect:{extraBalls:1} },
-    { id:"prism-core", name:"Prism Core", icon:"✥", rarity:"uncommon", kind:"chip", cost:7, stackable:true, maxStack:2, tags:["element","prism"], desc:"Every elemental ball gets +15% score.", effect:{allElementScore:0.15} },
-    { id:"magnetron", name:"Magnetron", icon:"⊛", rarity:"uncommon", kind:"chip", cost:8, stackable:true, maxStack:2, tags:["gravity","control"], desc:"+10% score. Gravity wells pull 50% harder.", effect:{wellPull:0.5,scoreMult:1.10} },
-    { id:"coin-press", name:"Coin Press", icon:"▣", rarity:"uncommon", kind:"chip", cost:7, stackable:true, maxStack:3, tags:["economy","combo"], desc:"+1 coin per 500 points scored in a blind, up to 3 per blind. Copies multiply it.", effect:{pressCoins:1} },
-    { id:"diamond-matrix", name:"Diamond Matrix", icon:"♦", rarity:"rare", kind:"chip", cost:9, stackable:true, maxStack:2, tags:["diamond","fortune","combo"], desc:"Diamond balls gain +45% score. Every third peg hit by a diamond ball adds +35 points.", effect:{diamondScore:0.45,diamondBonus:1} },
-    { id:"singularity", name:"Singularity", icon:"◉", rarity:"rare", kind:"chip", cost:10, stackable:true, maxStack:2, tags:["gravity","spade"], desc:"Spade balls gain +50% score and gravity wells pull them 100% harder.", effect:{spadeWell:1,spadeScore:0.5} },
-    { id:"phoenix-heart", name:"Phoenix Heart", icon:"ღ", rarity:"rare", kind:"chip", cost:9, stackable:true, maxStack:2, tags:["heart","split","survival"], desc:"Split balls can split once more and gain +10% score.", effect:{splitChain:1,splitBonus:0.10} },
-    { id:"club-king", name:"Club King", icon:"♣", rarity:"rare", kind:"chip", cost:9, stackable:true, maxStack:2, tags:["club","control","economy"], desc:"Club balls gain +35% score. Each club ball that hits 5+ pegs earns 1 coin.", effect:{clubScore:0.35,clubCoins:1} },
-    { id:"rainbow-engine", name:"Rainbow Engine", icon:"🌈", rarity:"rare", kind:"chip", cost:10, stackable:false, maxStack:1, tags:["element","synergy"], desc:"Each distinct suit in your hand adds +8% score. Flushes gain another +30%.", effect:{suitDiversity:0.08,flushBonus:0.30} },
-    { id:"golden-touch", name:"Golden Touch", icon:"✦", rarity:"legendary", kind:"chip", cost:14, stackable:false, maxStack:1, tags:["economy","legendary"], desc:"Cleared blinds pay +5 coins. All scoring gains +12%.", effect:{coinsPerBlind:5,scoreMult:1.12} },
-    { id:"chaos-theory", name:"Chaos Theory", icon:"⚡", rarity:"legendary", kind:"chip", cost:15, stackable:false, maxStack:1, tags:["balls","risk","legendary"], desc:"+2 balls and +30% score. Hazard drains pay half a normal bucket.", effect:{extraBalls:2,scoreMult:1.30,drainHalf:true} },
-    { id:"grinning-ace", name:"The Grinning Ace", icon:"Ⓐ", rarity:"common", kind:"chip", cost:4, stackable:false, maxStack:1, tags:["wild","balls"], desc:"High Card and One Pair hands drop +2 balls.", flavor:"\"Bad hand? I've won with worse. I'm a little wild like that.\"", effect:{grinBalls:2} },
-    { id:"ricochet-rig", name:"Ricochet Rig", icon:"⤨", rarity:"uncommon", kind:"chip", cost:6, stackable:true, maxStack:2, tags:["bounce","launch"], desc:"+6% score. Balls bounce 12% harder off pegs.", effect:{scoreMult:1.06,bounce:0.12} },
-    { id:"croupier-cut", name:"Croupier's Cut", icon:"♠", rarity:"uncommon", kind:"chip", cost:7, stackable:true, maxStack:2, tags:["economy","wild"], desc:"+1 coin for each ball in the ×4 pocket, up to 3 per drop. Copies add +3 more.", effect:{croupier:1} },
-    { id:"jackpot-funnel", name:"Jackpot Funnel", icon:"▼", rarity:"rare", kind:"chip", cost:10, stackable:false, maxStack:1, tags:["bucket","gravity"], desc:"The ×4 pocket pays ×5.", effect:{funnel:1} },
-    { id:"world-tree", name:"World Tree", icon:"♧", rarity:"legendary", kind:"chip", cost:15, stackable:false, maxStack:1, tags:["element","synergy","legendary"], desc:"+15% score on every ball, and +60% more when your hand holds all four suits.", effect:{fourSuitBonus:0.60,allElementScore:0.15} },
-    { id:"loaded-die", name:"Loaded Die", icon:"⚄", rarity:"uncommon", kind:"chip", cost:7, stackable:false, maxStack:1, tags:["bucket","risk"], desc:"Each drop, one random pocket pays double. Never the ×4.", effect:{loadedDie:1} },
-    { id:"second-wind", name:"Second Wind", icon:"↟", rarity:"uncommon", kind:"chip", cost:6, stackable:true, maxStack:2, tags:["balls","survival"], desc:"The first ball lost to a drain each drop is dropped again. Each copy saves one more.", effect:{secondWind:1} },
-    { id:"pawn-ticket", name:"Pawn Ticket", icon:"⇄", rarity:"common", kind:"chip", cost:4, stackable:false, maxStack:1, tags:["economy"], desc:"Your other Chips sell for the full price you paid.", effect:{pawn:1} },
-    { id:"high-roller", name:"High Roller", icon:"♛", rarity:"rare", kind:"chip", cost:9, stackable:false, maxStack:1, tags:["risk"], desc:"+60% score, but each blind gives you one hand fewer.", effect:{scoreMult:1.60,fewerHands:1} }
+    { id:"pocket-change", name:"Pocket Change", icon:"¢", rarity:"common", kind:"chip", cost:3, stackable:true, maxStack:5, family:"coin", desc:"+1 coin after each cleared blind.", effect:{coinsPerBlind:1} },
+    { id:"extra-plating", name:"Extra Plating", icon:"▦", rarity:"common", kind:"chip", cost:3, stackable:true, maxStack:3, family:"bounce", desc:"+8% score. Balls bounce 8% less off pegs.", effect:{scoreMult:1.08,plating:0.08} },
+    { id:"heart-reactor", name:"Heart Reactor", icon:"♥", rarity:"common", kind:"chip", cost:4, stackable:true, maxStack:2, family:"heart", desc:"Heart balls split on their first peg hit. Each copy adds +1 split.", effect:{reactor:1} },
+    { id:"moss-circuit", name:"Moss Circuit", icon:"♣", rarity:"common", kind:"chip", cost:4, stackable:true, maxStack:3, family:"club", desc:"+3% score. Club balls stick 30% harder to pegs and drift less.", effect:{stickPower:0.3,scoreMult:1.03} },
+    { id:"lucky-charm", name:"Lucky Charm", icon:"✧", rarity:"common", kind:"chip", cost:4, stackable:true, maxStack:4, family:"diamond", desc:"Diamond balls gain +12% bucket value.", effect:{fortune:0.12} },
+    { id:"wide-launcher", name:"Wide Launcher", icon:"↔", rarity:"common", kind:"chip", cost:4, stackable:true, maxStack:3, family:"bounce", desc:"+6% score. Balls launch with a small random spread.", effect:{scoreMult:1.06,launchSpread:0.06} },
+    { id:"glass-cannon", name:"Glass Cannon", icon:"◇", rarity:"uncommon", kind:"chip", cost:6, stackable:true, maxStack:2, family:"chaos", desc:"+20% score. In each drop, the first ball to hit a peg scores ×1.5.", effect:{scoreMult:1.20,glass:1} },
+    { id:"black-hole", name:"Black Hole", icon:"●", rarity:"uncommon", kind:"chip", cost:7, stackable:true, maxStack:2, family:"spade", desc:"Spade balls deal +1 peg damage and gain +25% score.", effect:{spadeDamage:1,spadeScore:0.25} },
+    { id:"echo-chamber", name:"Echo Chamber", icon:"◎", rarity:"uncommon", kind:"chip", cost:7, stackable:true, maxStack:2, family:"chaos", desc:"+1 ball for every hand.", effect:{extraBalls:1} },
+    { id:"prism-core", name:"Prism Core", icon:"✥", rarity:"uncommon", kind:"chip", cost:7, stackable:true, maxStack:2, family:"element", desc:"Every elemental ball gets +15% score.", effect:{allElementScore:0.15} },
+    { id:"magnetron", name:"Magnetron", icon:"⊛", rarity:"uncommon", kind:"chip", cost:8, stackable:true, maxStack:2, family:"spade", desc:"+10% score. Gravity wells pull 50% harder.", effect:{wellPull:0.5,scoreMult:1.10} },
+    { id:"coin-press", name:"Coin Press", icon:"▣", rarity:"uncommon", kind:"chip", cost:7, stackable:true, maxStack:3, family:"coin", desc:"+1 coin per 500 points scored in a blind, up to 3 per blind. Copies multiply it.", effect:{pressCoins:1} },
+    { id:"diamond-matrix", name:"Diamond Matrix", icon:"♦", rarity:"rare", kind:"chip", cost:9, stackable:true, maxStack:2, family:"diamond", desc:"Diamond balls gain +45% score. Every third peg hit by a diamond ball adds +35 points.", effect:{diamondScore:0.45,diamondBonus:1} },
+    { id:"singularity", name:"Singularity", icon:"◉", rarity:"rare", kind:"chip", cost:10, stackable:true, maxStack:2, family:"spade", desc:"Spade balls gain +50% score and gravity wells pull them 100% harder.", effect:{spadeWell:1,spadeScore:0.5} },
+    { id:"phoenix-heart", name:"Phoenix Heart", icon:"ღ", rarity:"rare", kind:"chip", cost:9, stackable:true, maxStack:2, family:"heart", desc:"Split balls can split once more and gain +10% score.", effect:{splitChain:1,splitBonus:0.10} },
+    { id:"club-king", name:"Club King", icon:"♣", rarity:"rare", kind:"chip", cost:9, stackable:true, maxStack:2, family:"club", desc:"Club balls gain +35% score. Each club ball that hits 5+ pegs earns 1 coin.", effect:{clubScore:0.35,clubCoins:1} },
+    { id:"rainbow-engine", name:"Rainbow Engine", icon:"🌈", rarity:"rare", kind:"chip", cost:10, stackable:false, maxStack:1, family:"element", desc:"Each distinct suit in your hand adds +8% score. Flushes gain another +30%.", effect:{suitDiversity:0.08,flushBonus:0.30} },
+    { id:"golden-touch", name:"Golden Touch", icon:"✦", rarity:"legendary", kind:"chip", cost:14, stackable:false, maxStack:1, family:"coin", desc:"Cleared blinds pay +5 coins. All scoring gains +12%.", effect:{coinsPerBlind:5,scoreMult:1.12} },
+    { id:"chaos-theory", name:"Chaos Theory", icon:"⚡", rarity:"legendary", kind:"chip", cost:15, stackable:false, maxStack:1, family:"chaos", desc:"+2 balls and +30% score. Hazard drains pay half a normal bucket.", effect:{extraBalls:2,scoreMult:1.30,drainHalf:true} },
+    { id:"grinning-ace", name:"The Grinning Ace", icon:"Ⓐ", rarity:"common", kind:"chip", cost:4, stackable:false, maxStack:1, family:"coin", desc:"High Card and One Pair hands drop +2 balls.", flavor:"\"Bad hand? I've won with worse. I'm a little wild like that.\"", effect:{grinBalls:2} },
+    { id:"ricochet-rig", name:"Ricochet Rig", icon:"⤨", rarity:"uncommon", kind:"chip", cost:6, stackable:true, maxStack:2, family:"bounce", desc:"+6% score. Balls bounce 12% harder off pegs.", effect:{scoreMult:1.06,bounce:0.12} },
+    { id:"croupier-cut", name:"Croupier's Cut", icon:"♠", rarity:"uncommon", kind:"chip", cost:7, stackable:true, maxStack:2, family:"coin", desc:"+1 coin for each ball in the ×4 pocket, up to 3 per drop. Copies add +3 more.", effect:{croupier:1} },
+    { id:"jackpot-funnel", name:"Jackpot Funnel", icon:"▼", rarity:"rare", kind:"chip", cost:10, stackable:false, maxStack:1, family:"spade", desc:"The ×4 pocket pays ×5.", effect:{funnel:1} },
+    { id:"world-tree", name:"World Tree", icon:"♧", rarity:"legendary", kind:"chip", cost:15, stackable:false, maxStack:1, family:"element", desc:"+15% score on every ball, and +60% more when your hand holds all four suits.", effect:{fourSuitBonus:0.60,allElementScore:0.15} },
+    { id:"loaded-die", name:"Loaded Die", icon:"⚄", rarity:"uncommon", kind:"chip", cost:7, stackable:false, maxStack:1, family:"bounce", desc:"Each drop, one random pocket pays double. Never the ×4.", effect:{loadedDie:1} },
+    { id:"second-wind", name:"Second Wind", icon:"↟", rarity:"uncommon", kind:"chip", cost:6, stackable:true, maxStack:2, family:"chaos", desc:"The first ball lost to a drain each drop is dropped again. Each copy saves one more.", effect:{secondWind:1} },
+    { id:"pawn-ticket", name:"Pawn Ticket", icon:"⇄", rarity:"common", kind:"chip", cost:4, stackable:false, maxStack:1, family:"coin", desc:"Your other Chips sell for the full price you paid.", effect:{pawn:1} },
+    { id:"high-roller", name:"High Roller", icon:"♛", rarity:"rare", kind:"chip", cost:9, stackable:false, maxStack:1, family:"chaos", desc:"+60% score, but each blind gives you one hand fewer.", effect:{scoreMult:1.60,fewerHands:1} },
+    // Step 2 suit Chips: each suit family has five, so a build is a choice between Chips, not copies of one.
+    { id:"double-down", name:"Double Down", icon:"⧉", rarity:"common", kind:"chip", cost:4, stackable:true, maxStack:2, family:"heart", desc:"Split balls gain +15% score.", effect:{splitBonus:0.15} },
+    { id:"hot-hand", name:"Hot Hand", icon:"♨", rarity:"uncommon", kind:"chip", cost:7, stackable:true, maxStack:2, family:"heart", desc:"Heart balls gain +30% score.", effect:{heartScore:0.30} },
+    { id:"press-the-bet", name:"Press the Bet", icon:"⊕", rarity:"uncommon", kind:"chip", cost:6, stackable:false, maxStack:1, family:"heart", desc:"Heart hands drop +1 ball.", effect:{heartBalls:1} },
+    { id:"card-counter", name:"Card Counter", icon:"⌗", rarity:"common", kind:"chip", cost:4, stackable:true, maxStack:2, family:"club", desc:"Club balls gain +20% score.", effect:{clubScore:0.20} },
+    { id:"dead-aim", name:"Dead Aim", icon:"⌖", rarity:"uncommon", kind:"chip", cost:6, stackable:false, maxStack:1, family:"club", desc:"Club hands launch dead straight: no random spread at all.", effect:{steady:true} },
+    { id:"grinder", name:"Grinder", icon:"⚙", rarity:"uncommon", kind:"chip", cost:7, stackable:false, maxStack:1, family:"club", desc:"Club balls gain +4% score for each peg they hit, up to +40%.", effect:{clubGrind:0.04} },
+    { id:"fat-stack", name:"Fat Stack", icon:"≣", rarity:"common", kind:"chip", cost:4, stackable:true, maxStack:2, family:"diamond", desc:"Diamond balls gain +20% score.", effect:{diamondScore:0.20} },
+    { id:"the-vig", name:"The Vig", icon:"％", rarity:"uncommon", kind:"chip", cost:7, stackable:false, maxStack:1, family:"diamond", desc:"Diamond balls gain +25% bucket value.", effect:{fortune:0.25} },
+    { id:"comp", name:"Comp", icon:"✉", rarity:"uncommon", kind:"chip", cost:6, stackable:true, maxStack:2, family:"diamond", desc:"+1 coin for each diamond ball in a jackpot pocket, up to 2 per drop. Copies add +2 more.", effect:{diamondCoins:1} },
+    { id:"suited-connectors", name:"Suited Connectors", icon:"⛓", rarity:"uncommon", kind:"chip", cost:6, stackable:true, maxStack:2, family:"element", desc:"Each distinct suit in your hand adds +4% score.", effect:{suitDiversity:0.04} }
   ];
 
   // Deck cards: bought cards change the deck for the rest of the run.
@@ -104,7 +115,7 @@
   const BALANCE={
     FINAL_BLIND:BLIND_TARGETS.length, BLIND_TARGETS,
     HANDS_PER_BLIND:3, SPARE_HAND_PAY:1, SELL_RATE:0.5, ELITE_CLIMB:1.5, START_COINS:7, BLIND_PAY:3, BASE_BALL_SCORE:25, HEART_SPLIT_HIT:3, DRAIN_ROUND:3,
-    REROLL_BASE:2, SHOP_SLOTS:{chip:3,card:2,consumable:2,buff:2}, CROUPIER_CAP:3, FUNNEL_MULT:1.25, GOLD_POWER:0.25, GLITCH_POWER:1.5, GLITCH_BALLS:2, GLITCH_MS:800, MAX_CHIPS:12, MAX_BAG:3, MAX_HAND_BALLS:24,
+    REROLL_BASE:2, SHOP_SLOTS:{chip:3,card:2,consumable:2,buff:2}, CROUPIER_CAP:3, FUNNEL_MULT:1.25, GOLD_POWER:0.25, GLITCH_POWER:1.5, GLITCH_BALLS:2, GLITCH_MS:800, SET_STEPS:[2,4,6], SET_TIERS:["REGULAR","VIP","WHALE"], SHOP_LEAN:0.5, SHOP_LEAN_CAP:4, GRIND_CAP:0.40, COMP_CAP:2, NUTS_ACES:7, MAX_CHIPS:12, MAX_BAG:3, MAX_HAND_BALLS:24,
     PRESS_STEP:500, PRESS_CAP:3, CLUB_COIN_HITS:5, DIAMOND_BONUS:35, GLASS_MULT:1.5,
     BUMP_BONUS:0.25, BUMP_CAP:4, SPADE_EDGE:4, FORTUNE_BUCKET:1.4, LAUNCH_JITTER:0.10, DIE_MULT:2, GOLD_PEG_MULT:2, MYSTERY:[[0,1],[0.5,1],[1,2],[2,3],[3,2],[5,1.5],[8,1]]
   };
@@ -164,7 +175,7 @@
     { kind:"item", id:"jackpot-funnel", hint:"Score 5,000 in a single drop.", test:m=>m.bestDrop>=5000 },
     { kind:"item", id:"phoenix-heart", hint:"Drop a Full House or better.", test:m=>m.bestRank>=6 },
     { kind:"item", id:"rainbow-engine", hint:"Drop a Flush.", test:m=>(m.hands.Flush||0)>0 },
-    { kind:"item", id:"singularity", hint:"End a run owning two gravity Chips.", test:m=>m.chipTags.filter(t=>t==="gravity").length>=2 },
+    { kind:"item", id:"singularity", hint:"End a run owning two Spades Chips.", test:m=>m.chipFamilies.filter(f=>f==="spade").length>=2 },
     { kind:"item", id:"chaos-theory", hint:"Clear blind 8.", test:m=>m.blinds>=8 },
     { kind:"item", id:"glass-charge", hint:"Drop Three of a Kind 5 times in one run.", test:m=>(m.hands["Three of a Kind"]||0)>=5 },
     { kind:"item", id:"world-tree", hint:"Win a run.", test:m=>m.victory },
@@ -189,15 +200,42 @@
     { kind:"deck", id:"pachinko", hint:"Win a run.", test:m=>m.victory }
   ];
   // Collection families: a Chip joins the first family that shares one of its tags.
+  // Chip families. Owning Chips of one family (copies count) pays in three steps: BALANCE.SET_STEPS Chips reach
+  // BALANCE.SET_TIERS. Each step's effect uses the same keys as a Chip's (scoring.js adds them up). `build` is the
+  // run's name once a family reaches VIP.
   const FAMILIES=[
-    { id:"heart", name:"Hearts", icon:"♥", tags:["heart","split"] },
-    { id:"diamond", name:"Diamonds", icon:"♦", tags:["diamond","fortune"] },
-    { id:"spade", name:"Spades", icon:"♠", tags:["spade","gravity"] },
-    { id:"club", name:"Clubs", icon:"♣", tags:["club","control"] },
-    { id:"coin", name:"Coin", icon:"¢", tags:["economy","combo","wild"] },
-    { id:"bounce", name:"Bounce", icon:"⤨", tags:["bounce","launch","bucket","defense"] },
-    { id:"element", name:"Element", icon:"✥", tags:["element","synergy","prism"] },
-    { id:"chaos", name:"Chaos", icon:"⚡", tags:["balls","risk","glass","echo"] }
+    { id:"heart", name:"Hearts", icon:"♥", build:"Double Down", steps:[
+      { text:"Split balls +10% score", effect:{splitBonus:0.10} },
+      { text:"Split balls can split once more", effect:{splitChain:1} },
+      { text:"Heart balls +40% score", effect:{heartScore:0.40} } ] },
+    { id:"diamond", name:"Diamonds", icon:"♦", build:"The Juice", steps:[
+      { text:"Diamond balls +10% bucket value", effect:{fortune:0.10} },
+      { text:"Diamond balls +25% score", effect:{diamondScore:0.25} },
+      { text:"Diamond balls +30% bucket value", effect:{fortune:0.30} } ] },
+    { id:"spade", name:"Spades", icon:"♠", build:"The Whale", steps:[
+      { text:"Spade balls +15% score", effect:{spadeScore:0.15} },
+      { text:"Wells pull 50% harder; spade balls deal +1 peg damage", effect:{wellPull:0.5,spadeDamage:1} },
+      { text:"Outer pockets pay spades ×6", effect:{spadeEdge:2} } ] },
+    { id:"club", name:"Clubs", icon:"♣", build:"The Sharp", steps:[
+      { text:"Club balls stick 20% harder", effect:{stickPower:0.2} },
+      { text:"Club balls +25% score", effect:{clubScore:0.25} },
+      { text:"Club balls +50% score", effect:{clubScore:0.50} } ] },
+    { id:"coin", name:"Coin", icon:"¢", build:"Bankroll", steps:[
+      { text:"+1¢ after each cleared blind", effect:{coinsPerBlind:1} },
+      { text:"+2¢ more after each cleared blind", effect:{coinsPerBlind:2} },
+      { text:"Everything in the shop costs 1¢ less", effect:{discount:1} } ] },
+    { id:"bounce", name:"Bounce", icon:"⤨", build:"Crapshoot", steps:[
+      { text:"+6% score", effect:{scoreMult:1.06} },
+      { text:"+10% score", effect:{scoreMult:1.10} },
+      { text:"+15% score", effect:{scoreMult:1.15} } ] },
+    { id:"element", name:"Element", icon:"✥", build:"Rainbow", steps:[
+      { text:"Every ball +8% score", effect:{allElementScore:0.08} },
+      { text:"Each distinct suit in hand +5% score", effect:{suitDiversity:0.05} },
+      { text:"+40% score when your hand holds all four suits", effect:{fourSuitBonus:0.40} } ] },
+    { id:"chaos", name:"Chaos", icon:"⚡", build:"Let It Ride", steps:[
+      { text:"+5% score", effect:{scoreMult:1.05} },
+      { text:"One more ball per drop scores ×1.5 on its first peg", effect:{glass:1} },
+      { text:"+1 ball for every hand", effect:{extraBalls:1} } ] }
   ];
 
   window.SlotchinkoData={NG,DECKS,NODES,EVENTS,LOUNGE,UNLOCKS,FAMILIES,BALANCE,SUITS,SUIT_GLYPHS,SUIT_NAMES,RANKS,HANDS,CHIP_CATALOG,CARD_CATALOG,BUFF_CATALOG,CONSUMABLE_CATALOG,RARITY_WEIGHT,RARITY_ORDER};

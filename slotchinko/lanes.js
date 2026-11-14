@@ -1,5 +1,5 @@
 /* Slotchinko lanes: where each kind of ball does best on the board in front of it, and what each pocket is.
-   Pure. The aim hint on the board, Lou's one-line tips and the test bot all read this, so they cannot disagree.
+   Pure. Lou's one-line tips, the pocket descriptions and the test bot all read this, so they cannot disagree.
    The numbers behind it are in docs/slotchinko/BOARDS.md (measured with tools/slotchinko-aim-map.mjs). */
 (() => {
   "use strict";

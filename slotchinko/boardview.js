@@ -76,7 +76,6 @@
         ctx.setLineDash([]);
       }
       this._buckets(ph, now);
-      if (ph.showHints) this._hints(ph);
       for (const peg of ph.pegs.values()) {
         if (!peg.plugin.gold) {
           this._circle(peg, peg.render.fillStyle, "#dbe8ff", 0.55);
@@ -114,37 +113,6 @@
       ctx.stroke();
     }
 
-    /* The aim hint: a gold marker at the top of the board where this hand's balls do best, with a faint line down.
-       A wide marker means "anywhere around here" (balls that scatter). */
-    _hints(ph) {
-      const { ctx } = this;
-      // The launcher's travel (game.js) and the marker's place: just under the "drag to aim" caption.
-      const MARGIN = 24,
-        TOP = 17,
-        TIP = 25;
-      for (const h of ph.aimHints || []) {
-        const x = MARGIN + h.aim * (ph.width - 2 * MARGIN),
-          half = h.wide ? 26 : 7,
-          foot = h.wide ? half - 6 : 0;
-        ctx.strokeStyle = "#ffd16655";
-        ctx.lineWidth = 1;
-        ctx.setLineDash([2, 6]);
-        ctx.beginPath();
-        ctx.moveTo(x, TIP + 2);
-        ctx.lineTo(x, ph.height - 40);
-        ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.fillStyle = "#ffd166";
-        ctx.beginPath();
-        ctx.moveTo(x - half, TOP);
-        ctx.lineTo(x + half, TOP);
-        ctx.lineTo(x + foot, TIP);
-        ctx.lineTo(x - foot, TIP);
-        ctx.closePath();
-        ctx.fill();
-      }
-    }
-
     _buckets(ph, now) {
       const { ctx } = this,
         top = ph.height - 37,
@@ -166,7 +134,9 @@
         const jack = !my && !drain && ph.jackpots().includes(i);
         ctx.fillStyle = pocketFill({ smash, drain, my, die, big, jack });
         ctx.fillRect(x0 + 1.5, top, w - 3, 37);
-        // The jackpot wears a gold cap, so a moved jackpot is easy to spot.
+        // The jackpot wears a gold cap and a soft glow, so a moved jackpot is easy to spot. A spade hand's
+        // outer pockets, which pay it just as much, glow the same way in steel.
+        if (jack || smash) this._glow(x0 + 1.5, top, w - 3, jack ? "255,209,102" : "196,213,255", now);
         if (jack) {
           ctx.fillStyle = "#ffd166";
           ctx.fillRect(x0 + 1.5, top, w - 3, 2.5);
@@ -204,6 +174,18 @@
           ctx.fillRect(x0 - 1.5, top, 3, 19);
         }
       });
+    }
+
+    /* A soft light rising out of a pocket, breathing slowly (held steady when motion is reduced). */
+    _glow(x, top, w, rgb, now) {
+      const { ctx } = this,
+        breath = this.reducedMotion() ? 0.5 : 0.5 + 0.5 * Math.sin(now / 700),
+        rise = 26,
+        g = ctx.createLinearGradient(0, top, 0, top - rise);
+      g.addColorStop(0, `rgba(${rgb},${0.2 + 0.14 * breath})`);
+      g.addColorStop(1, `rgba(${rgb},0)`);
+      ctx.fillStyle = g;
+      ctx.fillRect(x, top - rise, w, rise);
     }
 
     _floats(now) {

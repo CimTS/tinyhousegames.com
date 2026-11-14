@@ -187,7 +187,7 @@
       const mine = pick(round);
       return mine === before ? ids[(ids.indexOf(mine) + 1) % ids.length] : mine;
     }
-    /* Where this hand's balls do best on this board: a list of { aim, wide } (lanes.js). */
+    /* Where this hand's balls do best on this board: a list of { aim, wide } (lanes.js). The test bot aims by it. */
     aimHints() {
       const ph = this.physics;
       if (!this.state.primarySuit || !ph.jackpots) return [];
@@ -429,9 +429,8 @@
       )
         s.balls = Math.max(1, s.balls - 1);
       s.primarySuit = this._dominantSuit();
-      // The board marks the outer pockets for a heavy hand and can show where this hand does best (boardview.js).
+      // The board marks the outer pockets for a heavy hand (boardview.js).
       this.physics.heavyHand = s.primarySuit === "spade";
-      this.physics.aimHints = this.aimHints();
       return result;
     }
 

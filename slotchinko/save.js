@@ -5,7 +5,8 @@
 (() => {
   "use strict";
   const KEY = "slotchinko-run",
-    VERSION = 2; // 2: every blind starts from zero (score, total, handsLeft)
+    // 2: every blind starts from zero (score, total, handsLeft)
+    VERSION = 2;
   const fnv = text => {
     let h = 2166136261;
     for (let i = 0; i < text.length; i++) {
@@ -42,8 +43,10 @@
   };
   function write(game) {
     const s = game.state;
-    if (s.victory || (s.phase === "roundEnd" && !s.won)) return clear(); // the run is over
-    if (s.phase === "drop") return; // mid-drop is not a checkpoint; the last one stands
+    // the run is over
+    if (s.victory || (s.phase === "roundEnd" && !s.won)) return clear();
+    // mid-drop is not a checkpoint; the last one stands
+    if (s.phase === "drop") return;
     try {
       store()?.setItem(KEY, pack(game));
     } catch {
@@ -64,6 +67,11 @@
   /* Puts a saved run back exactly: state, RNG streams and the board for its blind. */
   function restore(game, d) {
     game.timers = [];
+    // Chips are read again from the catalogue, so a run saved by an older build plays by today's Chips
+    // (their family and effect). What the player paid and which copy it is stay as saved.
+    const defs = window.SlotchinkoData.CHIP_CATALOG,
+      today = c => ({ ...c, ...defs.find(x => x.id === c.id), cost: c.cost, instanceId: c.instanceId });
+    d.state.chips = (d.state.chips || []).map(today);
     game.state = d.state;
     game.rng.importState(d.rng);
     if (game._boardRules) game._boardRules();

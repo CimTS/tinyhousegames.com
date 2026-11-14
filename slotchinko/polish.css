@@ -25,7 +25,7 @@ button{cursor:pointer}button:disabled{cursor:not-allowed}
 .subtle,.phase-banner p,.micro,.hand-row small,#hand-detail,.board-footer,.reel small,.hand-note p,.hand-note b,.hand-note-right,#aim-guide,footer,.empty-inventory,.synergy-line,.consumable-heading small,.consumable-item,.consumable-item small,.shop-hint,.shop-empty-state>p,.market-kicker,.market-title>small,.shop-stockline,.shop-footer,.item-kind,.rarity-label,.buy-chip,.reroll-button>b,.reroll-button>small,.owned-chip,.shop-item p{font-size:11px;line-height:1.35}
 .micro{color:#a3afc7}footer{color:#8c99b3;font-size:10px}
 .phase-banner p{margin:3px 0 0;color:#b4c0d6}
-.item-tags{display:block;margin-top:4px;font-size:10px;color:#a3afc7;letter-spacing:.3px}
+.item-family{display:block;margin-top:4px;font-size:10px;color:var(--cyan);letter-spacing:.3px}
 .shop-item p{min-height:0;max-width:none;color:#c4cfe3}
 .item-kind{color:#a3afc7;letter-spacing:.3px}
 .market-title>small,.shop-stockline,.shop-stockline>span:last-child,.shop-footer{color:#a3afc7}
@@ -238,6 +238,7 @@ html.reduce-motion .target-flash.show{opacity:1}
 .col-tile.rarity-uncommon .col-icon{color:#6fe9a0}.col-tile.rarity-rare .col-icon{color:#7fb4ff}.col-tile.rarity-legendary .col-icon{color:var(--gold)}
 .col-tile.is-locked{border-style:dashed;background:#0d121d}.col-tile.is-locked b{color:#76839f}.col-tile.is-locked .col-icon{color:#5f6c88;background:#172033}
 .col-sets{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.col-sets.is-rows{grid-template-columns:1fr}
 .col-sets li{padding:7px 9px;border-radius:8px;border:1px dashed #2b3650;background:#0d121d}
 .col-sets b{display:block;font:800 13px 'Barlow Condensed',sans-serif;letter-spacing:.6px;color:#76839f}
 .col-sets small{font-size:10.5px;color:#8d9bb8}

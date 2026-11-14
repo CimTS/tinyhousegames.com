@@ -302,6 +302,10 @@
       return e;
     }
     /* The pocket, or pockets, holding the board's top value. */
+    /* What an outer pocket pays a heavy (spade) hand. The game raises it for The Whale's top step. */
+    edgePay() {
+      return this.spadeEdge ?? window.SlotchinkoData.BALANCE.SPADE_EDGE;
+    }
     jackpots() {
       const top = Math.max(...this.bucketValues);
       return this.bucketValues.map((v, i) => (v === top ? i : -1)).filter(i => i >= 0);
@@ -333,8 +337,7 @@
       if (!ball || !this.balls.has(ball.id)) return;
       this.balls.delete(ball.id);
       Composite.remove(this.world, ball);
-      const bw = this.width / 7,
-        p = ball.plugin;
+      const p = ball.plugin;
       let pocket = this.pocketAt(clamp(ball.position.x, 0, this.width - 0.01), this.wideCenter || !!p.wideCenter),
         nudged = false;
       // Nudge: a ball bound for a drain or a x0.5 pocket moves one pocket inward.
@@ -345,7 +348,7 @@
       // Heavy balls smash through the outer pockets: no drain, and a payout of their own.
       const smash = !!p.heavy && (pocket === 0 || pocket === 6);
       const drained = !smash && this.drainPockets.includes(pocket);
-      let value = smash ? window.SlotchinkoData.BALANCE.SPADE_EDGE : this.pocketValue(pocket, p);
+      let value = smash ? this.edgePay() : this.pocketValue(pocket, p);
       if (!drained && p.fortune) value *= window.SlotchinkoData.BALANCE.FORTUNE_BUCKET;
       value *= p.multiplier || 1;
       if (!drained && p.charge) value *= 1 + Math.min(0.15, p.charge * 0.05);

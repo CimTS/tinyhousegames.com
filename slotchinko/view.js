@@ -50,8 +50,8 @@
       $("round-value").textContent = `${s.round}/${BALANCE.FINAL_BLIND}`;
       $("score-value").textContent = s.score.toLocaleString("en-US");
       $("target-value").textContent = s.target.toLocaleString("en-US");
-      if (this.changed("coins", s.coins))
-        $("coins-value").textContent = `${s.coins}¢`; /* coin.js draws the ¢ as the coin */
+      // coin.js draws the ¢ as the coin
+      if (this.changed("coins", s.coins)) $("coins-value").textContent = `${s.coins}¢`;
       const pct = Math.min(100, (100 * s.score) / s.target);
       $("target-bar-fill").style.width = `${pct}%`;
       $("target-bar").classList.toggle("is-hit", s.score >= s.target);
@@ -168,7 +168,7 @@
         jackpot: ph.jackpots().includes(i),
         heavyHand: !!ph.heavyHand,
         edge: i === 0 || i === 6,
-        spadeEdge: window.SlotchinkoData.BALANCE.SPADE_EDGE
+        spadeEdge: ph.edgePay()
       });
     }
 
@@ -176,7 +176,7 @@
     coachRules() {
       const B = window.SlotchinkoData.BALANCE;
       return {
-        spadeEdge: B.SPADE_EDGE,
+        spadeEdge: this.game.physics.edgePay(),
         fortune: B.FORTUNE_BUCKET,
         twin: Math.max(...window.SlotchinkoData.BOSS_TUNE.LAYOUTS.twin),
         drainRound: this.game.physics.drainRound || B.DRAIN_ROUND

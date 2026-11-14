@@ -5,11 +5,13 @@
     window.SlotchinkoData;
   let serial = 0;
 
-  function weightedPick(items, random) {
-    const total = items.reduce((sum, item) => sum + (RARITY_WEIGHT[item.rarity] || 0), 0);
+  /* Picks by rarity weight; extra(item) scales an item's weight (the shop's lean toward owned families). */
+  function weightedPick(items, random, extra = () => 1) {
+    const weight = item => (RARITY_WEIGHT[item.rarity] || 0) * extra(item),
+      total = items.reduce((sum, item) => sum + weight(item), 0);
     let roll = random() * total;
     for (const item of items) {
-      roll -= RARITY_WEIGHT[item.rarity] || 0;
+      roll -= weight(item);
       if (roll <= 0) return item;
     }
     return items[items.length - 1];
@@ -19,12 +21,13 @@
   function cloneItem(def, s, surcharge = 0) {
     s.itemSerial = Math.max(s.itemSerial || 0, serial) + 1;
     serial = s.itemSerial;
-    return { ...def, cost: def.cost + surcharge, instanceId: `${def.id}-${s.itemSerial}` };
+    return { ...def, cost: Math.max(1, def.cost + surcharge), instanceId: `${def.id}-${s.itemSerial}` };
   }
 
   window.SlotchinkoShopLogic = {
-    /* Stock per section (BALANCE.SHOP_SLOTS), each picked by rarity weight without repeats. */
-    generateShop() {
+    /* Stock per section (BALANCE.SHOP_SLOTS), each picked by rarity weight without repeats.
+       lean: false for a reroll, which is fully random so a player can change direction. */
+    generateShop(lean = true) {
       const s = this.state,
         slots = { ...BALANCE.SHOP_SLOTS },
         rnd = this.rng.stream("shop"),
@@ -36,12 +39,17 @@
         consumable: CONSUMABLE_CATALOG.filter(d => open(d) && !s.consumables.some(c => c.id === d.id && d.unique)),
         buff: BUFF_CATALOG.filter(d => open(d) && this._canOwn(d))
       };
+      // The shop leans toward what you own: each Chip of a family you hold makes that family likelier (up to a cap).
+      const owned = id => Math.min(BALANCE.SHOP_LEAN_CAP, s.chips.filter(c => c.family === id).length),
+        leaning = d => 1 + BALANCE.SHOP_LEAN * owned(d.family),
+        discount = this._effects().discount;
       const inventory = [];
       for (const kind of ["chip", "card", "consumable", "buff"]) {
         const pool = [...pools[kind]];
         for (let i = 0; i < slots[kind] && pool.length; i++) {
-          const pick = weightedPick(pool, rnd);
-          inventory.push(cloneItem(pick, s, this._ngHas("tight-shop") && pick.cost >= NG.TIGHT_MIN_COST ? 1 : 0));
+          const pick = weightedPick(pool, rnd, kind === "chip" && lean ? leaning : () => 1),
+            tight = this._ngHas("tight-shop") && pick.cost >= NG.TIGHT_MIN_COST ? 1 : 0;
+          inventory.push(cloneItem(pick, s, tight - discount));
           pool.splice(
             pool.findIndex(item => item.id === pick.id),
             1
@@ -150,7 +158,7 @@
       }
       s.coins -= cost;
       const nextRerollCount = s.shopRerolls + 1;
-      this.generateShop();
+      this.generateShop(false);
       s.shopRerolls = nextRerollCount;
       this.toast(`SHOP REROLLED · -${cost}¢`);
       this.render();

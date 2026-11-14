@@ -417,7 +417,8 @@
       pad(t, semi, dur, vel, bright) {
         rnd();
         rnd();
-        rnd(); // default pad draws 3 detune values
+        // default pad draws 3 detune values
+        rnd();
         junoPad(ctx, n.layer.pad, t, {
           freq: hz(semi),
           dur,

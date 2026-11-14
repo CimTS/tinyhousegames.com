@@ -71,6 +71,11 @@
   const aces = s => s.cards.filter(c => c && c.rank === 14).length;
   const MOMENTS = [
     {
+      id: "sets",
+      when: s => (s.chips || []).some(c => s.chips.filter(x => x.family === c.family).length >= 2),
+      text: () => "Two Chips of one family make a set. Four is VIP, six is Whale. Your Loadout shows what each does."
+    },
+    {
       id: "glitch",
       when: s => s.cards.some(c => c && c.glitch),
       text: () => "That Ace keeps changing suit. It plays as whatever suit it shows when you press Drop Hand."

@@ -17,15 +17,17 @@
     }
     return { music: 1, sfx: 1 };
   }
-  let volume = readVolume(),
-    mus = null,
+  const volume = readVolume();
+  let mus = null,
     sting = null;
   // Music-engine stingers are effects: same level they had on the music bus (bus 0.9 x music 0.55), Effects volume.
   const STING = 0.9 * 0.55;
-  const PENTA = [0, 3, 5, 7, 10, 12, 15, 17, 19, 22, 24, 27]; // A minor pentatonic, matches music
+  // A minor pentatonic, matches music
+  const PENTA = [0, 3, 5, 7, 10, 12, 15, 17, 19, 22, 24, 27];
   const hz = s => 440 * Math.pow(2, s / 12);
   const FEAT_RUN = [3, 7, 10, 15, 19],
-    FEAT_CHORD = [3, 10, 15, 19, 22]; // C major, up through two octaves, then held
+    // C major, up through two octaves, then held
+    FEAT_CHORD = [3, 10, 15, 19, 22];
   let ctx = null,
     master,
     sfx,
@@ -64,14 +66,16 @@
   let combo = 0,
     lastBig = -9,
     stolen = 0;
-  const TOP = 27; // highest scoring note, in semitones above A4 (C7, 2093 Hz): above this a phone speaker turns notes into chirps
+  // highest scoring note, in semitones above A4 (C7, 2093 Hz): above this a phone speaker turns notes into chirps
+  const TOP = 27;
   // How a scoring ball sounds. ?score= picks one to compare: classic (the original: a fixed bright sound per pocket),
   // inkey (the original shape, tuned to the music's chord), climb (the original sound, each scoring ball a step higher),
   // ladder (low chord tones that climb).
   const SCORE = (m => (m ? m[1] : "classic"))(
     typeof location !== "undefined" && /[?&]score=(classic|inkey|climb|ladder)(?:&|$)/.exec(location.search)
   );
-  const CAP = 36; // A7, 3520 Hz: the tuned styles fold anything higher down an octave
+  // A7, 3520 Hz: the tuned styles fold anything higher down an octave
+  const CAP = 36;
   function scoreNotes(mult) {
     const step = mult >= 4 ? 10 : mult >= 2 ? 7 : mult >= 1 ? 4 : 0,
       root = PENTA[step] + (mult >= 1 ? 0 : -12);
@@ -145,7 +149,8 @@
     }
     clip.curve = c;
     clip.oversample = "2x";
-    const clipOff = !(typeof location !== "undefined" && /[?&]clip=on(&|$)/.test(location.search)); // soft clip only with ?clip=on
+    // soft clip only with ?clip=on
+    const clipOff = !(typeof location !== "undefined" && /[?&]clip=on(&|$)/.test(location.search));
     const lp = ctx.createBiquadFilter();
     lp.type = "lowpass";
     lp.frequency.value = 9000;
@@ -169,11 +174,11 @@
     limiter.release.value = 0.1;
     if (clipOff) {
       const mk = ctx.createGain();
+      // same small-signal level as the curve
       mk.gain.value = 1.3 / Math.tanh(1.3);
       lp.connect(bassCut[0]);
       bassCut[1].connect(comp).connect(mk).connect(master);
-    } // same small-signal level as the curve
-    else {
+    } else {
       lp.connect(bassCut[0]);
       bassCut[1].connect(comp).connect(clipIn).connect(clip).connect(master);
     }
@@ -338,9 +343,11 @@
     const at = ctx.currentTime + t,
       key = type + Math.round(freq),
       prev = lastHit.get(key);
-    if (prev !== undefined && Math.abs(at - prev) < 0.03) return; // same sound retriggered within 30 ms
+    // same sound retriggered within 30 ms
+    if (prev !== undefined && Math.abs(at - prev) < 0.03) return;
     lastHit.set(key, at);
-    vel *= Math.min(1, Math.sqrt(2 / (active.length + 1))); // keep stacked voices from summing hot
+    // keep stacked voices from summing hot
+    vel *= Math.min(1, Math.sqrt(2 / (active.length + 1)));
     const o = ctx.createOscillator(),
       g = ctx.createGain();
     o.type = type;
@@ -388,14 +395,22 @@
   //  pitchJump, pitchJumpTime, repeatTime, noise, modulation, bitCrush, delay, sustainVolume, decay, tremolo, filter]
   // Pitched sounds are rendered once and re-pitched with playbackRate (rate = target Hz / base Hz).
   const ZP = {
-    peg: [1, 0, 440, 0.004, 0, 0.2, 1, 1.4], // soft triangle ping
-    bucket: [1, 0, 440, 0.005, 0.04, 0.3, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0.04], // ping with a short echo
-    drain: [1, 0, 147, 0.005, 0.05, 0.25, 0, 1, -6], // falling thud
-    tally: [1, 0, 440, 0.004, 0.02, 0.16], // sine blip
-    note: [1, 0, 220, 0.015, 0.2, 0.55, 1, 1], // chord / arpeggio tone
-    tick: [1, 0, 2400, 0, 0, 0.02, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1800], // reel click (noise, high-passed)
-    hold: [1, 0, 1320, 0.003, 0.01, 0.04], // tiny confirm blip
-    buy: [1, 0, 523, 0.004, 0.03, 0.15, 1, 1, 0, 0, 262, 0.05] // coin: two-step blip
+    // soft triangle ping
+    peg: [1, 0, 440, 0.004, 0, 0.2, 1, 1.4],
+    // ping with a short echo
+    bucket: [1, 0, 440, 0.005, 0.04, 0.3, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0.04],
+    // falling thud
+    drain: [1, 0, 147, 0.005, 0.05, 0.25, 0, 1, -6],
+    // sine blip
+    tally: [1, 0, 440, 0.004, 0.02, 0.16],
+    // chord / arpeggio tone
+    note: [1, 0, 220, 0.015, 0.2, 0.55, 1, 1],
+    // reel click (noise, high-passed)
+    tick: [1, 0, 2400, 0, 0, 0.02, 4, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1800],
+    // tiny confirm blip
+    hold: [1, 0, 1320, 0.003, 0.01, 0.04],
+    // coin: two-step blip
+    buy: [1, 0, 523, 0.004, 0.03, 0.15, 1, 1, 0, 0, 262, 0.05]
   };
   function buildZ() {
     const zb = window.ZzfxBuild,
@@ -417,7 +432,8 @@
       at = ctx.currentTime + t,
       key = "z" + name + Math.round(rate * 1000),
       prev = lastHit.get(key);
-    if (prev !== undefined && Math.abs(at - prev) < 0.03) return; // same sound retriggered within 30 ms
+    // same sound retriggered within 30 ms
+    if (prev !== undefined && Math.abs(at - prev) < 0.03) return;
     lastHit.set(key, at);
     vel *= Math.min(1, Math.sqrt(2 / (active.length + 1)));
     const s = ctx.createBufferSource(),
@@ -440,7 +456,8 @@
     s.stop(end + 0.02);
     addVoice(s, g, at, vel);
   }
-  const TICK = 0.35; // ZzFX noise is full-band; the default ticks are band-passed, so scale to a similar level
+  // ZzFX noise is full-band; the default ticks are band-passed, so scale to a similar level
+  const TICK = 0.35;
   const ZS = {
     peg(x01, y01) {
       const now = performance.now(),
@@ -476,7 +493,8 @@
         zplay("drain", { vel: 0.08 });
         return;
       }
-      const n = scoreNotes(mult); // one note; a x2 pocket adds a second, a x4 a third
+      // one note; a x2 pocket adds a second, a x4 a third
+      const n = scoreNotes(mult);
       keepNext = true;
       zplay("bucket", { vel: 0.1, rate: hz(n[0]) / 440 });
       if (mult >= 2) zplay("bucket", { t: 0.05, vel: 0.06, rate: hz(n[1]) / 440 });
@@ -616,7 +634,8 @@
   const STINGS = (m => (m ? m[1] : "climb"))(
     typeof location !== "undefined" && /[?&]sting=(all|once|chord|climb)(?:&|$)/.exec(location.search)
   );
-  let bigs = 0; // x4 balls so far in this drop
+  // x4 balls so far in this drop
+  let bigs = 0;
   function big() {
     if (!music || !ctx) return;
     if (STINGS === "all") {
@@ -780,8 +799,9 @@
             mood(this);
             setMood(this);
           }
+          // short, with a hand left: no fail sting
           return;
-        } // short, with a hand left: no fail sting
+        }
         if (this.state.won) {
           setTimeout(S.win, 300);
           if (music) music.accent("win");
@@ -851,8 +871,9 @@
         const now = performance.now();
         if (k === "sfx" && now - lastPreview > 120) {
           lastPreview = now;
+          // hear the new level
           S.hold(true);
-        } // hear the new level
+        }
       });
     }
     el("mute-toggle")?.addEventListener("change", e => {

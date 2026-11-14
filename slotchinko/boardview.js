@@ -17,7 +17,7 @@
   }
   /* ...and what is written in it. */
   function pocketLabel({ smash, drain, my }, value) {
-    if (smash) return `♠×${window.SlotchinkoData.BALANCE.SPADE_EDGE}`;
+    if (smash) return `♠×${smash}`;
     if (drain) return "DRAIN";
     if (my && !my.shown) return "?";
     return `×${value}`;
@@ -163,7 +163,10 @@
         ctx.fillStyle = smash ? "#dfe8ff" : drain ? "#ff8cc4" : my ? "#d6c8ff" : die ? "#8ff8ec" : "#ffd166";
         // Narrow neighbours of a wide x4 get a smaller label so it still fits.
         ctx.font = `700 ${smash ? 13 : drain ? 11 : big ? 15 : w < 30 ? 10 : 13}px 'Barlow Condensed',sans-serif`;
-        const label = pocketLabel({ smash, drain, my }, +(ph.pocketValue?.(i) ?? value).toFixed(2));
+        const label = pocketLabel(
+          { smash: smash && ph.edgePay(), drain, my },
+          +(ph.pocketValue?.(i) ?? value).toFixed(2)
+        );
         ctx.fillText(label, mid, ph.height - 14);
         if (die) {
           ctx.font = "700 9px 'Barlow Condensed',sans-serif";

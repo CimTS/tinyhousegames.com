@@ -20,15 +20,6 @@
     return shuffle(deck, random);
   }
 
-  function compareVectors(a, b) {
-    const length = Math.max(a.length, b.length);
-    for (let i = 0; i < length; i++) {
-      const diff = (a[i] || 0) - (b[i] || 0);
-      if (diff !== 0) return diff;
-    }
-    return 0;
-  }
-
   // Returns a standard five-card poker result. tiebreak is ordered exactly
   // as poker requires: category first, then rank/kicker vectors.
   function evaluatePokerHand(cards) {

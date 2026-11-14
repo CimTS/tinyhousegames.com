@@ -1,7 +1,8 @@
 /* Slotchinko adaptive music. Procedural Web Audio, no files.
  * API: SlotchinkoMusic(ctx, out) -> { start(), stop(), setIntensity(0..1), setMood(name), accent(type),
  *                                      chordAt(time), stats(), renderTimeline(seconds,fn) }
- * accent types: "big" (big hand / x4 bucket), "win" (round cleared), "fail" (run over), "reset" (new round).
+ * accent types: "big" (big hand / x4 bucket), "target" (score passes the blind's goal), "win" (round cleared),
+ *               "fail" (run over), "reset" (new round).
  * moods: "play" (a blind), "boss" (a boss blind), "last" (the last hand of a blind), "shop", "fail".
  * Every 8 bars is a section: it picks a drum pattern, an arpeggio shape and a lead motif, so no two stretches
  * of a run are arranged the same way. Everything stays in A minor pentatonic over diatonic chords. */
@@ -273,14 +274,19 @@
       typeof location !== "undefined" &&
       !/[?&]music=(live|vice)(&|$)/.test(location.search) &&
       typeof OfflineAudioContext !== "undefined";
+    // bars rendered ahead (was 2: a busy phone main thread made chunks late)
     const PR_AHEAD = 3,
-      // bars rendered ahead (was 2: a busy phone main thread made chunks late)
       PR_FADE = 0.015;
     // seconds after the bar: pad release (2.6 s) and the ping-pong delay die out
     const PR_TAIL = 5;
+    // A mood change cuts to a fresh bar this soon (seconds), while what was playing fades out this fast.
+    const CUT_FADE = 0.35,
+      cutLead = () => Math.min(1.2, Math.max(0.3, 0.15 + (1.2 * (st.slow || 250)) / 1000));
+    // gen: bumped by every mood change, so a bar still being prepared for the old mood is dropped when it arrives.
     let prBusy = false,
-      prFlush = false;
-    // bars rendered and waiting to play: { T, s, snap }
+      gen = 0,
+      pending = null;
+    // bars rendered and waiting to play, or playing: { T, s, g, snap }
     const chunks = [];
     const SNAP = ["bar", "prog", "seed", "intensity", "fq", "drum", "arp", "motif", "rhythm", "pendingBig"];
     const snapshot = () => {
@@ -288,19 +294,17 @@
       for (const k of SNAP) o[k] = Array.isArray(st[k]) ? [...st[k]] : st[k];
       return o;
     };
-    /* A change of mood should be heard at the next bar line, not three bars later: bars already rendered
-       but not yet started are thrown away and rendered again in the new mood. */
+    /* A change of mood should be heard right away, not at the next bar line (up to three seconds off) with the old
+       bar's five-second tail still ringing. So the music cuts: bars not yet started are thrown away, what is
+       sounding fades out, and a fresh bar in the new mood starts as soon as it can be prepared. */
     function flush() {
       if (!PR || !st.running) return;
-      if (prBusy) {
-        prFlush = true;
-        return;
-      }
-      prFlush = false;
-      const cut = ctx.currentTime + 0.3,
-        drop = chunks.filter(c => c.T > cut).sort((a, b) => a.T - b.T);
-      if (!drop.length) return;
-      for (const c of drop) {
+      const now = ctx.currentTime,
+        T0 = now + cutLead() + (prBusy ? (st.slow || 250) / 1000 : 0);
+      gen++;
+      const waiting = chunks.filter(c => c.T - 0.05 > now),
+        dropped = [...waiting, ...(pending ? [pending] : [])].sort((a, b) => a.T - b.T);
+      for (const c of waiting) {
         try {
           c.s.stop();
         } catch (e) {
@@ -308,10 +312,24 @@
         }
         chunks.splice(chunks.indexOf(c), 1);
       }
-      const first = drop[0];
-      Object.assign(st, first.snap, { lv: { ...first.snap.lv } });
-      st.nextBar = first.T;
-      st.tl = st.tl.filter(x => x.t < first.T - 0.01);
+      // (a bar already fading from an earlier change is left to finish)
+      for (const c of chunks.filter(x => !x.fading)) {
+        c.fading = true;
+        c.g.gain.cancelScheduledValues(T0);
+        c.g.gain.setValueAtTime(1, T0);
+        c.g.gain.linearRampToValueAtTime(0, T0 + CUT_FADE);
+        try {
+          c.s.stop(T0 + CUT_FADE + 0.02);
+        } catch (e) {
+          /* already stopped */
+        }
+      }
+      // Carry on from the earliest bar thrown away, so bars and chords keep their order.
+      if (dropped.length) Object.assign(st, dropped[0].snap, { lv: { ...dropped[0].snap.lv } });
+      pending = null;
+      st.nextBar = T0;
+      st.cut = true;
+      st.tl = st.tl.filter(x => x.t < T0 - 0.01);
       prPump();
     }
     function prPump() {
@@ -324,6 +342,8 @@
         began = typeof performance !== "undefined" ? performance.now() : 0;
       st.nextBar = T + barLen;
       st.gT = T;
+      const mine = gen;
+      pending = { T, snap };
       const oc = new OfflineAudioContext(2, Math.ceil(sr * (barLen + PR_TAIL)), sr);
       // exactly one bar at local 0.05
       create(oc, oc.destination, st).renderTimeline(0.05 + barLen - 0.001);
@@ -331,6 +351,9 @@
       oc.startRendering()
         .then(buf => {
           if (began) st.slow = Math.max(st.slow || 0, Math.round(performance.now() - began));
+          // the mood changed while this bar was being prepared: it is not played
+          if (mine !== gen) return;
+          pending = null;
           st.bars = (st.bars || 0) + 1;
           // 100 ms fade on the (already near-silent) tail end
           const fl = Math.floor(sr * 0.1);
@@ -352,7 +375,7 @@
             s.start(now, now - at);
             st.late = (st.late || 0) + 1;
           }
-          const chunk = { T, s, snap };
+          const chunk = { T, s, g, snap };
           chunks.push(chunk);
           s.onended = () => {
             s.disconnect();
@@ -364,8 +387,7 @@
         .catch(e => console.warn("[music] prerender failed", e))
         .finally(() => {
           prBusy = false;
-          if (prFlush) flush();
-          else prPump();
+          prPump();
         });
     }
 
@@ -496,7 +518,7 @@
           p.cancelScheduledValues(t);
           p.setValueAtTime(st.lv && st.lv[k] != null ? st.lv[k] : p.value, t);
         }
-        n.layer[k].gain.linearRampToValueAtTime(v, t + 1.2);
+        n.layer[k].gain.linearRampToValueAtTime(v, t + (st.cut ? 0.2 : 1.2));
         (st.lv || (st.lv = {}))[k] = v;
       };
       const fail = st.mood === "fail",
@@ -513,7 +535,7 @@
       const fq = fail ? 500 : shop ? 2600 : (1100 + i * i * 5200) * (last ? 0.6 : 1);
       n.tone.frequency.cancelScheduledValues(t);
       n.tone.frequency.setValueAtTime(n.tone.frequency.value, t);
-      n.tone.frequency.exponentialRampToValueAtTime(fq, t + 2);
+      n.tone.frequency.exponentialRampToValueAtTime(fq, t + (st.cut ? 0.3 : 2));
       st.fq = fq;
     }
 
@@ -541,7 +563,9 @@
         chord = set[st.prog % set.length][st.bar % 4];
       st.tl.push({ t: st.gT != null ? st.gT : t, chord });
       if (st.tl.length > 16) st.tl.shift();
+      // the first bar after a mood change snaps its levels and tone into place instead of easing over a bar
       setLayers(t, i);
+      st.cut = false;
       chord.forEach(s => padVoice(t, s, bar * 0.92, chord.length > 3 ? 0.18 : 0.22, shop ? 0.5 : i));
       padVoice(t, chord[0] - 12, bar * 0.92, 0.12, i * 0.5);
       // bass: root on 1 and 3 with a fifth touch at mid intensity; a boss drives it in eighths; the shop walks to the fifth
@@ -669,7 +693,7 @@
       setIntensity(v) {
         st.target = Math.max(0, Math.min(1, Number(v) || 0));
       },
-      /* The mood re-arranges the same music: boss, last hand, shop, play. Heard from the next bar line. */
+      /* The mood re-arranges the same music: boss, last hand, shop, play. Heard within about half a second. */
       setMood(mood) {
         if (!["play", "boss", "last", "shop", "fail"].includes(mood) || st.mood === mood) return;
         st.mood = mood;
@@ -682,9 +706,20 @@
         for (const x of st.tl) if (x.t <= time + 0.02) hit = x;
         return hit ? [...hit.chord] : [0, 3, 7];
       },
-      /* How the music is keeping up: bars played, bars that arrived late, and the slowest bar to prepare (ms). */
+      /* How the music is keeping up: bars played, bars that arrived late, the slowest bar to prepare (ms),
+         the audio clock, and when the bar now being heard began (so a test can time a mood change). */
       stats() {
-        return { bars: st.bars || 0, late: st.late || 0, slow: st.slow || 0, prerender: PR, mood: st.mood };
+        const now = ctx.currentTime,
+          heard = st.tl.filter(x => x.t <= now).at(-1);
+        return {
+          bars: st.bars || 0,
+          late: st.late || 0,
+          slow: st.slow || 0,
+          prerender: PR,
+          mood: st.mood,
+          time: now,
+          barBegan: heard ? heard.t : null
+        };
       },
       accent(type, at, step) {
         const t = at ?? ctx.currentTime + 0.02;
@@ -702,6 +737,7 @@
           if (fxOn()) WIN_CHORD.forEach(s => pluck(t, s + 12, 1.2, 0.09, FX, "sine"));
         } else if (type === "climb") {
           // The chord the music is on, turned over once more for each x4 ball in the drop, so the stab climbs.
+          // Played in the chord's own octave: an octave up it was too bright (owner, listening test 2026-11-14).
           if (!fxOn()) return;
           const notes = api
             .chordAt(t)
@@ -709,10 +745,22 @@
             .sort((a, b) => a - b);
           for (let k = 0; k < Math.min(6, step || 0); k++) notes.push(notes.shift() + 12);
           notes.forEach(s => {
-            let v = s + 12;
+            let v = s;
             while (v > 36) v -= 12;
             pluck(t, v, 1.2, 0.09, FX, "sine");
           });
+        } else if (type === "target") {
+          // The score has passed the blind's goal: the chord the music is on, low, three notes, with the riser.
+          // It used to be the fixed C major sting an octave up, which clashed with whatever chord was playing.
+          sweep(t);
+          if (!fx) st.pendingBig = 1;
+          else if (fxOn()) riser(t + 0.1, FX);
+          if (fxOn())
+            api
+              .chordAt(t)
+              .slice(0, 3)
+              .sort((a, b) => a - b)
+              .forEach(s => pluck(t, s, 1.2, 0.1, FX, "sine"));
         } else if (type === "win") {
           sweep(t);
           if (fxOn()) {

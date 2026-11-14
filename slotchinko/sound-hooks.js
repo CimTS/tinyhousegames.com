@@ -18,6 +18,6 @@
   G.onBucket = function (result) {
     const had = this.state.targetHit;
     onBucket.call(this, result);
-    if (!had && this.state.targetHit) music()?.accent("big");
+    if (!had && this.state.targetHit) music()?.accent("target");
   };
 })();

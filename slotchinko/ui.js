@@ -160,7 +160,7 @@
     };
     // NEW RUN: straight in until decks unlock, then the deck select.
     const hasChoice = () =>
-      prefs.data.ngUnlocked > 0 || window.SlotchinkoData.DECKS.some(k => k.id !== "house" && prefs.deckOpen(k.id));
+      prefs.ngTop() > 0 || window.SlotchinkoData.DECKS.some(k => k.id !== "house" && prefs.deckOpen(k.id));
     $("play-button").addEventListener("click", () => (hasChoice() ? overlays.showDecks() : newRun()));
     // TUTORIAL: a fresh run on the House Deck with Lou's tips on, whoever is playing.
     $("title-tutorial").addEventListener("click", () => {
@@ -217,7 +217,7 @@
       overlays.showDecks();
     });
     $("ng-up").addEventListener("click", () => {
-      overlays.ngPick = Math.min(prefs.data.ngUnlocked || 0, (overlays.ngPick || 0) + 1);
+      overlays.ngPick = Math.min(prefs.ngOpen(overlays.deckPick || "house"), (overlays.ngPick || 0) + 1);
       overlays.showDecks();
     });
     $("deck-start").addEventListener("click", () =>
@@ -225,7 +225,7 @@
     );
     $("deck-back").addEventListener("click", () => overlays.showTitle());
     $("ng-button").addEventListener("click", () => {
-      overlays.ngPick = Math.min(prefs.data.ngUnlocked || 0, (game.state.ng || 0) + 1);
+      overlays.ngPick = Math.min(prefs.ngOpen(game.state.deckId || "house"), (game.state.ng || 0) + 1);
       overlays.deckPick = game.state.deckId || "house";
       overlays.showDecks();
     });

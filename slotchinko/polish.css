@@ -418,3 +418,6 @@ html.reduce-motion .reel.is-glitch .symbol.jolt{animation:none}
 .owned-icon .ic.fam-bounce,.col-icon .ic.fam-bounce,.col-family h3 .ic.fam-bounce,.col-rows .ic.fam-bounce,.item-family .ic.fam-bounce{color:#a78bfa}
 .owned-icon .ic.fam-element,.col-icon .ic.fam-element,.col-family h3 .ic.fam-element,.col-rows .ic.fam-element,.item-family .ic.fam-element{color:#36f5e5}
 .owned-icon .ic.fam-chaos,.col-icon .ic.fam-chaos,.col-family h3 .ic.fam-chaos,.col-rows .ic.fam-chaos,.item-family .ic.fam-chaos{color:#ff8c5a}
+/* Marked Card, armed: the Bag item glows and the cards wait to be picked. */
+.consumable-item.is-armed{border-color:var(--gold);box-shadow:0 0 0 1px #ffd16688,0 0 12px #ffd16644}
+body.marking .reel{border-color:var(--gold)}

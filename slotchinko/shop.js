@@ -70,7 +70,10 @@
         const n = this._ownedCount(def.id);
         return n === 0 || (def.stackable && n < (def.maxStack || 1));
       }
-      if (def.kind === "card") return def.deck === "addAce" ? (m.aces || 0) < def.maxStack : !m[def.deck];
+      if (def.kind === "card") {
+        if (def.deck === "addAce") return (m.aces || 0) < def.maxStack;
+        return def.maxStack > 1 ? (m[def.deck] || 0) < def.maxStack : !m[def.deck];
+      }
       if (def.kind === "buff") return def.duration !== "run" || !(s.runBuffs || []).some(b => b.id === def.id);
       return true;
     },
@@ -90,6 +93,7 @@
       } else if (item.kind === "card") {
         const m = s.deckMods;
         if (item.deck === "addAce") m.aces = (m.aces || 0) + 1;
+        else if (item.maxStack > 1) m[item.deck] = (m[item.deck] || 0) + 1;
         else m[item.deck] = true;
         if (item.deck === "joker") this.toast("JOKER ADDED TO YOUR DECK");
       } else if (item.kind === "buff") {
@@ -114,6 +118,26 @@
             ? " · DECK UPDATED"
             : " ACQUIRED";
       this.toast(`${item.name.toUpperCase()}${note}`);
+      this.render();
+    },
+
+    /* Marked Card, armed: the picked card takes the suit of the card on its left, and the item is spent. */
+    markCard(index) {
+      const s = this.state,
+        at = s.consumables.findIndex(c => c.instanceId === s.marking);
+      if (s.phase !== "slot" || at < 0) {
+        s.marking = null;
+        return;
+      }
+      if (index === 0) {
+        this.toast("THE FIRST CARD HAS NO CARD ON ITS LEFT");
+        return;
+      }
+      s.cards[index].suit = s.cards[index - 1].suit;
+      s.consumables.splice(at, 1);
+      s.marking = null;
+      this.toast("CARD MARKED");
+      this.evaluateHand();
       this.render();
     },
 
@@ -174,6 +198,17 @@
       const item = s.consumables[index];
       if (item.action === "redeal" && s.phase !== "slot") {
         this.toast("USE REDEAL WHILE PREPARING A HAND");
+        return;
+      }
+      // Marked Card needs a card picked: pressing it arms it (or puts it away); it is spent when a card is marked.
+      if (item.action === "mark") {
+        if (s.phase !== "slot") {
+          this.toast("USE MARKED CARD WHILE PREPARING A HAND");
+          return;
+        }
+        s.marking = s.marking === instanceId ? null : instanceId;
+        this.toast(s.marking ? "PICK A CARD TO MARK" : "MARKED CARD PUT AWAY");
+        this.render();
         return;
       }
       if (item.action === "skip") {

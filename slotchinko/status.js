@@ -6,6 +6,11 @@
   function banner(s, aiming, handsPerBlind = 3) {
     if (s.phase === "slot") {
       if (aiming) return { label: "AIM YOUR DROP", message: "Aim: drag or tap the board, then tap DROP to release." };
+      if (s.marking)
+        return {
+          label: "MARK A CARD",
+          message: "Pick a card: it takes the suit of the card on its left. Press Marked Card again to put it away."
+        };
       const need = Math.max(0, s.target - s.score).toLocaleString("en-US");
       const hands = s.handsMax || handsPerBlind;
       const handNumber = hands - (s.handsLeft || hands) + 1;

@@ -219,7 +219,14 @@
         }
     }
 
+    /* A split makes one more ball. Feeding Frenzy: the first split of a drop makes two more. */
     _splitBall(parent) {
+      const frenzy = parent.plugin.frenzy && !this.frenzied;
+      if (frenzy) this.frenzied = true;
+      this._spawnSplit(parent, "split");
+      if (frenzy && this.balls.size < MAX_BALLS) this._spawnSplit(parent, "frenzy");
+    }
+    _spawnSplit(parent, reason) {
       const p = parent.plugin;
       const offset = 7;
       const child = this._createBall(
@@ -243,7 +250,7 @@
         x: parent.velocity.x + (this.random() - 0.5) * 2.2,
         y: Math.max(0.5, parent.velocity.y * 0.78)
       });
-      this.callbacks.onBallSpawn?.({ ball: child, parent, reason: "split" });
+      this.callbacks.onBallSpawn?.({ ball: child, parent, reason });
     }
 
     _createBall(x, y, radius, plugin = {}) {

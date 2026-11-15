@@ -77,10 +77,12 @@
       [...stacks.values()].map(chipTile).join("") || '<span class="empty-inventory">No Chips yet.</span>';
     this.renderChipDetail(s, stacks);
     const live = s.phase === "slot" || (s.phase === "roundEnd" && s.won && !s.victory);
+    // Marked Card waits for a card to be picked once it has been pressed.
+    const armed = c => s.marking === c.instanceId;
     const bagItem = c =>
-      `<button type="button" class="consumable-item rarity-${c.rarity}" data-use="${c.instanceId}" ` +
+      `<button type="button" class="consumable-item rarity-${c.rarity}${armed(c) ? " is-armed" : ""}" data-use="${c.instanceId}" ` +
       `title="${c.desc}" ${live ? "" : "disabled"} aria-label="Use ${c.name}: ${c.desc}">` +
-      `<span>${Icons.of(c)}</span><b>${c.name}</b><small>USE</small></button>`;
+      `<span>${Icons.of(c)}</span><b>${c.name}</b><small>${armed(c) ? "PICK A CARD" : "USE"}</small></button>`;
     $("consumable-bag").innerHTML =
       s.consumables.map(bagItem).join("") || '<span class="empty-inventory">Consumables appear here.</span>';
     $("consumable-count").textContent = `${s.consumables.length}/${this.game._bagMax()}`;

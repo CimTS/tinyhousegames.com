@@ -125,8 +125,12 @@
       return true;
     }
     /* Ids still locked in the unlock pool, for a new run. */
+    /* Items not yet open on this save: milestone unlocks not found, and rush rewards not yet won. */
     locked() {
-      return window.SlotchinkoData.UNLOCKS.map(u => u.id).filter(id => !this.data.found.includes(id));
+      const won = u => (this.data.rush?.[u.rush.boss] || []).includes(u.rush.level);
+      return window.SlotchinkoData.UNLOCKS.filter(u => (u.rush ? !won(u) : !this.data.found.includes(u.id))).map(
+        u => u.id
+      );
     }
     deckOpen(id) {
       return id === "house" || this.data.found.includes(id);

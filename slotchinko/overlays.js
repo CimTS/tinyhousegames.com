@@ -38,7 +38,7 @@
     2: " and your two newest Chips",
     family: " and every Chip outside your biggest family"
   };
-  const FRESH = () => ({ best: 0, bestRound: 0, wins: 0, ngUnlocked: 0, found: [], deckBest: {}, setsFound: [] });
+  const FRESH = () => ({ best: 0, bestRound: 0, wins: 0, found: [], deckBest: {}, setsFound: [] });
   class Prefs {
     constructor() {
       this.data = { ...FRESH(), ...read() };
@@ -47,6 +47,9 @@
         this.data.found = [...new Set([...this.data.found, ...window.SlotchinkoData.DECKS.map(k => k.id)])];
         delete this.data.decksUnlocked;
       }
+      // Older saves: Ascension was one level for every deck. Each deck now stands on the levels it has won itself
+      // (deckBest, kept all along), so the old number is dropped and no deck is credited with a win it did not have.
+      delete this.data.ngUnlocked;
       const sys = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
       if (this.data.motion === undefined) this.data.motion = sys ? "reduced" : "full";
       this.apply();
@@ -127,6 +130,15 @@
     deckOpen(id) {
       return id === "house" || this.data.found.includes(id);
     }
+    /* Ascension is climbed deck by deck: a deck's highest open level is one above the highest it has won. */
+    ngOpen(deckId = "house") {
+      const won = this.data.deckBest?.[deckId];
+      return won == null ? 0 : Math.min(window.SlotchinkoData.NG.MAX, won + 1);
+    }
+    /* The highest level open on any deck (the title screen's line). */
+    ngTop() {
+      return Math.max(0, ...window.SlotchinkoData.DECKS.map(k => this.ngOpen(k.id)));
+    }
     /* Records a finished run: best score, wins, Ascension, sets found and new unlocks. */
     recordRun(s, game) {
       const d = this.data,
@@ -136,19 +148,16 @@
       let ascended = false;
       if (s.victory) {
         d.wins++;
-        const ng = s.ng || 0;
-        d.deckBest[s.deckId || "house"] = Math.max(d.deckBest[s.deckId || "house"] ?? -1, ng);
-        const open = Math.min(window.SlotchinkoData.NG.MAX, ng + 1);
-        if (open > (d.ngUnlocked || 0)) {
-          d.ngUnlocked = open;
-          ascended = true;
-        }
+        const deck = s.deckId || "house",
+          before = this.ngOpen(deck);
+        d.deckBest[deck] = Math.max(d.deckBest[deck] ?? -1, s.ng || 0);
+        ascended = this.ngOpen(deck) > before;
       }
       const fresh = game ? game.newUnlocks(d.found) : [];
       d.found.push(...fresh);
       d.setsFound = [...new Set([...(d.setsFound || []), ...(s.stats?.sets || [])])];
       write(d);
-      return { isBest, fresh, ascended };
+      return { isBest, fresh, ascended, deckId: s.deckId || "house" };
     }
   }
 
@@ -186,7 +195,7 @@
     showTitle() {
       const d = this.prefs.data;
       $("title-best").textContent = d.best
-        ? `BEST ${num(d.best)} · ${d.wins} WIN${d.wins === 1 ? "" : "S"}${d.ngUnlocked ? ` · ASCENSION ${d.ngUnlocked}` : ""}`
+        ? `BEST ${num(d.best)} · ${d.wins} WIN${d.wins === 1 ? "" : "S"}${this.prefs.ngTop() ? ` · ASCENSION ${this.prefs.ngTop()}` : ""}`
         : "NO RUNS YET";
       const saved = window.SlotchinkoSave?.read(),
         c = $("continue-button");
@@ -254,7 +263,10 @@
       const d = this.prefs.data,
         D = window.SlotchinkoData;
       if (this.deckPick == null || !this.prefs.deckOpen(this.deckPick)) this.deckPick = "house";
-      this.ngPick = Math.max(0, Math.min(this.ngPick || 0, d.ngUnlocked || 0));
+      // Each deck has its own ladder: the level on show never passes what this deck has opened.
+      const top = this.prefs.ngOpen(this.deckPick),
+        deck = D.DECKS.find(k => k.id === this.deckPick);
+      this.ngPick = Math.max(0, Math.min(this.ngPick || 0, top));
       const hint = id => D.UNLOCKS.find(u => u.id === id)?.hint || "";
       $("deck-list").innerHTML = D.DECKS.map(k => {
         const open = this.prefs.deckOpen(k.id),
@@ -270,11 +282,12 @@
         mods = D.NG.MODS.slice(0, n),
         pct = Math.round(((1 + D.NG.TARGET_STEP * n) * (n >= 8 ? D.NG.HIGH_STAKES : 1) - 1) * 100);
       $("ng-level").textContent = n ? `ASCENSION ${n}` : "STANDARD";
+      const next = n === top && n < D.NG.MAX ? ` · Win with the ${deck.name} to open ${n + 1}` : "";
       $("ng-detail").textContent = n
-        ? `${pct ? `Targets +${pct}% · ` : ""}${n} rule${n === 1 ? "" : "s"}`
-        : d.ngUnlocked
+        ? `${pct ? `Targets +${pct}% · ` : ""}${n} rule${n === 1 ? "" : "s"}${next}`
+        : top
           ? "Press + to raise the stakes."
-          : "Win a run to open Ascension 1.";
+          : `Win a run with the ${deck.name} to open its Ascension 1.`;
       // Newest rule in full; earlier ones as a compact row.
       const last = mods[n - 1],
         older = mods.slice(0, -1);
@@ -285,7 +298,7 @@
           : "");
       $("ng-mods").hidden = !n;
       $("ng-down").disabled = n <= 0;
-      $("ng-up").disabled = n >= (d.ngUnlocked || 0);
+      $("ng-up").disabled = n >= top;
       const found = D.DECKS.filter(k => this.prefs.deckOpen(k.id)).length;
       $("deck-count").textContent = `${found}/${D.DECKS.length} OPEN`;
       this.show("deck-screen");
@@ -350,7 +363,9 @@
     _unlockInfo(rec, d) {
       const D = window.SlotchinkoData,
         items = [...D.CHIP_CATALOG, ...D.CARD_CATALOG, ...D.BUFF_CATALOG, ...D.CONSUMABLE_CATALOG],
-        mod = D.NG.MODS[d.ngUnlocked - 1];
+        deck = D.DECKS.find(k => k.id === (rec.deckId || "house")),
+        level = this.prefs.ngOpen(deck.id),
+        mod = D.NG.MODS[level - 1];
       const list = rec.fresh.map(id => {
         const deck = D.UNLOCKS.find(x => x.id === id).kind === "deck",
           it = deck ? D.DECKS.find(k => k.id === id) : items.find(x => x.id === id),
@@ -361,8 +376,8 @@
         list.unshift({
           asc: true,
           icon: "♛",
-          name: `Ascension ${d.ngUnlocked}`,
-          kind: "Harder run · pick it when you start a run",
+          name: `${deck.name} · Ascension ${level}`,
+          kind: "Harder run with this deck · pick it when you start a run",
           desc: `Adds ${mod.name}: ${mod.desc}`
         });
       return list;
@@ -618,7 +633,7 @@
       const canNg = s.victory && (s.ng || 0) < D.NG.MAX;
       $("ng-button").hidden = !canNg;
       if (canNg) $("ng-button-level").textContent = `${(s.ng || 0) + 1}`;
-      const choose = D.DECKS.some(k => k.id !== "house" && this.prefs.deckOpen(k.id)) || d.ngUnlocked > 0;
+      const choose = D.DECKS.some(k => k.id !== "house" && this.prefs.deckOpen(k.id)) || this.prefs.ngTop() > 0;
       $("deck-button").hidden = !choose;
       $("restart-button").classList.toggle("btn-primary", !canNg);
       $("restart-button").classList.toggle("btn-secondary", canNg);

@@ -111,6 +111,7 @@
         itemSerial: 0,
         locked: [...(locked || [])],
         path: null,
+        rush: { tried: [], won: [], active: null, result: null },
         event: null,
         node: "blind",
         boss: null,
@@ -145,6 +146,7 @@
       this.physics.setRound(1);
       this._bossBoard();
       this._startNewHand();
+      this._startPath();
       this.render();
     }
 
@@ -884,8 +886,13 @@
         this.view?.dealt?.([0, 1, 2, 3, 4]);
         return;
       }
+      if (s.score < s.target && s.rush?.active) {
+        this._rushLost();
+        return;
+      }
       if (s.score >= s.target) {
         s.won = true;
+        if (s.rush?.active) this._rushWon();
         const st = s.stats,
           max = s.handsMax || BALANCE.HANDS_PER_BLIND;
         if (st) {

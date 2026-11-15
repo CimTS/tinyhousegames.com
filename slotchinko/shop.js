@@ -185,6 +185,10 @@
           this.toast("THE FINAL BLIND CANNOT BE SKIPPED");
           return;
         }
+        if (s.rush?.active) {
+          this.toast("A RUSHED BOSS CANNOT BE SKIPPED");
+          return;
+        }
       }
       s.consumables.splice(index, 1);
       if (item.action === "coins") {

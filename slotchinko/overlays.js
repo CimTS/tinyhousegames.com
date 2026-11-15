@@ -31,6 +31,13 @@
     "Chips of one family form a set: 2 is Regular, 4 is VIP, 6 is Whale. Reach VIP and your run has a build. " +
     "Locked items open from milestones.";
 
+  /* What Lou takes beyond coins when a rush is lost, keyed by the cut's "chips" (data.js RUSH.CUTS). */
+  const RUSH_CUT = {
+    0: "",
+    1: " and your newest Chip",
+    2: " and your two newest Chips",
+    family: " and every Chip outside your biggest family"
+  };
   const FRESH = () => ({ best: 0, bestRound: 0, wins: 0, ngUnlocked: 0, found: [], deckBest: {}, setsFound: [] });
   class Prefs {
     constructor() {
@@ -63,6 +70,15 @@
     }
     apply() {
       document.documentElement.classList.toggle("reduce-motion", this.reducedMotion());
+    }
+    /* A rush won: the reward for that boss at that Ascension level. True the first time on this save. */
+    rushWon(boss, ng) {
+      const won = this.data.rush || {},
+        levels = won[boss] || [];
+      if (levels.includes(ng)) return false;
+      this.data.rush = { ...won, [boss]: [...levels, ng] };
+      write(this.data);
+      return true;
     }
     /* Lou's one-line tips after the tutorial: on unless switched off in Settings. */
     tipsOn() {
@@ -422,15 +438,25 @@
         D = window.SlotchinkoData;
       if (!s.path) return;
       if (s.event) return this.showEvent(game);
-      const next = s.round + 1;
+      const next = s.path.start ? 1 : s.round + 1;
+      $("path-back").hidden = !!s.path.start;
       // A blind whose jackpot has moved says so before you commit to it.
       const board = game._layoutFor(next) === "classic" ? "" : ` · Board: ${game.layoutName(next)}`;
       $("path-sub").textContent = `Blind ${next} of ${D.BALANCE.FINAL_BLIND}${board}`;
       window.SlotchinkoBossView.pathPreview(game);
       $("path-boss-label").hidden = $("path-boss").hidden;
+      // A boss that can be rushed from here says so: its box opens the offer.
+      const rush = !!game.rushOffer();
+      $("path-boss-label").textContent = rush ? "HEADS UP · THIS BOSS CAN BE RUSHED" : "HEADS UP · NOT A CHOICE";
+      $("path-boss").classList.toggle("is-rush", rush);
+      for (const [k, v] of [
+        ["role", "button"],
+        ["tabindex", "0"]
+      ])
+        rush ? $("path-boss").setAttribute(k, v) : $("path-boss").removeAttribute(k);
       // Tutorial, last step: Lou says what can be picked (those glow) and what the boss box is for.
       const C = window.SlotchinkoCoach,
-        coach = !!this.prefs.coachOn?.() && s.round === 1,
+        coach = !!this.prefs.coachOn?.() && s.round === 1 && !s.path.start,
         boss = D.BOSSES.find(x => x.round > s.round),
         words = window.SlotchinkoCopy?.words || (x => x);
       $("path-coach").hidden = !coach;
@@ -482,6 +508,63 @@
         $("path-boss").classList.remove("nudge");
         $("path-list").classList.remove("nudge");
       }, 900);
+    }
+    /* Tapping a boss that can be rushed: the offer, with what a win pays and what Lou takes. Nothing happens until
+       RUSH is pressed. */
+    showRushOffer(game) {
+      const o = game.rushOffer();
+      if (!o) return;
+      const takes = RUSH_CUT[o.cut.chips] || RUSH_CUT[0],
+        coins =
+          o.cut.coins === 1 ? "all your coins" : o.cut.coins === 0.5 ? "half your coins" : "a quarter of your coins",
+        harder = o.climb > 1 ? ` The target is ${Math.round((o.climb - 1) * 100)}% higher.` : "";
+      this.rushCard({
+        offer: true,
+        face: o.boss.id,
+        title: `RUSH ${o.boss.name.toUpperCase()}?`,
+        text: `Skip three blinds and fight at blind ${o.boss.round} now.${harder}`,
+        lines: [
+          `Win: +${o.wages}¢ from Lou and the reward ${o.boss.rewards[game.state.ng - 1]}`,
+          `Lose: Lou takes ${coins}${takes}, then deals you blind ${o.from + 1}`,
+          "One try per boss each run"
+        ],
+        ok: "RUSH"
+      });
+    }
+    rushCard({ offer = false, face, title, text, lines, ok }) {
+      this.rushOffered = offer;
+      $("rush-face").innerHTML = (window.SlotchinkoBossArt || {})[face] || "";
+      $("rush-title").textContent = title;
+      $("rush-text").textContent = text;
+      $("rush-list").innerHTML = lines.map(t => `<li>${t}</li>`).join("");
+      $("rush-ok").textContent = ok;
+      $("rush-no").hidden = !offer;
+      this.show("rush-screen");
+    }
+    /* After a rush: what was won, or what Lou took. Shown once, then the game goes on underneath. */
+    showRush(game) {
+      const s = game.state,
+        r = s.rush?.result,
+        b = r && window.SlotchinkoData.BOSSES.find(x => x.id === r.boss);
+      if (!b) return;
+      const reward = b.rewards[s.ng - 1],
+        lines = r.won
+          ? [
+              `+${r.wages}¢ from Lou for the blinds you skipped`,
+              `${r.fresh ? "Reward earned" : "Reward already yours"}: ${reward}`
+            ]
+          : [
+              r.coins ? `Lou takes ${r.coins}¢` : "You had no coins for Lou to take",
+              ...r.chips.map(name => `Chip lost: ${name}`),
+              `Back to blind ${r.next}. ${b.name} is still waiting at blind ${b.round}, with no reward this run.`
+            ];
+      this.rushCard({
+        face: r.won ? b.id : "host",
+        title: r.won ? "RUSH WON" : "LOU TAKES HIS CUT",
+        text: r.won ? `${b.name} is beaten three blinds early.` : `${b.name} wins this one. “Nothing personal, kid.”`,
+        lines,
+        ok: r.won ? "TO THE SHOP" : "DEAL ME IN"
+      });
     }
     showEvent(game) {
       const s = game.state,

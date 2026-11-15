@@ -407,3 +407,14 @@ html.reduce-motion .reel.is-glitch .symbol.jolt{animation:none}
 .rush-face{width:84px;height:84px}
 .rush-list{list-style:none;margin:0;padding:0;display:grid;gap:6px;width:100%}
 .rush-list li{padding:8px 10px;border:1px solid #2c3852;border-radius:8px;background:#101725;font:500 13px/1.4 'DM Mono',monospace;color:#d7dceb;text-align:left}
+/* Drawn item icons (icons.js): sized by the text around them and coloured by it. On the dark Loadout and Collection
+   tiles a Chip's icon takes its family's colour, so a build can be read at a glance. */
+.ic{display:inline-block;width:1.15em;height:1.15em;vertical-align:-.2em;flex:none}
+.owned-icon .ic.fam-heart,.col-icon .ic.fam-heart,.col-family h3 .ic.fam-heart,.col-rows .ic.fam-heart,.item-family .ic.fam-heart{color:#ff4fa3}
+.owned-icon .ic.fam-diamond,.col-icon .ic.fam-diamond,.col-family h3 .ic.fam-diamond,.col-rows .ic.fam-diamond,.item-family .ic.fam-diamond{color:#ffd166}
+.owned-icon .ic.fam-spade,.col-icon .ic.fam-spade,.col-family h3 .ic.fam-spade,.col-rows .ic.fam-spade,.item-family .ic.fam-spade{color:#bfefff}
+.owned-icon .ic.fam-club,.col-icon .ic.fam-club,.col-family h3 .ic.fam-club,.col-rows .ic.fam-club,.item-family .ic.fam-club{color:#5eead4}
+.owned-icon .ic.fam-coin,.col-icon .ic.fam-coin,.col-family h3 .ic.fam-coin,.col-rows .ic.fam-coin,.item-family .ic.fam-coin{color:#ffd166}
+.owned-icon .ic.fam-bounce,.col-icon .ic.fam-bounce,.col-family h3 .ic.fam-bounce,.col-rows .ic.fam-bounce,.item-family .ic.fam-bounce{color:#a78bfa}
+.owned-icon .ic.fam-element,.col-icon .ic.fam-element,.col-family h3 .ic.fam-element,.col-rows .ic.fam-element,.item-family .ic.fam-element{color:#36f5e5}
+.owned-icon .ic.fam-chaos,.col-icon .ic.fam-chaos,.col-family h3 .ic.fam-chaos,.col-rows .ic.fam-chaos,.item-family .ic.fam-chaos{color:#ff8c5a}

@@ -2,6 +2,7 @@
 (() => {
   "use strict";
   const { BALANCE } = window.SlotchinkoData;
+  const Icons = window.SlotchinkoIcons;
   const $ = id => document.getElementById(id);
   const P = window.GameView.prototype;
 
@@ -30,7 +31,7 @@
     box.hidden = false;
     document.body.classList.add("chip-open");
     const several = entry.n > 1;
-    const title = `${c.icon} ${c.name}${several ? ` ×${entry.n}` : ""}`;
+    const title = `${Icons.of(c)} ${c.name}${several ? ` ×${entry.n}` : ""}`;
     const sell =
       `<button type="button" class="sell-chip" data-sell="${c.id}" ` +
       `aria-label="Sell ${several ? "one " : ""}${c.name} for ${value} coins">` +
@@ -68,7 +69,7 @@
       return (
         `<button type="button" class="owned-chip rarity-${c.rarity}${open ? " is-open" : ""}" data-info="${c.id}" ` +
         `title="${c.desc}" aria-expanded="${open}" aria-controls="chip-detail" aria-label="${label}">` +
-        `<span class="owned-icon">${c.icon}</span><span class="owned-name">${c.name}</span>` +
+        `<span class="owned-icon">${Icons.of(c)}</span><span class="owned-name">${c.name}</span>` +
         `${n > 1 ? `<i>×${n}</i>` : ""}</button>`
       );
     };
@@ -79,7 +80,7 @@
     const bagItem = c =>
       `<button type="button" class="consumable-item rarity-${c.rarity}" data-use="${c.instanceId}" ` +
       `title="${c.desc}" ${live ? "" : "disabled"} aria-label="Use ${c.name}: ${c.desc}">` +
-      `<span>${c.icon}</span><b>${c.name}</b><small>USE</small></button>`;
+      `<span>${Icons.of(c)}</span><b>${c.name}</b><small>USE</small></button>`;
     $("consumable-bag").innerHTML =
       s.consumables.map(bagItem).join("") || '<span class="empty-inventory">Consumables appear here.</span>';
     $("consumable-count").textContent = `${s.consumables.length}/${this.game._bagMax()}`;
@@ -116,12 +117,12 @@
       family = FAMILIES.find(f => f.id === item.family);
     if (!family) return "";
     const set = Sets.familySets(s.chips).find(x => x.family === family) || { family, count: 0, step: 0 };
-    return `<small class="item-family">${family.icon} ${Sets.standing(set)}</small>`;
+    return `<small class="item-family">${Icons.family(family)} ${Sets.standing(set)}</small>`;
   };
   const itemCard = (item, index, s) => `
     <article class="shop-item rarity-${item.rarity} is-${item.kind}" style="--card-index:${index}">
       <div class="item-top">
-        <span class="item-icon-wrap"><span class="item-icon">${item.icon}</span></span>
+        <span class="item-icon-wrap"><span class="item-icon">${Icons.of(item)}</span></span>
         <span class="rarity-label"><i></i>${item.rarity}</span>
       </div>
       <div class="item-copy">

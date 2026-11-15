@@ -20,6 +20,7 @@
   const num = n => Number(n).toLocaleString("en-US");
 
   /* One tile in the Collection or Loadout grids: an icon, a name, a line of text, and anything extra. */
+  const Icons = window.SlotchinkoIcons;
   const tile = ({ classes, icon, name, desc, extra = "", after = "" }) =>
     `<li class="col-tile ${classes}"><span class="col-icon">${icon}</span>` +
     `<span><b>${name}</b><small>${desc}</small>${extra}</span>${after}</li>`;
@@ -323,14 +324,14 @@
       const row = ({ chip: c, n, value }) =>
         tile({
           classes: `loadout-row rarity-${c.rarity}`,
-          icon: c.icon,
+          icon: Icons.of(c),
           name: `${c.name}${n > 1 ? ` ×${n}` : ""}`,
           desc: c.desc,
           extra: value ? "" : `<small class="loadout-note">Part of your deck. It can't be sold.</small>`,
           after: value && can ? sellButton(c, n, value) : ""
         });
       const buffs = (s.runBuffs || [])
-        .map(c => tile({ classes: `rarity-${c.rarity}`, icon: c.icon, name: c.name, desc: c.desc }))
+        .map(c => tile({ classes: `rarity-${c.rarity}`, icon: Icons.of(c), name: c.name, desc: c.desc }))
         .join("");
       // Each family owned: where it stands, what its reached steps do, and what the next one adds.
       const Sets = window.SlotchinkoSets,
@@ -339,7 +340,7 @@
           const have = x.family.steps.slice(0, x.step).map((_, i) => does(x, i)),
             next = x.step < x.family.steps.length ? `Next: ${does(x, x.step)}` : "";
           const words = [...have, next].filter(Boolean).join(" · ");
-          return `<li class="${x.step ? "is-found" : ""}"><b>${x.family.icon} ${Sets.standing(x)}</b><small>${words}</small></li>`;
+          return `<li class="${x.step ? "is-found" : ""}"><b>${Icons.family(x.family)} ${Sets.standing(x)}</b><small>${words}</small></li>`;
         };
       const sets = game._effects().sets.map(setRow).join(""),
         build = game.build();
@@ -370,7 +371,7 @@
         const deck = D.UNLOCKS.find(x => x.id === id).kind === "deck",
           it = deck ? D.DECKS.find(k => k.id === id) : items.find(x => x.id === id),
           kind = deck ? "Deck · pick it when you start a run" : "Now turns up in the shop";
-        return { icon: it.icon, name: it.name, kind, desc: it.desc };
+        return { icon: Icons.of(it), name: it.name, kind, desc: it.desc };
       });
       if (rec.ascended)
         list.unshift({
@@ -405,7 +406,7 @@
       const lockable = (classes, it, open) =>
         tile({
           classes: `${classes}${open ? "" : "is-locked"}`,
-          icon: open ? it.icon : "?",
+          icon: open ? Icons.of(it) : "?",
           name: open ? it.name : "Locked",
           desc: open ? it.desc : hint(it.id)
         });
@@ -416,7 +417,7 @@
       const fams = D.FAMILIES.map(f => {
         const items = D.CHIP_CATALOG.filter(c => c.family === f.id);
         if (!items.length) return "";
-        return family(f.icon, f.name, small(openOf(items)), grid(items));
+        return family(Icons.family(f), f.name, small(openOf(items)), grid(items));
       }).join("");
       const other = [
         ["Deck Cards", D.CARD_CATALOG, "▤"],
@@ -432,7 +433,7 @@
       const sets = D.FAMILIES.map(f => {
         const n = reached(f),
           best = n ? `Reached ${tiers[n - 1]}` : "Not found yet";
-        return `<li class="${n ? "is-found" : ""}"><b>${f.icon} ${f.build}</b><small>${f.name} · ${best}</small></li>`;
+        return `<li class="${n ? "is-found" : ""}"><b>${Icons.family(f)} ${f.build}</b><small>${f.name} · ${best}</small></li>`;
       }).join("");
       const decks = D.DECKS.map(k => {
         return lockable("", k, this.prefs.deckOpen(k.id));

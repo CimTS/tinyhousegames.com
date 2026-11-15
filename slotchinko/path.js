@@ -74,6 +74,9 @@
       s.coins += wages;
       s.stats.coinsEarned += wages;
       s.stats.rushWon = (s.stats.rushWon || 0) + 1;
+      // The reward joins this run's shop at once, if its item exists yet.
+      const reward = D.rewardId(D.BOSSES.find(b => b.id === boss).rewards[s.ng - 1]);
+      s.locked = (s.locked || []).filter(id => id !== reward);
       s.rush.result = { won: true, boss, wages };
       this.view?.rushWon?.(boss, s.ng);
     },

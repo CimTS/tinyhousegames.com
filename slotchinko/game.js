@@ -20,9 +20,18 @@
         {
           onPegHit: (ball, peg) => this.onPegHit(ball, peg),
           onBallSpawn: ({ reason }) => {
-            if (reason === "split") {
+            if (reason === "split" || reason === "frenzy") {
               this.state.activeBalls++;
-              this._onSplit();
+              if (reason === "split") this._onSplit();
+              else
+                this.payout({
+                  id: "feeding-frenzy",
+                  icon: "♆",
+                  name: "FEEDING FRENZY",
+                  amount: 1,
+                  unit: "BALL",
+                  kind: "ball"
+                });
             }
           },
           onPegDestroyed: ({ element }) => this.onPegDestroyed(element),
@@ -302,7 +311,8 @@
         rnd = this.rng.stream("deck");
       let deck = createDeck(rnd);
       // same order as before deck cards existed
-      if (!m.aces && !m.trim && !m.gold && !m.deckAces && !m.joker && !m.glitch) return deck;
+      if (!m.aces && !m.trim && !m.gold && !m.deckAces && !m.joker && !m.glitch && !m.chameleon && !m.fifthSuit)
+        return deck;
       for (let i = 0; i < (m.deckAces || 0); i++) {
         const suit = SUITS[i % 4];
         deck.push({ id: `14-${suit}-d${i}`, rank: 14, label: "A", suit });
@@ -315,6 +325,9 @@
       if (m.trim) deck = deck.filter(c => c.rank > 2);
       if (m.gold) deck = deck.map(c => (c.rank === 14 ? { ...c, gold: true } : c));
       if (m.joker) deck.push({ id: "joker", rank: 0, label: "★", suit: "spade", joker: true });
+      for (let i = 0; i < (m.chameleon || 0); i++)
+        deck.push({ id: `chameleon-${i}`, rank: 11, label: "J", suit: SUITS[i % 4], chameleon: true });
+      if (m.fifthSuit) deck.push({ id: "14-fifth", rank: 14, label: "A", suit: SUITS[0] });
       for (let i = deck.length - 1; i > 0; i--) {
         const j = Math.floor(rnd() * (i + 1));
         [deck[i], deck[j]] = [deck[j], deck[i]];
@@ -362,6 +375,10 @@
     toggleHold(index) {
       const s = this.state;
       if (s.phase !== "slot" || !Number.isInteger(index) || index < 0 || index > 4) return;
+      if (s.marking) {
+        this.markCard(index);
+        return;
+      }
       s.held[index] = !s.held[index];
       this.vibrate(8);
       this.render();
@@ -399,15 +416,19 @@
       if (s.cards.length !== 5 || s.cards.some(c => !c)) return;
       const two = s.deckId === "wild-suit";
       this._playJoker(two);
-      const result = evaluatePokerHand(
-          two
-            ? s.cards.map(c => ({ ...c, suit: c.suit === "heart" || c.suit === "diamond" ? "heart" : "spade" }))
-            : s.cards
-        ),
-        fx = this._effects();
+      this._playChameleons();
+      const fx = this._effects(),
+        toned = two
+          ? s.cards.map(c => ({ ...c, suit: c.suit === "heart" || c.suit === "diamond" ? "heart" : "spade" }))
+          : s.cards,
+        stray = fx.offSuit ? this._stray(toned) : null,
+        result = evaluatePokerHand(stray ? toned.map(c => (c === stray.card ? { ...c, suit: stray.suit } : c)) : toned);
+      // Off-Suit makes the hand score as a Flush; it is not one for anything that counts Flushes (natural says so).
+      result.natural = stray ? evaluatePokerHand(toned).name : result.name;
+      result.offSuit = !!stray;
       s.lastEvaluation = result;
       s.hand = result.name;
-      s.handDetail = `${result.description} · ${result.bonus}`;
+      s.handDetail = `${result.description} · ${result.bonus}${stray ? " · OFF-SUIT" : ""}`;
       s.power = result.power * (1 + this._boost(s.pendingBoosts, "power")) * (s.deckId === "pachinko" ? 0.8 : 1);
       const gold = s.cards.filter(c => c.gold).length;
       s.goldBonus = gold * BALANCE.GOLD_POWER;
@@ -418,12 +439,17 @@
         s.power *= BALANCE.GLITCH_POWER;
         s.handDetail = `${result.description} · GLITCHED ACE: +50% power, double balls`;
       }
+      if (result.name === "The Cinco" && s.deckMods?.fifthSuit) {
+        s.power *= BALANCE.FIFTH_SUIT;
+        s.handDetail += " · THE FIFTH SUIT: +25%";
+      }
       s.grinBonus = fx.grinBalls && (result.name === "High Card" || result.name === "One Pair") ? fx.grinBalls : 0;
       s.balls = Math.min(
         BALANCE.MAX_HAND_BALLS,
         result.balls * (s.glitched ? BALANCE.GLITCH_BALLS : 1) +
           fx.extraBalls +
           (this._dominantSuit() === "heart" ? fx.heartBalls : 0) +
+          (result.flush && !result.offSuit ? fx.flushBalls : 0) +
           s.grinBonus +
           this._boost(s.pendingBoosts, "balls")
       );
@@ -441,6 +467,23 @@
       return result;
     }
 
+    /* A Chameleon takes the suit of the card on its left (the leftmost one keeps the suit it has). */
+    _playChameleons() {
+      this.state.cards.forEach((c, i, cards) => {
+        if (c?.chameleon && i > 0 && cards[i - 1]) c.suit = cards[i - 1].suit;
+      });
+    }
+    /* Off-Suit: with exactly four cards of one suit, the fifth is the stray and plays as that suit. */
+    _stray(cards) {
+      const suit = SUITS.find(x => cards.filter(c => c.suit === x).length === 4);
+      return suit ? { suit, card: cards.find(c => c.suit !== suit) } : null;
+    }
+    /* Suited Up: the suit a hand holds most after the given one, or null when the hand is all one suit. */
+    _secondSuit(first) {
+      const count = x => this.state.cards.filter(c => c.suit === x).length,
+        rest = SUITS.filter(x => x !== first && count(x) > 0);
+      return rest.length ? rest.reduce((best, x) => (count(x) > count(best) ? x : best)) : null;
+    }
     /* A Joker in hand becomes the card that makes the best hand (it takes that rank and suit until the next change). */
     _playJoker(twoTone) {
       const s = this.state,
@@ -519,6 +562,7 @@
       this.evaluateHand();
       s.activeBoosts = [...s.pendingBoosts];
       s.pendingBoosts = [];
+      s.marking = null;
       s.phase = "drop";
       s.ballsLeft = s.balls;
       s.activeBalls = 0;
@@ -528,6 +572,7 @@
       s.croupierPaid = 0;
       s.compPaid = 0;
       this._bossDropStart();
+      this.physics.frenzied = false;
       const st = s.stats;
       if (st) {
         const rank = Object.keys(window.SlotchinkoData.HANDS).indexOf(s.hand);
@@ -536,7 +581,8 @@
           st.bestPower = s.power;
           st.bestHand = s.hand;
         }
-        st.hands[s.hand] = (st.hands[s.hand] || 0) + 1;
+        const dropped = s.lastEvaluation?.natural || s.hand;
+        st.hands[dropped] = (st.hands[dropped] || 0) + 1;
         for (const x of this._effects().synergies) if (!st.sets.includes(x)) st.sets.push(x);
         this._grantNow();
       }
@@ -607,7 +653,9 @@
       const s = this.state,
         wild = s.activeBoosts.some(b => b.action === "rainbow"),
         suit = this._ballSuit();
-      const suits = wild ? [...SUITS] : [suit],
+      // Suited Up: the first ball of the hand also carries the hand's second suit.
+      const second = fx.secondSuit && s.balls - s.ballsLeft === 1 ? this._secondSuit(suit) : null,
+        suits = wild ? [...SUITS] : second ? [suit, second] : [suit],
         has = x => suits.includes(x);
       return {
         x,
@@ -620,6 +668,7 @@
         splitsLeft: has("heart") ? 1 + fx.reactor : 0,
         splitAt: fx.reactor ? 1 : BALANCE.HEART_SPLIT_HIT,
         chain: fx.splitChain > 0,
+        frenzy: !!fx.frenzy,
         wellPull: 1 + fx.wellPull + (has("spade") ? fx.spadeWell : 0),
         plating: fx.plating,
         stick: fx.stickPower,

@@ -39,4 +39,12 @@
     LAYOUT_NAMES:{ classic:"Centre jackpot", left:"Left jackpot", right:"Right jackpot", twin:"Twin jackpots" },
     SHIELDS:[[0.4,0.6,0.8,2],[0.25,0.5,0.75,1,2],[0.25,0.5,0.75,1,2]], FINAL_CLIMB:1.5
   };
+  // Rush rewards: a reward's item id is its name in lower case with dashes. Each reward that exists as an item is
+  // locked until that boss is rushed at that Ascension level (the save's rush record opens it, see overlays.js).
+  D.rewardId=name=>name.toLowerCase().replace(/[^a-z0-9]+/g,"-");
+  const items=[...D.CHIP_CATALOG,...D.CARD_CATALOG,...D.BUFF_CATALOG,...D.CONSUMABLE_CATALOG];
+  for(const b of D.BOSSES) b.rewards.forEach((name,i)=>{
+    const id=D.rewardId(name);
+    if(items.some(x=>x.id===id)) D.UNLOCKS.push({ kind:"item", id, rush:{ boss:b.id, level:i+1 }, hint:`Win a rush on ${b.name} at Ascension ${i+1}.`, test:()=>false });
+  });
 })();

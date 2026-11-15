@@ -63,6 +63,11 @@
         plating: 0,
         stickPower: 0,
         heartScore: 0,
+        heartPerHeart: 0,
+        offSuit: false,
+        secondSuit: false,
+        frenzy: false,
+        flushBalls: 0,
         heartBalls: 0,
         clubGrind: 0,
         steady: false,
@@ -107,7 +112,7 @@
         has = x => suits.includes(x);
       let synergy = 1 + fx.allElementScore;
       if (has("diamond")) synergy += fx.fortune + fx.diamondScore;
-      if (has("heart")) synergy += fx.heartScore;
+      if (has("heart")) synergy += fx.heartScore + fx.heartPerHeart * s.cards.filter(c => c.suit === "heart").length;
       if (has("club")) synergy += fx.clubScore + Math.min(BALANCE.GRIND_CAP, fx.clubGrind * (p.pegHits || 0));
       if (has("spade")) synergy += fx.spadeScore;
       if (p.parentId) synergy += fx.splitBonus;

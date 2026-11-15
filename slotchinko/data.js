@@ -82,13 +82,18 @@
     { id:"blood-in-the-water", name:"Blood in the Water", icon:"♥", rarity:"uncommon", kind:"chip", cost:6, stackable:false, maxStack:1, family:"heart", desc:"Heart balls gain +10% score for each Heart in your hand.", effect:{heartPerHeart:0.10} },
     { id:"suited-up", name:"Suited Up", icon:"◐", rarity:"uncommon", kind:"chip", cost:6, stackable:false, maxStack:1, family:"element", desc:"The first ball of each hand also counts as your hand's second suit.", effect:{secondSuit:true} },
     { id:"feeding-frenzy", name:"Feeding Frenzy", icon:"♆", rarity:"rare", kind:"chip", cost:8, stackable:false, maxStack:1, family:"heart", desc:"Once each drop, a ball that splits makes three balls, not two.", effect:{frenzy:true} },
-    { id:"suited-connectors", name:"Suited Connectors", icon:"⛓", rarity:"uncommon", kind:"chip", cost:6, stackable:true, maxStack:2, family:"element", desc:"Each distinct suit in your hand adds +4% score.", effect:{suitDiversity:0.04} }
+    { id:"suited-connectors", name:"Suited Connectors", icon:"⛓", rarity:"uncommon", kind:"chip", cost:6, stackable:true, maxStack:2, family:"element", desc:"Each distinct suit in your hand adds +4% score.", effect:{suitDiversity:0.04} },
+    // Bingo prizes (bingo-data.js): locked until their line is finished.
+    { id:"last-call", name:"Last Call", icon:"⌛", rarity:"uncommon", kind:"chip", cost:6, stackable:false, maxStack:1, family:"chaos", desc:"The last ball of each hand scores +50%.", effect:{lastBall:0.5} },
+    { id:"minimalist", name:"Minimalist", icon:"⊖", rarity:"rare", kind:"chip", cost:8, stackable:false, maxStack:1, family:"chaos", desc:"+3% score for every empty Chip slot.", effect:{emptySlot:0.03} },
+    { id:"compound-interest", name:"Compound Interest", icon:"%", rarity:"uncommon", kind:"chip", cost:6, stackable:false, maxStack:1, family:"coin", desc:"Each cleared blind pays +1¢ for every 10¢ you hold, up to 5¢.", effect:{interest:1} }
   ];
 
   // Deck cards: bought cards change the deck for the rest of the run.
   const CARD_CATALOG = [
     { id:"ace-sleeve", name:"Ace Up the Sleeve", icon:"A", rarity:"common", kind:"card", cost:4, maxStack:3, desc:"Add an extra Ace to your deck (suits rotate ♥ ♠ ♦ ♣).", deck:"addAce" },
     { id:"trim-deck", name:"Trim the Deck", icon:"✂", rarity:"uncommon", kind:"card", cost:6, maxStack:1, desc:"Remove every 2 from your deck. Fewer junk draws.", deck:"trim" },
+    { id:"stripped-deck", name:"Stripped Deck", icon:"✄", rarity:"rare", kind:"card", cost:8, maxStack:1, desc:"Remove one whole suit from your deck. The shop shows which.", deck:"strip" },
     { id:"gold-leaf", name:"Gold Leaf", icon:"✪", rarity:"rare", kind:"card", cost:9, maxStack:1, desc:"Upgrade your Aces to gold: each gold card in a hand adds +0.25 base power.", deck:"gold" },
     { id:"joker", name:"Joker", icon:"★", rarity:"rare", kind:"card", cost:8, maxStack:1, desc:"Add a Joker to your deck. It plays as whatever card makes your best hand.", deck:"joker" },
     { id:"glitched-ace", name:"The Glitched Ace", icon:"Ⱥ", rarity:"rare", kind:"card", cost:8, maxStack:1, desc:"Add a glitched Ace to your deck. Its suit keeps changing: it plays as the suit it shows when you press Drop Hand. In a High Card hand: +50% power and double balls.", deck:"glitch" },
@@ -127,6 +132,8 @@
     { id:"focus-tonic", name:"Focus Tonic", icon:"◉", rarity:"common", kind:"consumable", cost:3, desc:"Next hand: +2 balls.", action:"balls", value:2 },
     { id:"power-surge", name:"Power Surge", icon:"ϟ", rarity:"common", kind:"consumable", cost:3, desc:"Next hand: +50% base power.", action:"power", value:0.5 },
     { id:"coin-flip", name:"Coin Flip", icon:"¢", rarity:"uncommon", kind:"consumable", cost:3, desc:"Gain 6 coins immediately.", action:"coins", value:6 },
+    { id:"life-ring", name:"Life Ring", icon:"◯", rarity:"common", kind:"consumable", cost:3, desc:"Next drop: the first ball to land in a ×0.5 pocket or a drain is dropped again.", action:"lifering", value:1 },
+    { id:"double-take", name:"Double Take", icon:"⚭", rarity:"uncommon", kind:"consumable", cost:4, desc:"Next hand: your highest card counts twice.", action:"doubletake", value:1 },
     { id:"wild-card", name:"Wild Current", icon:"✧", rarity:"uncommon", kind:"consumable", cost:5, desc:"Next hand: every ball counts as all four suits.", action:"rainbow", value:1 },
     { id:"glass-charge", name:"Glass Charge", icon:"◇", rarity:"rare", kind:"consumable", cost:6, desc:"Next drop: the first ball to hit a peg scores ×6.", action:"glass", value:6 },
     { id:"spare-ball", name:"Spare Ball", icon:"•", rarity:"common", kind:"consumable", cost:2, desc:"Next hand: +1 ball.", action:"balls", value:1 },
@@ -146,6 +153,7 @@
   const BALANCE={
     FINAL_BLIND:BLIND_TARGETS.length, BLIND_TARGETS,
     HANDS_PER_BLIND:3, SPARE_HAND_PAY:1, SELL_RATE:0.5, ELITE_CLIMB:1.5, START_COINS:7, BLIND_PAY:3, BASE_BALL_SCORE:25, HEART_SPLIT_HIT:3, SPLIT_SHARE:0.5, DRAIN_ROUND:3,
+    INTEREST_PER:10, INTEREST_CAP:5, DEALER_DRAWS:3,
     REROLL_BASE:2, SHOP_SLOTS:{chip:3,card:2,consumable:2,buff:2}, CROUPIER_CAP:3, FUNNEL_MULT:1.25, GOLD_POWER:0.25, GLITCH_POWER:1.5, GLITCH_BALLS:2, GLITCH_MS:800, SET_STEPS:[2,4,6], SET_TIERS:["REGULAR","VIP","WHALE"], SHOP_LEAN:0.5, SHOP_LEAN_CAP:4, GRIND_CAP:0.40, COMP_CAP:2, NUTS_ACES:7, MAX_CHIPS:12, MAX_BAG:3, MAX_HAND_BALLS:24,
     RUSH:{ WAGES:12, CLIMB:{ house:1.25 }, CUTS:[{ upTo:4, coins:0.25, chips:0 },{ upTo:7, coins:0.5, chips:1 },{ upTo:10, coins:1, chips:2 },{ upTo:12, coins:1, chips:"family" }] },
     FIFTH_SUIT:1.25, MARKER_OWED:12, LOYALTY:3, PIT_VIP:3, SANDBAR:0.4, LOW_TIDE:1.25, CAR_SPOTS:[[4,2]], PRESS_STEP:500, PRESS_CAP:3, CLUB_COIN_HITS:5, DIAMOND_BONUS:35, GLASS_MULT:1.5,
@@ -175,7 +183,9 @@
     { id:"wild-suit", name:"Two-Tone Deck", icon:"♥♠", desc:"Suits count by colour: red with red, black with black." },
     { id:"pachinko", name:"Pachinko Deck", icon:"◎", desc:"+1 ball every hand, 20% less power." },
     // The Deed (The House's last rush reward, see bosses-data.js) opens this one; "reward" names the reward that does.
-    { id:"owner", name:"Owner's Deck", icon:"⚿", reward:"The Deed", desc:"The house is yours. Start with two Chips from one family, a Regular set from the first blind." }
+    { id:"owner", name:"Owner's Deck", icon:"⚿", reward:"The Deed", desc:"The house is yours. Start with two Chips from one family, a Regular set from the first blind." },
+    // Lou's bingo blackout opens this one (bingo-data.js). "prize" decks are left out of Full Deck.
+    { id:"dealer", name:"Dealer's Deck", icon:"⟲", reward:"Lou's blackout", prize:true, desc:"Lou's own. One extra draw every hand." }
   ];
   // The path between blinds (chosen after the shop).
   const NODES={
@@ -197,7 +207,10 @@
     { id:"sleeve", icon:"A", name:"Ace Up the Sleeve", text:"A dealer slides you a card under the table.",
       options:[{ label:"Take the Ace", detail:"Add an Ace to your deck." },{ label:"Sell it back", detail:"+3¢." }] },
     { id:"blood-moon", icon:"◑", name:"Blood Moon", text:"The lights go red. The house is feeling generous, and hungry.",
-      options:[{ label:"Embrace it", detail:"Target climbs 25% further. This blind pays double." },{ label:"Look away", detail:"Nothing happens." }] }
+      options:[{ label:"Embrace it", detail:"Target climbs 25% further. This blind pays double." },{ label:"Look away", detail:"Nothing happens." }] },
+    // A bingo prize: offered only once its line is finished.
+    { id:"back-room", icon:"⚿", name:"The Back Room", text:"Lou holds a door open. \"Two of yours for one of mine. A good one.\"",
+      options:[{ label:"Trade", detail:"Lose your two newest Chips from outside your biggest family. Gain a Chip from that family.", needTrade:true },{ label:"Not today", detail:"Nothing happens." }] }
   ];
   const LOUNGE={ id:"lounge", icon:"☕", name:"The Lounge", text:"Quiet music, soft chairs. Pick one.",
     options:[{ label:"Stretch", detail:"+3 balls on your next hand." },{ label:"Focus", detail:"+50% power on your next hand." }] };

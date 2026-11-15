@@ -35,8 +35,8 @@
     TIDE_POCKETS:[0.5,2,3,4,1,0.5,0.5], NORMAL_POCKETS:[0.5,1,2,4,2,1,0.5],
     // From blind 6 a plain blind's jackpot can sit left, right, or split in two. Bosses keep their own boards.
     LAYOUT_FROM:6,
-    LAYOUTS:{ classic:[0.5,1,2,4,2,1,0.5], left:[0.5,2,4,2,1,1,0.5], right:[0.5,1,1,2,4,2,0.5], twin:[0.5,1,3.5,1,3.5,1,0.5] },
-    LAYOUT_NAMES:{ classic:"Centre jackpot", left:"Left jackpot", right:"Right jackpot", twin:"Twin jackpots" },
+    LAYOUTS:{ classic:[0.5,1,2,4,2,1,0.5], left:[0.5,2,4,2,1,1,0.5], right:[0.5,1,1,2,4,2,0.5], twin:[0.5,1,3.5,1,3.5,1,0.5], shores:[3.5,1,0.5,1,0.5,1,3.5] },
+    LAYOUT_NAMES:{ classic:"Centre jackpot", left:"Left jackpot", right:"Right jackpot", twin:"Twin jackpots", shores:"Two shores" },
     SHIELDS:[[0.4,0.6,0.8,2],[0.25,0.5,0.75,1,2],[0.25,0.5,0.75,1,2]], FINAL_CLIMB:1.5
   };
   // Rush rewards: a reward's item id is its name in lower case with dashes. Each reward that exists as an item is

@@ -199,12 +199,17 @@
     _layoutFor(round) {
       const T = window.SlotchinkoData.BOSS_TUNE;
       if (round < T.LAYOUT_FROM || this._bossFor(round)) return "classic";
-      const ids = Object.keys(T.LAYOUTS);
+      // A board that is still a locked prize (Two Shores) is not in the rotation.
+      const ids = this._layouts();
       const pick = r => ids[window.SlotchinkoRNG.hash(`${this.rng.seed}:layout:${r}`) % ids.length];
       // Never the same board twice running: step to the next layout if it would repeat the blind before.
       const before = round - 1 >= T.LAYOUT_FROM && !this._bossFor(round - 1) ? this._layoutFor(round - 1) : "classic";
       const mine = pick(round);
       return mine === before ? ids[(ids.indexOf(mine) + 1) % ids.length] : mine;
+    }
+    _layouts() {
+      const locked = this.state.locked || [];
+      return Object.keys(window.SlotchinkoData.BOSS_TUNE.LAYOUTS).filter(id => !locked.includes(`board-${id}`));
     }
     /* Where this hand's balls do best on this board: a list of { aim, wide } (lanes.js). The test bot aims by it. */
     aimHints() {
@@ -326,7 +331,10 @@
           instanceId: "deck-glass"
         });
       else if (id === "owner") this._ownerChips();
-      else if (id === "pachinko")
+      else if (id === "dealer") {
+        s.maxSpins = BALANCE.DEALER_DRAWS;
+        s.baseSpins = BALANCE.DEALER_DRAWS;
+      } else if (id === "pachinko")
         s.runBuffs.push({
           id: "pachinko-deck",
           name: "Pachinko Deck",
@@ -361,8 +369,8 @@
         rnd = this.rng.stream("deck");
       let deck = createDeck(rnd);
       // same order as before deck cards existed
-      if (!m.aces && !m.trim && !m.gold && !m.deckAces && !m.joker && !m.glitch && !m.chameleon && !m.fifthSuit)
-        return deck;
+      const plain = !m.aces && !m.trim && !m.gold && !m.deckAces && !m.joker && !m.glitch && !m.chameleon;
+      if (plain && !m.fifthSuit && !m.strip) return deck;
       for (let i = 0; i < (m.deckAces || 0); i++) {
         const suit = SUITS[i % 4];
         deck.push({ id: `14-${suit}-d${i}`, rank: 14, label: "A", suit });
@@ -378,6 +386,8 @@
       for (let i = 0; i < (m.chameleon || 0); i++)
         deck.push({ id: `chameleon-${i}`, rank: 11, label: "J", suit: SUITS[i % 4], chameleon: true });
       if (m.fifthSuit) deck.push({ id: "14-fifth", rank: 14, label: "A", suit: SUITS[0] });
+      // Stripped Deck: one whole suit is gone. The special cards (Joker, Chameleons, the Glitched Ace) stay.
+      if (m.strip) deck = deck.filter(c => c.suit !== m.strip || c.joker || c.chameleon || c.glitch);
       for (let i = deck.length - 1; i > 0; i--) {
         const j = Math.floor(rnd() * (i + 1));
         [deck[i], deck[j]] = [deck[j], deck[i]];
@@ -472,13 +482,15 @@
           ? s.cards.map(c => ({ ...c, suit: c.suit === "heart" || c.suit === "diamond" ? "heart" : "spade" }))
           : s.cards,
         stray = fx.offSuit ? this._stray(toned) : null,
-        result = evaluatePokerHand(stray ? toned.map(c => (c === stray.card ? { ...c, suit: stray.suit } : c)) : toned);
+        played = stray ? toned.map(c => (c === stray.card ? { ...c, suit: stray.suit } : c)) : toned,
+        take = this._boost(s.pendingBoosts, "doubletake") > 0,
+        result = take ? this._doubleTake(played) : evaluatePokerHand(played);
       // Off-Suit makes the hand score as a Flush; it is not one for anything that counts Flushes (natural says so).
       result.natural = stray ? evaluatePokerHand(toned).name : result.name;
       result.offSuit = !!stray;
       s.lastEvaluation = result;
       s.hand = result.name;
-      s.handDetail = `${result.description} · ${result.bonus}${stray ? " · OFF-SUIT" : ""}`;
+      s.handDetail = `${result.description} · ${result.bonus}${stray ? " · OFF-SUIT" : ""}${take ? " · DOUBLE TAKE" : ""}`;
       s.power = result.power * (1 + this._boost(s.pendingBoosts, "power")) * (s.deckId === "pachinko" ? 0.8 : 1);
       const gold = s.cards.filter(c => c.gold).length;
       s.goldBonus = gold * BALANCE.GOLD_POWER;
@@ -517,6 +529,14 @@
       return result;
     }
 
+    /* Double Take: the highest card counts twice. The hand is the best five of the six that makes. */
+    _doubleTake(cards) {
+      const top = [...cards].sort((a, b) => b.rank - a.rank)[0],
+        six = [...cards, { ...top, id: `${top.id}-again` }],
+        names = Object.keys(window.SlotchinkoData.HANDS),
+        fives = six.map((_, skip) => evaluatePokerHand(six.filter((__, i) => i !== skip)));
+      return fives.sort((a, b) => names.indexOf(b.name) - names.indexOf(a.name) || b.power - a.power)[0];
+    }
     /* A Chameleon takes the suit of the card on its left (the leftmost one keeps the suit it has). */
     _playChameleons() {
       this.state.cards.forEach((c, i, cards) => {
@@ -785,6 +805,22 @@
         ball = result.ball;
       let gained = this._bossBall(result, fx);
       const d = s.dropFx || {};
+      // Last Call: the last ball of the hand (nothing left to launch, nothing else in play) scores more.
+      if (fx.lastBall && gained > 0 && s.phase === "drop" && s.ballsLeft <= 0 && s.activeBalls <= 1) {
+        const more = Math.round(gained * fx.lastBall);
+        gained += more;
+        this.payout({ id: "last-call", icon: "⌛", name: "LAST CALL", amount: more, unit: "PTS", kind: "points" });
+      }
+      // Life Ring: the first ball lost to a ×0.5 pocket or a drain goes back in the launcher.
+      const low = result.drained || (this.physics.bucketValues?.[result.index] ?? 1) <= 0.5,
+        rings = this._boost(s.activeBoosts, "lifering");
+      if (low && rings > (d.rings || 0) && s.phase === "drop") {
+        d.rings = (d.rings || 0) + 1;
+        const idle = s.ballsLeft <= 0;
+        s.ballsLeft++;
+        this.payout({ id: "life-ring", icon: "◯", name: "LIFE RING", amount: 1, unit: "BALL", kind: "ball" });
+        if (idle) this.after(BALL_GAP_STEPS, () => this._dropNext());
+      }
       if (d.double) {
         d.doubled = (d.doubled || 0) + gained;
         gained *= 2;
@@ -858,7 +894,9 @@
     _payBlind() {
       const s = this.state,
         fx = this._effects(),
-        pay = this._blindPay(fx) * (s.blindPayMult || 1);
+        pay = this._blindPay(fx) * (s.blindPayMult || 1),
+        // Compound Interest: counted on what is held before this blind pays.
+        interest = Math.min(BALANCE.INTEREST_CAP, Math.floor(s.coins / BALANCE.INTEREST_PER)) * fx.interest;
       s.coins += pay;
       if (s.stats) s.stats.coinsEarned += pay;
       const spare = Math.max(0, (s.handsLeft || 1) - 1) * BALANCE.SPARE_HAND_PAY;
@@ -869,6 +907,11 @@
       const n = id => this._chipsInPlay().filter(c => c.id === id).length,
         coin = (id, icon, name, amount) =>
           amount > 0 && this.payout({ id, icon, name, amount, unit: "¢", kind: "coin", fromBlind: true });
+      if (interest > 0) {
+        s.coins += interest;
+        if (s.stats) s.stats.coinsEarned += interest;
+      }
+      coin("compound-interest", "%", "COMPOUND INTEREST", interest);
       coin("pocket-change", "¢", "POCKET CHANGE", n("pocket-change"));
       coin("golden-touch", "✦", "GOLDEN TOUCH", 5 * n("golden-touch"));
       // The Coin family's set steps pay here too, under the build's name.

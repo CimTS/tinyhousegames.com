@@ -453,7 +453,8 @@ body.marking .reel{border-color:var(--gold)}
 .bingo-title small{font:700 10px 'DM Mono',monospace;letter-spacing:.6px;color:#c9b98a;white-space:nowrap}
 .bingo-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr)) 18px;gap:4px;align-items:center}
 .bingo-letter{text-align:center;font:900 18px 'Barlow Condensed',sans-serif;letter-spacing:1px;color:var(--pink)}
-.bingo-star{display:grid;place-items:center;font-size:12px;color:#5b6885}
+.bingo-star{display:grid;place-items:center;min-height:22px;padding:0;border:0;border-radius:6px;background:none;font-size:13px;color:#7b88a6;cursor:pointer;touch-action:manipulation}
+.bingo-star.is-on,.bingo-black.is-on{outline:2px solid var(--cyan);outline-offset:1px}
 .bingo-star.is-done{color:var(--gold);text-shadow:0 0 8px #ffd16688}
 .bingo-sq{position:relative;display:grid;place-items:center;aspect-ratio:1;min-width:0;padding:0;border:1px solid #3a4965;border-radius:8px;background:#172033;color:#d6deee;text-align:center;overflow:hidden;cursor:pointer;touch-action:manipulation}
 /* The name is as wide as the daub's circle allows; bingo-view.js steps its size down until it fits. */
@@ -487,3 +488,20 @@ html.reduce-motion .daub-pop{animation:none}
 .bingo-tab.has-new::after,.col-tab.has-new::after{content:"";position:absolute;top:4px;right:5px;width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
 @keyframes bingoNew{50%{box-shadow:0 0 0 1px var(--cyan),0 0 4px #45f3e244}}
 html.reduce-motion .bingo-sq.is-new{animation:none}
+/* Bingo prizes: the blackout button under the grid, the prizes paid so far, and the worn title on the title screen. */
+.bingo-black{display:block;width:100%;margin-top:6px;min-height:30px;border:1px dashed #6d5522;border-radius:8px;background:none;color:#b79a55;font:800 12px 'Barlow Condensed',sans-serif;letter-spacing:1.6px;cursor:pointer;touch-action:manipulation}
+.bingo-black.is-done{border:1px solid var(--gold);color:var(--gold);background:#3a2c0c}
+.bingo-prizes{display:grid;gap:7px;padding:9px;border:1px solid #2b3650;border-radius:10px;background:#131b2b}
+.bingo-prizes>b{font:800 14px 'Barlow Condensed',sans-serif;letter-spacing:1.4px;color:var(--gold)}
+.bingo-prizes div{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.bingo-prizes small{flex:0 0 100%;font:700 9px 'DM Mono',monospace;letter-spacing:.8px;color:var(--muted)}
+.bingo-wear,.bingo-won{padding:5px 10px;border:1px solid #3a4965;border-radius:999px;background:#172033;color:#d6deee;font:800 12px 'Barlow Condensed',sans-serif;letter-spacing:.8px}
+.bingo-wear{min-height:30px;cursor:pointer;touch-action:manipulation}
+.bingo-wear.is-on{border-color:var(--gold);background:#3a2c0c;color:var(--gold);box-shadow:0 0 10px #ffd16644}
+.bingo-won{border-style:dashed;color:#a9b5cc}
+.title-worn{margin:0;font:800 15px 'Barlow Condensed',sans-serif;letter-spacing:2px;color:var(--gold);text-shadow:0 0 12px #ffd16666}
+/* Felts (bingo blackout prizes): each dresses the board and nothing else. Art can replace a background here later. */
+body[data-felt="sharkskin"] #plinko-canvas{border-color:#4b6b7a;background:repeating-linear-gradient(135deg,#ffffff07 0 2px,transparent 2px 6px),radial-gradient(ellipse at 50% 8%,#2c4654,#0a1116 70%);box-shadow:inset 0 0 40px #000a}
+body[data-felt="neon-tide"] #plinko-canvas{border-color:#b04fd0;background:repeating-linear-gradient(0deg,#45f3e20a 0 1px,transparent 1px 9px),radial-gradient(ellipse at 50% 100%,#3a1466,#0c0a24 68%);box-shadow:inset 0 0 40px #000a,0 0 18px #b04fd033}
+body[data-felt="chrome"] #plinko-canvas{border-color:#c2ccdc;background:linear-gradient(115deg,transparent 30%,#ffffff12 42%,transparent 54%),radial-gradient(ellipse at 50% 8%,#56627a,#12161f 72%);box-shadow:inset 0 0 40px #000a}
+body[data-felt="gold"] #plinko-canvas{border-color:#8a6a24;background:radial-gradient(ellipse at 50% 8%,#5a4313,#1a1206 70%);box-shadow:inset 0 0 40px #000a,0 0 22px #ffd16622}

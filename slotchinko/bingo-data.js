@@ -53,8 +53,41 @@
   ];
   for(const c of CARDS) c.squares.forEach(q=>{ q.id=`${c.id}:${q.key}`; });
   const rows=[0,1,2,3,4].map(r=>[0,1,2,3,4].map(c=>r*5+c)), cols=[0,1,2,3,4].map(c=>[0,1,2,3,4].map(r=>r*5+c));
+  /* Prizes. A line pays once it is finished, and the save works out what is owned from the card itself, so nothing
+     is "claimed". On a boss card the middle row (line 2) and the N column (line 7), the two lines that need no rush,
+     open something to play with; the other ten pay a title to wear. A blackout pays a felt for the board, and Lou's
+     pays his deck. unlock: the id in UNLOCKS that the line opens (pushed below). */
+  const title=name=>({ kind:"title", name });
+  const open=(id,name,what,note)=>({ kind:"unlock", id, name, what, note });
+  const felt=(id,name)=>({ kind:"felt", id, name:`${name} felt` });
+  // Titles in line order: five rows, five columns, the two diagonals. null where the line opens something instead.
+  const PRIZES={
+    sonny:{ titles:["Minnow","Bait Thief",null,"Card Shark","Shark Hunter","Sharp Dresser","Bloodhound",null,"Deep Diver","Fin Collector","Great White","Sonny's Nemesis"],
+      2:open("stripped-deck","Stripped Deck","Deck card","Now turns up in the shop."), 7:open("last-call","Last Call","Chip","Now turns up in the shop."), blackout:felt("sharkskin","Sharkskin") },
+    undertow:{ titles:["Wave Rider","Beat Keeper",null,"Tide Turner","Headliner","Crowd Surfer","Deckhand",null,"Rip Current","Bass Dropper","Opening Act","King Tide"],
+      2:open("board-shores","Two Shores","Board","A board with a jackpot at each edge joins the rotation."), 7:open("life-ring","Life Ring","Bag item","Now turns up in the shop."), blackout:felt("neon-tide","Neon Tide") },
+    mirror:{ titles:["Fair Reflection","Double Agent",null,"Looking Sharp","Glass Breaker","Second Glance","Copy Editor",null,"Mirror Master","One of a Kind","Seven Lucky Years","The Other Dealer"],
+      2:open("double-take","Double Take","Bag item","Now turns up in the shop."), 7:open("minimalist","Minimalist","Chip","Now turns up in the shop."), blackout:felt("chrome","Chrome") },
+    house:{ titles:["Table Regular","Big Fish",null,"Pit Favourite","Bank Breaker","House Guest","Comped",null,"Shield Breaker","Key Holder","The Better House","Owner"],
+      2:open("back-room","The Back Room","Event","Lou may now offer it on the path."), 7:open("compound-interest","Compound Interest","Chip","Now turns up in the shop."), blackout:felt("gold","Gold") },
+    lou:{ titles:["New Face","Lou's Pal","Good Customer","Trouble","Lou's Favourite","Lucky","Rush Addict","Night Owl","Silver Tongue","Legend","Kid","House Rules"],
+      blackout:open("dealer","Dealer's Deck","Deck","Pick it when you choose your deck.") }
+  };
+  const WHO={ sonny:"Sonny's", undertow:"Undertow's", mirror:"the Mirror Dealer's", house:"The House's", lou:"Lou's" };
+  const KIND={ "Deck card":"item", Chip:"item", "Bag item":"item", Board:"board", Event:"event", Deck:"deck" };
+  for(const c of CARDS){
+    const p=PRIZES[c.id];
+    c.prizes=p.titles.map((t,i)=>p[i]||title(t));
+    c.blackout=p.blackout;
+    [...c.prizes.map((z,line)=>[z,line]),[c.blackout,"blackout"]].forEach(([z,line])=>{
+      if(z.kind!=="unlock") return;
+      const who=WHO[c.id], where=line==="blackout"?`Black out ${who} bingo card.`:`Bingo: finish the ${line===2?"middle row":"N column"} of ${who} card.`;
+      D.UNLOCKS.push({ kind:KIND[z.what], id:z.id, bingo:{ card:c.id, line }, hint:where, test:()=>false });
+    });
+  }
   D.BINGO={
     CARDS,
+    FELTS:CARDS.map(c=>c.blackout).filter(z=>z.kind==="felt"),
     FREE:12,
     // Numbers the feats are judged by (feats.js).
     NEAR_LOSS:0.95, NEAR_WIN:1.02, DOUBLE:2, CASH:50, BALL_PIT:12, REROLLS:5, LOUNGES:3, ELITES:3, SIX_FIGURES:100000, LIGHT_CHIPS:4, COPIES:3, HAT_TRICK:3,

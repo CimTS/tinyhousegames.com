@@ -143,11 +143,17 @@
         pawn: 0,
         fewerHands: 0,
         mystery: 0,
-        bumper: 0
+        bumper: 0,
+        lastBall: 0,
+        emptySlot: 0,
+        interest: 0
       };
       const chips = this._chipsInPlay();
       for (const chip of [...chips, ...(this.state.runBuffs || []), ...this._trophyItems()]) add(totals, chip.effect);
       this._mirrors(totals, chips);
+      // Minimalist: every empty Chip slot adds to the score.
+      if (totals.emptySlot)
+        totals.scoreMult *= 1 + totals.emptySlot * Math.max(0, BALANCE.MAX_CHIPS - this.state.chips.length);
       // Each family step reached adds its effect, and counts as one set (bosses and trophies count sets).
       totals.sets = familySets(this.state.chips);
       totals.synergies = [];

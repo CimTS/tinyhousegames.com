@@ -245,7 +245,7 @@
           glass: 0,
           lastPeg: null,
           lastBump: null,
-          multiplier: (p.multiplier || 1) * 0.65
+          multiplier: (p.multiplier || 1) * window.SlotchinkoData.BALANCE.SPLIT_SHARE
         }
       );
       Body.setVelocity(child, {

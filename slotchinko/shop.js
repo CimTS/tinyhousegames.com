@@ -33,8 +33,10 @@
         rnd = this.rng.stream("shop"),
         open = d => !(s.locked || []).includes(d.id);
       if (s.deckId === "hoarder") slots.chip--;
+      // Looking Glass: this shop's Chips are ones already owned (that still have room for a copy).
+      const mine = d => !s.lookingGlass || s.chips.some(c => c.id === d.id);
       const pools = {
-        chip: CHIP_CATALOG.filter(d => open(d) && this._canOwn(d)),
+        chip: CHIP_CATALOG.filter(d => open(d) && this._canOwn(d) && mine(d)),
         card: CARD_CATALOG.filter(d => open(d) && this._canOwn(d)),
         consumable: CONSUMABLE_CATALOG.filter(d => open(d) && !s.consumables.some(c => c.id === d.id && d.unique)),
         buff: BUFF_CATALOG.filter(d => open(d) && this._canOwn(d))
@@ -68,7 +70,9 @@
         m = s.deckMods || {};
       if (def.kind === "chip") {
         const n = this._ownedCount(def.id);
-        return n === 0 || (def.stackable && n < (def.maxStack || 1));
+        // Double Stack: a common Chip that stacks has room for one more copy.
+        const extra = def.rarity === "common" && (s.runBuffs || []).some(b => b.effect?.extraStack) ? 1 : 0;
+        return n === 0 || (def.stackable && n < (def.maxStack || 1) + extra);
       }
       if (def.kind === "card") {
         if (def.deck === "addAce") return (m.aces || 0) < def.maxStack;
@@ -211,6 +215,39 @@
         this.render();
         return;
       }
+      // Carbon Copy: the newest common Chip with room for another copy. Kept if there is none.
+      if (item.action === "copy") {
+        const from = [...s.chips].reverse().find(c => c.rarity === "common" && this._canOwn(c));
+        if (!from || s.chips.length >= BALANCE.MAX_CHIPS) {
+          this.toast(from ? "NO ROOM FOR ANOTHER CHIP" : "NO COMMON CHIP HAS ROOM FOR A COPY");
+          return;
+        }
+        s.consumables.splice(index, 1);
+        s.chips.push(cloneItem(from, s));
+        this.toast(`CARBON COPY · ${from.name.toUpperCase()}`);
+        this.evaluateHand();
+        this.render();
+        return;
+      }
+      // Looking Glass: only in the shop, and only if some owned Chip has room for a copy.
+      if (item.action === "glassshop") {
+        const any = s.chips.some(c => this._canOwn(c));
+        if (!inShop || !any) {
+          this.toast(inShop ? "NO CHIP YOU OWN HAS ROOM FOR A COPY" : "USE LOOKING GLASS IN THE SHOP");
+          return;
+        }
+        // Only the Chips are redrawn: the rest of the shop, and what a reroll costs, stay as they were.
+        const rerolls = s.shopRerolls,
+          rest = s.shopInventory.filter(x => x.kind !== "chip");
+        s.consumables.splice(index, 1);
+        s.lookingGlass = true;
+        this.generateShop(false);
+        s.shopInventory = [...s.shopInventory.filter(x => x.kind === "chip"), ...rest];
+        s.shopRerolls = rerolls;
+        this.toast("LOOKING GLASS · CHIPS YOU OWN");
+        this.render();
+        return;
+      }
       // Board items act on the blind being played.
       if (["bumpercar", "slide", "second"].includes(item.action)) {
         const no = inShop
@@ -246,10 +283,12 @@
         this.toast(`+${item.value}¢`);
       } else if (item.action === "bumpercar") {
         // The board is rebuilt with the extra bumpers; it stays that way until the blind ends.
+        // The pockets are kept as they stand (DJ Undertow may have moved them).
+        const pockets = this.physics.bucketValues;
         s.bumperCar = true;
         this._boardRules();
         this.physics.setRound(s.round);
-        this._bossBoard();
+        this.physics.bucketValues = pockets;
         this.toast("BUMPER CAR · THIS BLIND");
       } else if (item.action === "skip") {
         s.score = Math.max(s.score, s.target);

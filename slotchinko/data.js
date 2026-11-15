@@ -70,6 +70,8 @@
     { id:"fat-stack", name:"Fat Stack", icon:"≣", rarity:"common", kind:"chip", cost:4, stackable:true, maxStack:2, family:"diamond", desc:"Diamond balls gain +20% score.", effect:{diamondScore:0.20} },
     { id:"the-vig", name:"The Vig", icon:"％", rarity:"uncommon", kind:"chip", cost:7, stackable:false, maxStack:1, family:"diamond", desc:"Diamond balls gain +25% bucket value.", effect:{fortune:0.25} },
     { id:"comp", name:"Comp", icon:"✉", rarity:"uncommon", kind:"chip", cost:6, stackable:true, maxStack:2, family:"diamond", desc:"+1 coin for each diamond ball in a jackpot pocket, up to 2 per drop. Copies add +2 more.", effect:{diamondCoins:1} },
+    { id:"riptide", name:"Riptide", icon:"↯", rarity:"uncommon", kind:"chip", cost:6, stackable:false, maxStack:1, family:"bounce", desc:"A ball that bounces off a side wall scores +15%.", effect:{wallBonus:0.15} },
+    { id:"pinball-wizard", name:"Pinball Wizard", icon:"◎", rarity:"uncommon", kind:"chip", cost:6, stackable:false, maxStack:1, family:"bounce", desc:"Bumper kicks are worth double: +50% each, not +25%. The most a ball can gain stays +100%.", effect:{bumpBoost:1} },
     { id:"off-suit", name:"Off-Suit", icon:"≠", rarity:"rare", kind:"chip", cost:8, stackable:false, maxStack:1, family:"element", desc:"Four cards of one suit and one stray: the stray plays as that suit, so the hand scores as a Flush.", effect:{offSuit:true} },
     { id:"blood-in-the-water", name:"Blood in the Water", icon:"♥", rarity:"uncommon", kind:"chip", cost:6, stackable:false, maxStack:1, family:"heart", desc:"Heart balls gain +10% score for each Heart in your hand.", effect:{heartPerHeart:0.10} },
     { id:"suited-up", name:"Suited Up", icon:"◐", rarity:"uncommon", kind:"chip", cost:6, stackable:false, maxStack:1, family:"element", desc:"The first ball of each hand also counts as your hand's second suit.", effect:{secondSuit:true} },
@@ -96,10 +98,16 @@
     { id:"golden-peg", name:"Golden Peg", icon:"✹", rarity:"common", kind:"buff", cost:4, duration:"drop", desc:"Next drop: one random peg turns gold. A ball that hits it scores double.", action:"goldpeg", value:1 },
     { id:"mystery-pocket", name:"Mystery Pocket", icon:"?", rarity:"rare", kind:"buff", cost:8, duration:"run", desc:"Whole run: each drop one pocket is a mystery. It pays anything from ×0 to ×8, shown when the first ball lands in it.", effect:{mystery:1} },
     { id:"bumper", name:"Bumper", icon:"◈", rarity:"rare", kind:"buff", cost:7, duration:"run", desc:"Whole run: two bumpers sit above the pockets beside the ×4 and kick balls sideways. Each kick adds +25% to that ball, up to +100%.", effect:{bumper:1} },
+    { id:"sandbar", name:"Sandbar", icon:"▂", rarity:"uncommon", kind:"buff", cost:6, duration:"run", desc:"Whole run: the two outer pockets, where the drains open, are 40% narrower.", effect:{sandbar:1} },
+    { id:"low-tide", name:"Low Tide", icon:"≋", rarity:"rare", kind:"buff", cost:9, duration:"run", desc:"Whole run: the bottom row of pegs is gold. A ball that hits one scores +25%.", effect:{lowTide:1} },
+    { id:"the-remix", name:"The Remix", icon:"⟳", rarity:"rare", kind:"buff", cost:8, duration:"run", desc:"Whole run: on the path, choose the board for the next blind: centre, left, right or twin jackpot. Not on boss blinds.", effect:{remix:1} },
     { id:"shark-fin", name:"Shark Fin", icon:"◣", rarity:"uncommon", kind:"buff", cost:6, duration:"run", desc:"Whole run: a Flush drops +2 balls.", effect:{flushBalls:2} }
   ];
 
   const CONSUMABLE_CATALOG = [
+    { id:"bumper-car", name:"Bumper Car", icon:"◉", rarity:"uncommon", kind:"consumable", cost:4, desc:"This blind: two more bumpers on the board. Each kick adds +25% to that ball, up to +100%.", action:"bumpercar", value:1 },
+    { id:"slide-whistle", name:"Slide Whistle", icon:"↹", rarity:"common", kind:"consumable", cost:3, desc:"Next hand: the jackpot slides one pocket toward where you aim.", action:"slide", value:1 },
+    { id:"second-jackpot", name:"Second Jackpot", icon:"②", rarity:"rare", kind:"consumable", cost:6, desc:"Next hand: the next-best pocket nearest your aim pays like the jackpot.", action:"second", value:1 },
     { id:"marked-card", name:"Marked Card", icon:"✎", rarity:"uncommon", kind:"consumable", cost:4, desc:"Use it, then pick a card: it takes the suit of the card on its left.", action:"mark", value:1 },
     { id:"focus-tonic", name:"Focus Tonic", icon:"◉", rarity:"common", kind:"consumable", cost:3, desc:"Next hand: +2 balls.", action:"balls", value:2 },
     { id:"power-surge", name:"Power Surge", icon:"ϟ", rarity:"common", kind:"consumable", cost:3, desc:"Next hand: +50% base power.", action:"power", value:0.5 },
@@ -125,7 +133,7 @@
     HANDS_PER_BLIND:3, SPARE_HAND_PAY:1, SELL_RATE:0.5, ELITE_CLIMB:1.5, START_COINS:7, BLIND_PAY:3, BASE_BALL_SCORE:25, HEART_SPLIT_HIT:3, DRAIN_ROUND:3,
     REROLL_BASE:2, SHOP_SLOTS:{chip:3,card:2,consumable:2,buff:2}, CROUPIER_CAP:3, FUNNEL_MULT:1.25, GOLD_POWER:0.25, GLITCH_POWER:1.5, GLITCH_BALLS:2, GLITCH_MS:800, SET_STEPS:[2,4,6], SET_TIERS:["REGULAR","VIP","WHALE"], SHOP_LEAN:0.5, SHOP_LEAN_CAP:4, GRIND_CAP:0.40, COMP_CAP:2, NUTS_ACES:7, MAX_CHIPS:12, MAX_BAG:3, MAX_HAND_BALLS:24,
     RUSH:{ WAGES:12, CLIMB:{ house:1.25 }, CUTS:[{ upTo:4, coins:0.25, chips:0 },{ upTo:7, coins:0.5, chips:1 },{ upTo:10, coins:1, chips:2 },{ upTo:12, coins:1, chips:"family" }] },
-    FIFTH_SUIT:1.25, PRESS_STEP:500, PRESS_CAP:3, CLUB_COIN_HITS:5, DIAMOND_BONUS:35, GLASS_MULT:1.5,
+    FIFTH_SUIT:1.25, SANDBAR:0.4, LOW_TIDE:1.25, CAR_SPOTS:[[4,2]], PRESS_STEP:500, PRESS_CAP:3, CLUB_COIN_HITS:5, DIAMOND_BONUS:35, GLASS_MULT:1.5,
     BUMP_BONUS:0.25, BUMP_CAP:4, SPADE_EDGE:4, FORTUNE_BUCKET:1.4, LAUNCH_JITTER:0.10, DIE_MULT:2, GOLD_PEG_MULT:2, MYSTERY:[[0,1],[0.5,1],[1,2],[2,3],[3,2],[5,1.5],[8,1]]
   };
 

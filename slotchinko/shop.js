@@ -211,6 +211,20 @@
         this.render();
         return;
       }
+      // Board items act on the blind being played.
+      if (["bumpercar", "slide", "second"].includes(item.action)) {
+        const no = inShop
+          ? `USE ${item.name.toUpperCase()} ON A LIVE BLIND`
+          : item.action !== "bumpercar" && s.boss === "undertow"
+            ? "DJ UNDERTOW MOVES THE POCKETS HIMSELF"
+            : item.action === "bumpercar" && s.bumperCar
+              ? "THE BUMPER CAR IS ALREADY ON THE BOARD"
+              : "";
+        if (no) {
+          this.toast(no);
+          return;
+        }
+      }
       if (item.action === "skip") {
         if (inShop) {
           this.toast("USE BLIND SKIP ON A LIVE BLIND");
@@ -230,6 +244,13 @@
         s.coins += item.value;
         if (s.stats) s.stats.coinsEarned += item.value;
         this.toast(`+${item.value}¢`);
+      } else if (item.action === "bumpercar") {
+        // The board is rebuilt with the extra bumpers; it stays that way until the blind ends.
+        s.bumperCar = true;
+        this._boardRules();
+        this.physics.setRound(s.round);
+        this._bossBoard();
+        this.toast("BUMPER CAR · THIS BLIND");
       } else if (item.action === "skip") {
         s.score = Math.max(s.score, s.target);
         this._payBlind();

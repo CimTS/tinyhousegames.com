@@ -64,6 +64,8 @@
           if (other.label === "peg") this._pegInteraction(ball, other);
           else if (other.label === "mover") this.callbacks.onObstacleHit?.({ ball, obstacle: other });
           else if (other.label === "bumper") this._bump(ball, other);
+          // Riptide reads this: a side wall, not the floor under the pockets.
+          else if (other.label === "wall" && other.position.y < this.height) ball.plugin.walled = true;
         }
       });
       Events.on(this.engine, "beforeUpdate", () => {
@@ -297,6 +299,11 @@
     pocketEdges(wide = this.wideCenter) {
       const bw = this.width / 7,
         e = [0, 1, 2, 3, 4, 5, 6, 7].map(i => i * bw);
+      // Sandbar: the two outer pockets give up part of their width to their neighbours.
+      if (this.narrow) {
+        e[1] -= this.narrow * bw;
+        e[6] += this.narrow * bw;
+      }
       if (wide) {
         // Each jackpot pocket takes room from its neighbours: half a pocket a side, shared out if there are two.
         const jack = this.jackpots(),

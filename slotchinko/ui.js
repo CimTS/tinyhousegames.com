@@ -153,7 +153,11 @@
     };
     const newRun = (opts = {}) => {
       save.clear();
-      game.newRun(nextSeed(), { ng: opts.ng ?? 0, deckId: opts.deckId ?? "house", locked: prefs.locked() });
+      game.newRun(nextSeed(), {
+        ng: opts.ng ?? 0,
+        deckId: opts.deckId ?? "house",
+        locked: prefs.locked()
+      });
       if (prefs.coachOn()) game.dealTutorialHand();
       overlays.hide();
       startPath();

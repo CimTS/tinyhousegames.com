@@ -196,6 +196,8 @@
       drop.classList.toggle("drop-confirm", aiming);
       document.body.classList.toggle("aiming", aiming);
       document.body.classList.toggle("marking", !!s.marking && s.phase === "slot");
+      // The Owner's Deck wears gold in the header for the whole run.
+      document.body.classList.toggle("deck-owner", s.deckId === "owner");
       // One stage at a time on a phone (phone.css): hand, aim, drop, shop, end.
       const stage =
         s.phase === "slot" ? (aiming ? "aim" : "hand") : s.phase === "drop" ? "drop" : shop ? "shop" : "end";

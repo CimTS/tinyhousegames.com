@@ -132,8 +132,9 @@
         u => u.id
       );
     }
+    /* A deck is open unless its unlock is still waiting (a milestone, or for the Owner's Deck a rush reward). */
     deckOpen(id) {
-      return id === "house" || this.data.found.includes(id);
+      return !this.locked().includes(id);
     }
     /* Ascension is climbed deck by deck: a deck's highest open level is one above the highest it has won. */
     ngOpen(deckId = "house") {
@@ -277,10 +278,12 @@
         const open = this.prefs.deckOpen(k.id),
           picked = this.deckPick === k.id,
           best = d.deckBest?.[k.id];
-        const classes = `deck-card ${picked ? "is-picked" : ""} ${open ? "" : "is-locked"}`;
+        // A deck opened by a rush reward is the trophy of the set: it is drawn in gold and carries the reward's name.
+        const classes = `deck-card ${k.reward ? "is-deed" : ""} ${picked ? "is-picked" : ""} ${open ? "" : "is-locked"}`;
         const bestMark = best != null ? `<span class="deck-best" title="Best Ascension won">★ ${best}</span>` : "";
+        const tag = k.reward ? `<span class="deck-tag">${k.reward.toUpperCase()}</span>` : "";
         return `<button type="button" class="${classes}" data-deck="${k.id}" ${open ? "" : "disabled"} aria-pressed="${picked}">
-          <span class="deck-head"><span class="deck-icon">${open ? k.icon : "?"}</span>${bestMark}</span>
+          <span class="deck-head"><span class="deck-icon">${open ? Icons.deck(k) : "?"}</span>${tag}${bestMark}</span>
           <b>${open ? k.name : "Locked"}</b><small>${open ? k.desc : hint(k.id)}</small></button>`;
       }).join("");
       const n = this.ngPick,
@@ -440,7 +443,7 @@
         return `<li class="${n ? "is-found" : ""}"><b>${Icons.family(f)} ${f.build}</b><small>${f.name} · ${best}</small></li>`;
       }).join("");
       const decks = D.DECKS.map(k => {
-        return lockable("", k, this.prefs.deckOpen(k.id));
+        return lockable("", { ...k, icon: Icons.deck(k) }, this.prefs.deckOpen(k.id));
       }).join("");
       const setsFound = D.FAMILIES.reduce((n, f) => n + reached(f), 0),
         setsTotal = D.FAMILIES.length * tiers.length;
@@ -574,10 +577,12 @@
         b = r && window.SlotchinkoData.BOSSES.find(x => x.id === r.boss);
       if (!b) return;
       const reward = b.rewards[s.ng - 1],
+        deck = window.SlotchinkoData.DECKS.find(k => k.reward === reward),
         lines = r.won
           ? [
               `+${r.wages}¢ from Lou for the blinds you skipped`,
-              `${r.fresh ? "Reward earned" : "Reward already yours"}: ${reward}`
+              `${r.fresh ? "Reward earned" : "Reward already yours"}: ${reward}`,
+              ...(deck ? [`The ${deck.name} is open. Pick it when you choose your deck.`] : [])
             ]
           : [
               r.coins ? `Lou takes ${r.coins}¢` : "You had no coins for Lou to take",

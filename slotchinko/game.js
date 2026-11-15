@@ -324,6 +324,7 @@
           effect: { scoreMult: 1.6 },
           instanceId: "deck-glass"
         });
+      else if (id === "owner") this._ownerChips();
       else if (id === "pachinko")
         s.runBuffs.push({
           id: "pachinko-deck",
@@ -336,6 +337,22 @@
           effect: { extraBalls: 1 },
           instanceId: "deck-pachinko"
         });
+    }
+    /* Owner's Deck: two Chips of one family, picked by the run's seed from the common and uncommon Chips open on this
+       save, so the run starts on a Regular set. A family with fewer than two such Chips open is passed over. */
+    _ownerChips() {
+      const s = this.state,
+        D = window.SlotchinkoData,
+        rnd = this.rng.stream("owner"),
+        open = c => !s.locked.includes(c.id) && (c.rarity === "common" || c.rarity === "uncommon"),
+        pools = D.FAMILIES.map(f => D.CHIP_CATALOG.filter(c => c.family === f.id && open(c))).filter(
+          p => p.length >= 2
+        ),
+        pool = pools[Math.floor(rnd() * pools.length)] || [];
+      for (let i = 0; i < 2 && pool.length; i++) {
+        const [c] = pool.splice(Math.floor(rnd() * pool.length), 1);
+        s.chips.push({ ...c, instanceId: `deck-owner-${i}` });
+      }
     }
     /* The standard deck plus the run's bought deck cards (extra Aces, trimmed 2s, gold Aces, Joker, Glitched Ace). */
     _buildDeck() {
@@ -604,6 +621,12 @@
       s.croupierPaid = 0;
       s.compPaid = 0;
       this._bossDropStart();
+      // Penthouse: a hand that is all one suit pays coins as it drops. Off-Suit's borrowed Flush does not count.
+      const penthouse = s.lastEvaluation?.flush && !s.lastEvaluation.offSuit ? this._effects().flushCoins : 0;
+      if (penthouse) {
+        s.coins += penthouse;
+        this.payout({ id: "penthouse", icon: "▲", name: "PENTHOUSE", amount: penthouse, unit: "¢", kind: "coin" });
+      }
       this.physics.frenzied = false;
       this._dropPockets();
       const st = s.stats;
@@ -929,6 +952,16 @@
       );
     }
 
+    /* A Marker's debt: after a cleared blind is paid, Lou takes what is owed, or as much of it as there is.
+       markerPaid is what he took this time, for the shop to say so. */
+    _payMarker() {
+      const s = this.state,
+        pay = Math.min(s.coins, s.marker || 0);
+      s.markerPaid = pay;
+      s.coins -= pay;
+      s.marker = (s.marker || 0) - pay;
+    }
+
     finishRound() {
       const s = this.state;
       if (s.phase !== "drop") return;
@@ -995,6 +1028,7 @@
         } else {
           this._payBlind();
           this._eliteReward();
+          this._payMarker();
           this._shatter();
           this.generateShop();
           this.toast("BLIND CLEARED · SHOP OPEN");
@@ -1023,6 +1057,7 @@
       s.layout = (!bossDef && remix) || this._layoutFor(s.round);
       s.bumperCar = false;
       s.lookingGlass = false;
+      s.markerPaid = 0;
       s.blindPayMult = blindPay;
       s.path = null;
       // Every blind starts from zero: the target is what this blind alone asks for.

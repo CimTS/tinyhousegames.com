@@ -70,6 +70,9 @@
     { id:"fat-stack", name:"Fat Stack", icon:"≣", rarity:"common", kind:"chip", cost:4, stackable:true, maxStack:2, family:"diamond", desc:"Diamond balls gain +20% score.", effect:{diamondScore:0.20} },
     { id:"the-vig", name:"The Vig", icon:"％", rarity:"uncommon", kind:"chip", cost:7, stackable:false, maxStack:1, family:"diamond", desc:"Diamond balls gain +25% bucket value.", effect:{fortune:0.25} },
     { id:"comp", name:"Comp", icon:"✉", rarity:"uncommon", kind:"chip", cost:6, stackable:true, maxStack:2, family:"diamond", desc:"+1 coin for each diamond ball in a jackpot pocket, up to 2 per drop. Copies add +2 more.", effect:{diamondCoins:1} },
+    { id:"players-club", name:"Players Club", icon:"♛", rarity:"uncommon", kind:"chip", cost:7, stackable:false, maxStack:1, family:"coin", desc:"Counts as one more Chip in your biggest family.", effect:{playersClub:true} },
+    { id:"pit-boss", name:"Pit Boss", icon:"♚", rarity:"rare", kind:"chip", cost:9, stackable:false, maxStack:1, family:"coin", desc:"Your biggest family reaches VIP at 3 Chips, not 4.", effect:{pitBoss:true} },
+    { id:"penthouse", name:"Penthouse", icon:"▲", rarity:"rare", kind:"chip", cost:9, stackable:false, maxStack:1, family:"coin", desc:"A hand that is all one suit pays 10¢ when it drops.", effect:{flushCoins:10} },
     { id:"spitting-image", name:"Spitting Image", icon:"❐", rarity:"uncommon", kind:"chip", cost:6, stackable:false, maxStack:1, family:"chaos", desc:"For every Chip you own two or more of, the second copy works at 150%.", effect:{spitting:0.5} },
     { id:"double-vision", name:"Double Vision", icon:"◫", rarity:"uncommon", kind:"chip", cost:6, stackable:false, maxStack:1, family:"chaos", desc:"A Chip you own exactly two of counts as three toward its family's set.", effect:{doubleVision:true} },
     { id:"two-way-mirror", name:"Two-Way Mirror", icon:"⧈", rarity:"rare", kind:"chip", cost:9, stackable:false, maxStack:1, family:"chaos", desc:"The Chip you own most copies of works one extra time.", effect:{mirrorExtra:1} },
@@ -101,6 +104,8 @@
     { id:"golden-peg", name:"Golden Peg", icon:"✹", rarity:"common", kind:"buff", cost:4, duration:"drop", desc:"Next drop: one random peg turns gold. A ball that hits it scores double.", action:"goldpeg", value:1 },
     { id:"mystery-pocket", name:"Mystery Pocket", icon:"?", rarity:"rare", kind:"buff", cost:8, duration:"run", desc:"Whole run: each drop one pocket is a mystery. It pays anything from ×0 to ×8, shown when the first ball lands in it.", effect:{mystery:1} },
     { id:"bumper", name:"Bumper", icon:"◈", rarity:"rare", kind:"buff", cost:7, duration:"run", desc:"Whole run: two bumpers sit above the pockets beside the ×4 and kick balls sideways. Each kick adds +25% to that ball, up to +100%.", effect:{bumper:1} },
+    { id:"high-limit-room", name:"High Limit Room", icon:"▣", rarity:"uncommon", kind:"buff", cost:6, duration:"run", desc:"Whole run: the shop shows one more Chip.", effect:{shopChips:1} },
+    { id:"loyalty-card", name:"Loyalty Card", icon:"▤", rarity:"uncommon", kind:"buff", cost:6, duration:"run", desc:"Whole run: Chips from your biggest family turn up three times as often in the shop.", effect:{loyalty:1} },
     { id:"twin-set", name:"Twin Set", icon:"⚭", rarity:"uncommon", kind:"buff", cost:6, duration:"run", desc:"Whole run: +5% score for every Chip you own two or more of.", effect:{twinSet:0.05} },
     { id:"double-stack", name:"Double Stack", icon:"⧉", rarity:"uncommon", kind:"buff", cost:6, duration:"run", desc:"Whole run: common Chips that stack can be held one copy past their limit.", effect:{extraStack:1} },
     { id:"hall-of-mirrors", name:"Hall of Mirrors", icon:"▥", rarity:"rare", kind:"buff", cost:9, duration:"run", desc:"Whole run: every two Chips you own add 10% to every Chip's effect. Whole numbers, like +1 ball, stay whole.", effect:{hall:0.1} },
@@ -111,6 +116,8 @@
   ];
 
   const CONSUMABLE_CATALOG = [
+    { id:"on-the-house", name:"On the House", icon:"✪", rarity:"uncommon", kind:"consumable", cost:5, desc:"A free Chip from the family you own most.", action:"onhouse", value:1 },
+    { id:"marker", name:"Marker", icon:"✍", rarity:"common", kind:"consumable", cost:1, desc:"Take 10¢ now. Lou takes 12¢ back from your winnings, blind by blind, until it is paid.", action:"marker", value:10 },
     { id:"carbon-copy", name:"Carbon Copy", icon:"⎘", rarity:"uncommon", kind:"consumable", cost:5, desc:"Copy your newest common Chip that has room for another copy.", action:"copy", value:1 },
     { id:"looking-glass", name:"Looking Glass", icon:"◍", rarity:"uncommon", kind:"consumable", cost:4, desc:"In the shop: swap the Chips on offer for Chips you already own.", action:"glassshop", value:1 },
     { id:"bumper-car", name:"Bumper Car", icon:"◉", rarity:"uncommon", kind:"consumable", cost:4, desc:"This blind: two more bumpers on the board. Each kick adds +25% to that ball, up to +100%.", action:"bumpercar", value:1 },
@@ -141,7 +148,7 @@
     HANDS_PER_BLIND:3, SPARE_HAND_PAY:1, SELL_RATE:0.5, ELITE_CLIMB:1.5, START_COINS:7, BLIND_PAY:3, BASE_BALL_SCORE:25, HEART_SPLIT_HIT:3, SPLIT_SHARE:0.5, DRAIN_ROUND:3,
     REROLL_BASE:2, SHOP_SLOTS:{chip:3,card:2,consumable:2,buff:2}, CROUPIER_CAP:3, FUNNEL_MULT:1.25, GOLD_POWER:0.25, GLITCH_POWER:1.5, GLITCH_BALLS:2, GLITCH_MS:800, SET_STEPS:[2,4,6], SET_TIERS:["REGULAR","VIP","WHALE"], SHOP_LEAN:0.5, SHOP_LEAN_CAP:4, GRIND_CAP:0.40, COMP_CAP:2, NUTS_ACES:7, MAX_CHIPS:12, MAX_BAG:3, MAX_HAND_BALLS:24,
     RUSH:{ WAGES:12, CLIMB:{ house:1.25 }, CUTS:[{ upTo:4, coins:0.25, chips:0 },{ upTo:7, coins:0.5, chips:1 },{ upTo:10, coins:1, chips:2 },{ upTo:12, coins:1, chips:"family" }] },
-    FIFTH_SUIT:1.25, SANDBAR:0.4, LOW_TIDE:1.25, CAR_SPOTS:[[4,2]], PRESS_STEP:500, PRESS_CAP:3, CLUB_COIN_HITS:5, DIAMOND_BONUS:35, GLASS_MULT:1.5,
+    FIFTH_SUIT:1.25, MARKER_OWED:12, LOYALTY:3, PIT_VIP:3, SANDBAR:0.4, LOW_TIDE:1.25, CAR_SPOTS:[[4,2]], PRESS_STEP:500, PRESS_CAP:3, CLUB_COIN_HITS:5, DIAMOND_BONUS:35, GLASS_MULT:1.5,
     BUMP_BONUS:0.25, BUMP_CAP:4, SPADE_EDGE:4, FORTUNE_BUCKET:1.4, LAUNCH_JITTER:0.10, DIE_MULT:2, GOLD_PEG_MULT:2, MYSTERY:[[0,1],[0.5,1],[1,2],[2,3],[3,2],[5,1.5],[8,1]]
   };
 
@@ -166,7 +173,9 @@
     { id:"glass", name:"Glass Deck", icon:"◇", desc:"Score ×1.6, but Chips can shatter after a blind." },
     { id:"hoarder", name:"Hoarder Deck", icon:"▤", desc:"Bag holds 2 more. One fewer Chip per shop." },
     { id:"wild-suit", name:"Two-Tone Deck", icon:"♥♠", desc:"Suits count by colour: red with red, black with black." },
-    { id:"pachinko", name:"Pachinko Deck", icon:"◎", desc:"+1 ball every hand, 20% less power." }
+    { id:"pachinko", name:"Pachinko Deck", icon:"◎", desc:"+1 ball every hand, 20% less power." },
+    // The Deed (The House's last rush reward, see bosses-data.js) opens this one; "reward" names the reward that does.
+    { id:"owner", name:"Owner's Deck", icon:"⚿", reward:"The Deed", desc:"The house is yours. Start with two Chips from one family, a Regular set from the first blind." }
   ];
   // The path between blinds (chosen after the shop).
   const NODES={

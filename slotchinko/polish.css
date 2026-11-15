@@ -219,6 +219,17 @@ html.reduce-motion .target-flash.show{opacity:1}
 .deck-card.is-locked{cursor:default;border-style:dashed;background:#0f1522}
 .deck-card.is-locked b{color:#7d8aa7}.deck-card.is-locked .deck-icon{color:#6b7896;background:#192235}
 .deck-card.is-locked small{color:#8d9bb8}
+/* The Owner's Deck (opened by The Deed): the trophy card. Gold, full width on a phone, with the reward's name on it. */
+.deck-card.is-deed{grid-column:1/-1;min-height:74px;border-color:#b98a2c;background:linear-gradient(150deg,#3a2c0c,#17130a 62%,#111827);box-shadow:inset 0 0 0 1px #ffd16622,0 0 18px #ffd16622}
+.deck-card.is-deed b{color:var(--gold)}.deck-card.is-deed small{color:#e3d3a4}
+.deck-card.is-deed .deck-icon{background:linear-gradient(160deg,#ffe08a,#c9942c);color:#2a1d04}
+.deck-card.is-deed .deck-icon .ic{width:18px;height:18px}
+.deck-owner .brand .brand-mark,.deck-owner .brand .accent{color:var(--gold)}.deck-owner .brand .brand-mark{text-shadow:0 0 12px #ffd16688}
+.deck-tag{margin:0 auto 0 8px;padding:2px 7px;border:1px solid #b98a2c;border-radius:999px;font:800 10px 'Barlow Condensed',sans-serif;letter-spacing:1.6px;color:var(--gold)}
+.deck-card.is-deed.is-picked{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold),0 0 22px #ffd16655;background:linear-gradient(150deg,#56400f,#1f180a 62%,#111827)}
+.deck-card.is-deed.is-locked{border-style:dashed;border-color:#6d5522;background:linear-gradient(150deg,#1d170a,#0f1522);box-shadow:none}
+.deck-card.is-deed.is-locked b{color:#b79a55}.deck-card.is-deed.is-locked small{color:#a99a72}
+.deck-card.is-deed.is-locked .deck-icon{background:#2a2110;color:#b79a55}
 .ng-mods{margin:-2px 0 0;padding:8px 10px;list-style:none;text-align:left;display:flex;flex-direction:column;gap:5px;border-radius:10px;background:#140e1c;border:1px solid #2e2238}
 .ng-mods li{font-size:12px;line-height:1.35;color:#b9a9c8}.ng-mods li span{display:inline-block;width:18px;color:var(--pink)}
 .ng-mods b{color:#ffb3d6;font-weight:700}

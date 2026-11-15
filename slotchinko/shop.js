@@ -29,10 +29,12 @@
        lean: false for a reroll, which is fully random so a player can change direction. */
     generateShop(lean = true) {
       const s = this.state,
+        fx = this._effects(),
         slots = { ...BALANCE.SHOP_SLOTS },
         rnd = this.rng.stream("shop"),
         open = d => !(s.locked || []).includes(d.id);
       if (s.deckId === "hoarder") slots.chip--;
+      slots.chip += fx.shopChips;
       // Looking Glass: this shop's Chips are ones already owned (that still have room for a copy).
       const mine = d => !s.lookingGlass || s.chips.some(c => c.id === d.id);
       const pools = {
@@ -43,8 +45,11 @@
       };
       // The shop leans toward what you own: each Chip of a family you hold makes that family likelier (up to a cap).
       const owned = id => Math.min(BALANCE.SHOP_LEAN_CAP, s.chips.filter(c => c.family === id).length),
-        leaning = d => 1 + BALANCE.SHOP_LEAN * owned(d.family),
-        discount = this._effects().discount;
+        // Loyalty Card: the biggest family's Chips weigh LOYALTY times as much.
+        top = [...fx.sets].sort((a, b) => b.count - a.count)[0]?.family.id,
+        loyal = d => (fx.loyalty && d.family === top ? BALANCE.LOYALTY : 1),
+        leaning = d => (1 + BALANCE.SHOP_LEAN * owned(d.family)) * loyal(d),
+        discount = fx.discount;
       const inventory = [];
       for (const kind of ["chip", "card", "consumable", "buff"]) {
         const pool = [...pools[kind]];
@@ -212,6 +217,39 @@
         }
         s.marking = s.marking === instanceId ? null : instanceId;
         this.toast(s.marking ? "PICK A CARD TO MARK" : "MARKED CARD PUT AWAY");
+        this.render();
+        return;
+      }
+      // On the House: a free Chip from the biggest family. It cost nothing, so it sells for nothing. Kept if none fits.
+      if (item.action === "onhouse") {
+        const top = [...this._effects().sets].sort((a, b) => b.count - a.count)[0]?.family.id,
+          pool = CHIP_CATALOG.filter(d => d.family === top && !(s.locked || []).includes(d.id) && this._canOwn(d));
+        if (!pool.length || s.chips.length >= BALANCE.MAX_CHIPS) {
+          this.toast(
+            !top ? "OWN A CHIP FIRST" : pool.length ? "NO ROOM FOR ANOTHER CHIP" : "NOTHING LEFT TO GIVE IN THAT FAMILY"
+          );
+          return;
+        }
+        const gift = {
+          ...cloneItem(
+            weightedPick(pool, this.rng.stream("shop"), () => 1),
+            s
+          ),
+          cost: 0
+        };
+        s.consumables.splice(index, 1);
+        s.chips.push(gift);
+        this.toast(`ON THE HOUSE · ${gift.name.toUpperCase()}`);
+        this.evaluateHand();
+        this.render();
+        return;
+      }
+      // Marker: coins now, and a debt Lou collects from each blind's winnings (_payMarker).
+      if (item.action === "marker") {
+        s.consumables.splice(index, 1);
+        s.coins += item.value;
+        s.marker = (s.marker || 0) + BALANCE.MARKER_OWED;
+        this.toast(`MARKER · +${item.value}¢ · YOU OWE ${s.marker}¢`);
         this.render();
         return;
       }

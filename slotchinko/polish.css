@@ -471,7 +471,7 @@ body.marking .reel{border-color:var(--gold)}
 .bingo-detail b{display:block;font:800 13px 'Barlow Condensed',sans-serif;letter-spacing:1.2px;color:var(--cyan)}
 .bingo-card.is-blackout{border-color:var(--gold);box-shadow:0 0 22px #ffd16644}
 .daubs{position:fixed;top:calc(8px + env(safe-area-inset-top));left:50%;z-index:60;display:flex;flex-direction:column;align-items:center;gap:5px;width:min(92vw,330px);transform:translateX(-50%);pointer-events:none}
-.daub-pop{display:flex;align-items:center;gap:9px;max-width:100%;padding:7px 13px 7px 9px;border:1px solid #b98a2c;border-radius:999px;background:linear-gradient(160deg,#2b210bf5,#141a29f5);box-shadow:0 6px 18px #000a;animation:daubIn 3.2s ease-out both}
+.daub-pop{pointer-events:auto;cursor:pointer;font:inherit;text-align:left;touch-action:manipulation;display:flex;align-items:center;gap:9px;max-width:100%;padding:7px 13px 7px 9px;border:1px solid #b98a2c;border-radius:999px;background:linear-gradient(160deg,#2b210bf5,#141a29f5);box-shadow:0 6px 18px #000a;animation:daubIn 3.2s ease-out both}
 .daub-pop i{display:grid;place-items:center;flex:0 0 26px;height:26px;border-radius:50%;border:2px solid #ffd166aa;background:radial-gradient(circle at 35% 30%,#ff8cc3,#ff4fa3 55%,#c2256f);color:#fff;font-style:normal;font-size:12px}
 .daub-pop b{display:block;font:800 14px/1.1 'Barlow Condensed',sans-serif;letter-spacing:1px;color:#fff}
 .daub-pop small{display:block;font:700 9px 'DM Mono',monospace;letter-spacing:.6px;color:#c9b98a}
@@ -480,3 +480,10 @@ body.marking .reel{border-color:var(--gold)}
 .daub-pop.is-line i{background:radial-gradient(circle at 35% 30%,#fff1c2,#ffd166 55%,#c9942c);color:#2a1d04}
 @keyframes daubIn{0%{opacity:0;transform:translateY(-10px) scale(.92)}8%{opacity:1;transform:none}88%{opacity:1}100%{opacity:0;transform:translateY(-6px)}}
 html.reduce-motion .daub-pop{animation:none}
+/* Squares daubed since their card was last looked at: a cyan ring that pulses, and a dot on the tabs that lead to them. */
+.bingo-sq.is-new{border-color:var(--cyan);box-shadow:0 0 0 1px var(--cyan),0 0 12px #45f3e288;animation:bingoNew 1.4s ease-in-out infinite}
+.bingo-sq.is-new::after{content:"NEW";position:absolute;right:2px;bottom:1px;font:700 6.5px/1 'DM Mono',monospace;letter-spacing:.3px;color:var(--cyan)}
+.bingo-tab.has-new,.col-tab.has-new{position:relative}
+.bingo-tab.has-new::after,.col-tab.has-new::after{content:"";position:absolute;top:4px;right:5px;width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
+@keyframes bingoNew{50%{box-shadow:0 0 0 1px var(--cyan),0 0 4px #45f3e244}}
+html.reduce-motion .bingo-sq.is-new{animation:none}

@@ -172,7 +172,8 @@
       newRun();
     });
     $("title-collection").addEventListener("click", () => overlays.showCollection());
-    $("collection-close").addEventListener("click", () => overlays.showTitle());
+    $("collection-close").addEventListener("click", () => overlays.closeCollection());
+    window.SlotchinkoBingoView.onOpen = (card, square) => overlays.openBingo(card, square);
     $("col-tab-items").addEventListener("click", () => overlays.showCollection("items"));
     $("col-tab-bingo").addEventListener("click", () => overlays.showCollection("bingo"));
     $("collection-body").addEventListener("click", e => {

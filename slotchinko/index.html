@@ -173,6 +173,7 @@
         <p><b>Bosses:</b> blinds 4, 8, 12 and 16 have a boss with its own rule, shown on the path. Beat one to keep its trophy for the run. Trophies take no Chip slot.</p>
         <p><b>Path:</b> after each shop pick a plain blind, an Elite (harder, pays a Rare Chip), an Event or the Lounge. Milestones unlock new decks and items (see Collection). Win with a deck to open that deck's next Ascension level.</p>
         <p><b>Rush the Boss:</b> from Ascension 1, on the path before blinds 1, 5, 9 and 13, the boss box has a RUSH button: skip three blinds and fight the boss now. Win and Lou pays 12¢ for the blinds you skipped, plus a reward for that boss and Ascension level. Lose and the run goes on, but Lou takes his cut (more for later bosses and higher levels) and you play the skipped blinds, with no reward when you reach the boss. One try per boss each run. The last reward of all, for The House at Ascension 8, is The Deed: it opens the Owner's Deck.</p>
+        <p><b>Bingo:</b> the Collection holds five bingo cards, one for each boss and one for Lou. Every square is a feat, such as beating a boss in a certain way. Pull one off and that square is daubed for good; five in a row is a bingo. On a boss's card the two diagonals are that boss's eight rush wins.</p>
       </details>
       <details class="howto-more howto-keys">
         <summary>KEYBOARD</summary>
@@ -234,6 +235,7 @@
   <div id="collection-screen" class="overlay" role="dialog" aria-labelledby="collection-title" hidden>
     <div class="overlay-card collection-card">
       <div class="sheet-head is-stacked"><h2 id="collection-title">COLLECTION</h2><small id="collection-count"></small></div>
+      <div class="col-tabs"><button id="col-tab-items" class="col-tab" type="button" aria-pressed="true">ITEMS</button><button id="col-tab-bingo" class="col-tab" type="button" aria-pressed="false">BINGO</button></div>
       <div id="collection-body" class="collection-body"></div>
       <button id="collection-close" class="btn btn-primary overlay-button" type="button" data-focus>DONE</button>
     </div>
@@ -330,6 +332,7 @@
   <script src="rng.js"></script>
   <script src="data.js"></script>
   <script src="bosses-data.js"></script>
+  <script src="bingo-data.js"></script>
   <script src="icons.js"></script>
   <script src="lanes.js"></script>
   <script src="poker.js"></script>
@@ -339,6 +342,7 @@
   <script src="board.js"></script>
   <script src="path.js"></script>
   <script src="boss-rules.js"></script>
+  <script src="feats.js"></script>
   <script src="game.js"></script>
   <script src="save.js"></script>
   <script src="vice-voices.js"></script>
@@ -355,6 +359,7 @@
   <script src="view-shop.js"></script>
   <script src="boss-art.js"></script>
   <script src="boss-view.js"></script>
+  <script src="bingo-view.js"></script>
   <script src="overlays.js"></script>
   <script src="aimflow.js"></script>
   <script src="keys.js"></script>

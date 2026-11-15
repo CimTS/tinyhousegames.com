@@ -173,6 +173,14 @@
     });
     $("title-collection").addEventListener("click", () => overlays.showCollection());
     $("collection-close").addEventListener("click", () => overlays.showTitle());
+    $("col-tab-items").addEventListener("click", () => overlays.showCollection("items"));
+    $("col-tab-bingo").addEventListener("click", () => overlays.showCollection("bingo"));
+    $("collection-body").addEventListener("click", e => {
+      const card = e.target.closest("[data-bingo-card]"),
+        square = e.target.closest("[data-bingo-square]");
+      if (card) overlays.pickBingo({ card: card.dataset.bingoCard });
+      else if (square) overlays.pickBingo({ square: +square.dataset.bingoSquare });
+    });
     // The path between blinds, and event cards.
     // The boss box: where a rush is on offer it opens the offer, otherwise it says the boss is not a choice.
     $("path-boss").addEventListener("click", () =>

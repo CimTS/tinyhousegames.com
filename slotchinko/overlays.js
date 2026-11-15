@@ -53,6 +53,8 @@
       delete this.data.ngUnlocked;
       const sys = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
       if (this.data.motion === undefined) this.data.motion = sys ? "reduced" : "full";
+      // Squares the save has already earned (rushes won, decks won with) are daubed quietly as it loads.
+      this.daub([]);
       this.apply();
     }
     reducedMotion() {
@@ -132,6 +134,57 @@
         u => u.id
       );
     }
+    /* Bingo (bingo-data.js): the squares daubed on this save. The free square is always daubed. */
+    daubed(id) {
+      return id.endsWith(":free") || (this.data.bingo || []).includes(id);
+    }
+    /* One card as it stands: which squares are daubed, which lines are finished, and whether it is blacked out. */
+    card(id) {
+      const B = window.SlotchinkoData.BINGO,
+        hit = B.CARDS.find(c => c.id === id).squares.map(q => this.daubed(q.id)),
+        lines = B.LINES.map(l => l.at.every(i => hit[i]));
+      return { hit, lines, count: hit.filter(Boolean).length, blackout: hit.every(Boolean) };
+    }
+    /* Daubs squares. Returns what is new, in order: each fresh square, then any line or blackout it finished.
+       Squares read from the save itself (Full Deck, Comped for Life) are checked on the way out. */
+    daub(ids) {
+      const B = window.SlotchinkoData.BINGO,
+        d = this.data,
+        news = [];
+      const mark = id => {
+        const at = B.square(id);
+        if (!at || this.daubed(id)) return;
+        const before = this.card(at.card.id);
+        d.bingo = [...(d.bingo || []), id];
+        const after = this.card(at.card.id);
+        news.push({ kind: "square", card: at.card, square: at.square });
+        after.lines.forEach((done, i) => {
+          if (done && !before.lines[i]) news.push({ kind: "line", card: at.card, line: B.LINES[i] });
+        });
+        if (after.blackout) news.push({ kind: "blackout", card: at.card });
+      };
+      ids.forEach(mark);
+      const bosses = B.CARDS.filter(c => c.boss),
+        derived = {
+          fulldeck: () => window.SlotchinkoData.DECKS.every(k => d.deckBest?.[k.id] != null),
+          comped: () => bosses.every(c => this.card(c.id).blackout)
+        };
+      // A rush already on the save's record (won before the cards existed) has its square too.
+      const rushed = (c, q) => q.rush && (d.rush?.[c.boss] || []).includes(q.rush);
+      for (const c of B.CARDS)
+        for (const q of c.squares) if (rushed(c, q) || (q.derive && derived[q.derive]())) mark(q.id);
+      if (news.length) write(d);
+      return news;
+    }
+    /* Adds one to a count kept across runs, and daubs any square that count has now earned. */
+    tally(key) {
+      const d = this.data,
+        B = window.SlotchinkoData.BINGO;
+      d.tally = { ...(d.tally || {}), [key]: (d.tally?.[key] || 0) + 1 };
+      write(d);
+      const due = B.CARDS.flatMap(c => c.squares).filter(q => q.tally === key && d.tally[key] >= q.need);
+      return this.daub(due.map(q => q.id));
+    }
     /* A deck is open unless its unlock is still waiting (a milestone, or for the Owner's Deck a rush reward). */
     deckOpen(id) {
       return !this.locked().includes(id);
@@ -163,7 +216,8 @@
       d.found.push(...fresh);
       d.setsFound = [...new Set([...(d.setsFound || []), ...(s.stats?.sets || [])])];
       write(d);
-      return { isBest, fresh, ascended, deckId: s.deckId || "house" };
+      // A win can finish Full Deck, which is read from the record just written.
+      return { isBest, fresh, ascended, deckId: s.deckId || "house", bingo: this.daub([]) };
     }
   }
 
@@ -402,7 +456,17 @@
       if (open) box.innerHTML = `<b>${u.name}</b><small>${u.kind}</small><span>${u.desc}</span>`;
     }
     /* Collection: the builds, every Chip by family, the other items and decks. Locked tiles show their milestone. */
-    showCollection() {
+    showCollection(tab = this.colTab || "items") {
+      this.colTab = tab;
+      $("col-tab-items").setAttribute("aria-pressed", String(tab === "items"));
+      $("col-tab-bingo").setAttribute("aria-pressed", String(tab === "bingo"));
+      if (tab === "bingo") {
+        this.bingoPick = this.bingoPick || { card: "sonny", square: null };
+        // Shown first: the card measures its squares to fit the names.
+        if (this.open !== "collection-screen") this.show("collection-screen");
+        window.SlotchinkoBingoView.render(this.prefs, this.bingoPick);
+        return;
+      }
       const d = this.prefs.data,
         D = window.SlotchinkoData,
         locked = this.prefs.locked(),
@@ -453,7 +517,14 @@
         ${fams}${other}
         <section class="col-family"><h3><span>♠</span>Decks</h3><ul class="col-grid">${decks}</ul></section>`;
       $("collection-body").scrollTop = 0;
-      this.show("collection-screen");
+      if (this.open !== "collection-screen") this.show("collection-screen");
+    }
+    /* Bingo tab: another card (its squares start unpicked), or a square whose feat to show (again to put it away). */
+    pickBingo({ card, square }) {
+      const p = this.bingoPick;
+      if (card) this.bingoPick = { card, square: null };
+      else p.square = p.square === square ? null : square;
+      window.SlotchinkoBingoView.render(this.prefs, this.bingoPick);
     }
     /* Path choice after the shop. */
     showPath(game) {
@@ -626,6 +697,7 @@
         d = this.prefs.data,
         cleared = s.victory ? s.round : s.round - 1,
         D = window.SlotchinkoData;
+      window.SlotchinkoBingoView.pop(rec.bingo, game?.view);
       sum = sum || game.summary();
       $("end-hand").textContent = sum.bestHand;
       $("end-coins").textContent = `${num(sum.coinsEarned)}¢`;

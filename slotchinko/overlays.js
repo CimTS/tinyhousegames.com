@@ -54,7 +54,7 @@
       const sys = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
       if (this.data.motion === undefined) this.data.motion = sys ? "reduced" : "full";
       // Squares the save has already earned (rushes won, decks won with) are daubed quietly as it loads.
-      this.daub([]);
+      this.daub([], true);
       this.apply();
     }
     reducedMotion() {
@@ -147,7 +147,7 @@
     }
     /* Daubs squares. Returns what is new, in order: each fresh square, then any line or blackout it finished.
        Squares read from the save itself (Full Deck, Comped for Life) are checked on the way out. */
-    daub(ids) {
+    daub(ids, quiet = false) {
       const B = window.SlotchinkoData.BINGO,
         d = this.data,
         news = [];
@@ -156,6 +156,8 @@
         if (!at || this.daubed(id)) return;
         const before = this.card(at.card.id);
         d.bingo = [...(d.bingo || []), id];
+        // Marked as new on its card until that card is next looked at.
+        if (!quiet) d.bingoNew = [...(d.bingoNew || []), id];
         const after = this.card(at.card.id);
         news.push({ kind: "square", card: at.card, square: at.square });
         after.lines.forEach((done, i) => {
@@ -175,6 +177,13 @@
         for (const q of c.squares) if (rushed(c, q) || (q.derive && derived[q.derive]())) mark(q.id);
       if (news.length) write(d);
       return news;
+    }
+    seenBingo(card) {
+      const d = this.data,
+        left = (d.bingoNew || []).filter(id => !id.startsWith(`${card}:`));
+      if (left.length === (d.bingoNew || []).length) return;
+      d.bingoNew = left;
+      write(d);
     }
     /* Adds one to a count kept across runs, and daubs any square that count has now earned. */
     tally(key) {
@@ -457,7 +466,11 @@
     }
     /* Collection: the builds, every Chip by family, the other items and decks. Locked tiles show their milestone. */
     showCollection(tab = this.colTab || "items") {
+      // Opened from the title, or over a run by a bingo banner: closing goes back to wherever it came from.
+      if (this.open !== "collection-screen") this.colReturn = this.open;
+      else if (tab !== "bingo") this.seenBingo();
       this.colTab = tab;
+      $("col-tab-bingo").classList.toggle("has-new", !!this.prefs.data.bingoNew?.length);
       $("col-tab-items").setAttribute("aria-pressed", String(tab === "items"));
       $("col-tab-bingo").setAttribute("aria-pressed", String(tab === "bingo"));
       if (tab === "bingo") {
@@ -520,8 +533,26 @@
       if (this.open !== "collection-screen") this.show("collection-screen");
     }
     /* Bingo tab: another card (its squares start unpicked), or a square whose feat to show (again to put it away). */
+    closeCollection() {
+      const back = this.colReturn;
+      this.colReturn = null;
+      this.seenBingo();
+      if (back === "title-screen") this.showTitle();
+      else if (back) this.show(back);
+      else this.hide();
+    }
+    /* A pressed bingo banner: the Collection opens on that card, with the square it named picked. */
+    openBingo(card, square) {
+      this.bingoPick = { card, square };
+      this.showCollection("bingo");
+    }
+    /* The card on show has been looked at: its squares stop being marked as new. */
+    seenBingo() {
+      if (this.colTab === "bingo" && this.bingoPick) this.prefs.seenBingo(this.bingoPick.card);
+    }
     pickBingo({ card, square }) {
       const p = this.bingoPick;
+      if (card) this.seenBingo();
       if (card) this.bingoPick = { card, square: null };
       else p.square = p.square === square ? null : square;
       window.SlotchinkoBingoView.render(this.prefs, this.bingoPick);

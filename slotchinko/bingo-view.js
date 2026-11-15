@@ -17,6 +17,8 @@
       B = D.BINGO,
       art = window.SlotchinkoBossArt || {},
       states = Object.fromEntries(B.CARDS.map(c => [c.id, prefs.card(c.id)])),
+      // squares daubed since their card was last looked at
+      news = prefs.data.bingoNew || [],
       def = B.CARDS.find(c => c.id === pick.card) || B.CARDS[0],
       card = states[def.id],
       squares = Object.values(states).reduce((n, c) => n + c.count, 0),
@@ -26,15 +28,17 @@
     const tabs = B.CARDS.map(c => {
       const on = c.id === def.id,
         face = `<span class="bingo-face">${art[c.boss || "host"] || ""}</span>`,
-        attrs = `class="bingo-tab ${on ? "is-on" : ""}" data-bingo-card="${c.id}" aria-pressed="${on}"`;
+        fresh = c.squares.some(q => news.includes(q.id)),
+        attrs = `class="bingo-tab ${on ? "is-on" : ""} ${fresh ? "has-new" : ""}" data-bingo-card="${c.id}" aria-pressed="${on}"`;
       return `<button type="button" ${attrs}>${face}<b>${SHORT[c.id]}</b><small>${states[c.id].count}/25</small></button>`;
     }).join("");
     const cell = (q, i) => {
       const hit = card.hit[i],
         on = pick.square === i,
         tag = q.rush ? `<i>A${q.rush}</i>` : "",
-        classes = `bingo-sq ${hit ? "is-hit" : ""} ${q.rush ? "is-rush" : ""} ${on ? "is-on" : ""}`,
-        label = `${q.name}${hit ? ", daubed" : ""}`;
+        fresh = news.includes(q.id),
+        classes = `bingo-sq ${hit ? "is-hit" : ""} ${q.rush ? "is-rush" : ""} ${on ? "is-on" : ""} ${fresh ? "is-new" : ""}`,
+        label = `${q.name}${hit ? ", daubed" : ""}${fresh ? ", new" : ""}`;
       return (
         `<button type="button" class="${classes}" data-bingo-square="${i}" aria-pressed="${on}" aria-label="${label}">` +
         // a hyphen that does not break, so Two-Tone and Walk-In stay whole
@@ -127,16 +131,24 @@
       box.setAttribute("role", "status");
       document.body.append(box);
     }
-    const el = document.createElement("div"),
+    // A banner is a button: it opens its card in the Collection, on the square it names.
+    const el = document.createElement("button"),
       big = n.kind !== "square",
       head = n.kind === "square" ? n.square.name : n.kind === "line" ? `BINGO · ${n.line.name}` : "BLACKOUT";
+    el.type = "button";
     el.className = `daub-pop ${big ? "is-line" : ""}`;
+    el.addEventListener("click", () => {
+      // The card is about to show everything that is new, so the banners still waiting are not needed.
+      queue.length = 0;
+      box.replaceChildren();
+      api.onOpen?.(n.card.id, n.kind === "square" ? n.card.squares.indexOf(n.square) : null);
+    });
     el.innerHTML =
       `<i aria-hidden="true">${big ? "★" : "✦"}</i>` +
       `<span><b>${head.toUpperCase()}</b><small>${n.card.title}</small></span>`;
     box.append(el);
     if (big) view?.vibrate?.([40, 60, 120]);
-    window.setTimeout(() => el.remove(), big ? 4200 : 3200);
+    window.setTimeout(() => el.remove(), big ? 5200 : 4200);
     window.setTimeout(() => next(view), 550);
   }
   function pop(news, view) {
@@ -145,5 +157,7 @@
     if (!busy) next(view);
   }
 
-  window.SlotchinkoBingoView = { render, pop };
+  // onOpen is set by ui.js: what a pressed banner does.
+  const api = { render, pop, onOpen: null };
+  window.SlotchinkoBingoView = api;
 })();

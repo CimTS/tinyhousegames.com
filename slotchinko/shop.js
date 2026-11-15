@@ -118,6 +118,7 @@
       }
       s.coins -= item.cost;
       s.shopInventory = s.shopInventory.filter(x => x.instanceId !== instanceId);
+      this._featBought();
       const note =
         item.kind === "buff"
           ? item.duration === "run"
@@ -193,6 +194,7 @@
       const nextRerollCount = s.shopRerolls + 1;
       this.generateShop(false);
       s.shopRerolls = nextRerollCount;
+      this._featReroll();
       this.toast(`SHOP REROLLED · -${cost}¢`);
       this.render();
     },

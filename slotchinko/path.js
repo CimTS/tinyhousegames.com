@@ -97,6 +97,7 @@
       s.rush.active = null;
       s.stats.rushLost = (s.stats.rushLost || 0) + 1;
       s.rush.result = { won: false, boss, coins, chips: lost.map(c => c.name), next: from + 1 };
+      this._featCut(coins, lost.length);
       s.round = from;
       s.phase = "roundEnd";
       s.won = true;
@@ -160,6 +161,7 @@
       let climb = 1,
         blindPay = 1;
       if (id !== "lounge" && s.stats) s.stats.events = (s.stats.events || 0) + 1;
+      if (id !== "wager") this._featEvent(id, i, false);
       if (id === "lounge") {
         if (i === 0) {
           boost("balls", 3);
@@ -173,6 +175,7 @@
         if (ev() < 0.5) {
           s.coins += 12;
           s.stats.coinsEarned += 7;
+          this._featEvent(id, i, true);
           note("YOU CALLED IT · +12¢");
         } else note("THE HOUSE WINS · -5¢");
       } else if (id === "loaded-dice" && i === 0) {

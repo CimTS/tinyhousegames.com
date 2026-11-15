@@ -271,6 +271,13 @@
       this.vibrate([30, 40, 30]);
       window.setTimeout(() => el.classList.remove("show"), 1300);
     }
+    /* Bingo: a square earned in the run (feats.js) is daubed on the save; what is new there is announced. */
+    feat(id) {
+      window.SlotchinkoBingoView.pop(this.prefs.daub([id]), this);
+    }
+    tally(key) {
+      window.SlotchinkoBingoView.pop(this.prefs.tally(key), this);
+    }
     /* A milestone met mid-run: saved at once, and announced the first time on this save only. */
     achieved(id) {
       if (!this.prefs.find(id)) return;

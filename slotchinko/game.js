@@ -289,6 +289,7 @@
       if (s.phase !== "drop" || !s.tiltReady) return;
       s.tiltReady = false;
       this.physics.tilt?.();
+      this._ft().blind.tilt = true;
       this.toast("TILT!");
       this.vibrate([20, 30, 20]);
       this.render();
@@ -642,6 +643,7 @@
         for (const x of this._effects().synergies) if (!st.sets.includes(x)) st.sets.push(x);
         this._grantNow();
       }
+      this._featHand();
       if (s.glitched)
         this.payout({
           id: "glitched-ace",
@@ -699,7 +701,9 @@
         spread = (this.rng.random("launch") - 0.5) * loose * this.physics.width;
       s.ballsLeft--;
       s.activeBalls++;
-      this.physics.drop(this._ballOptions(24 + s.aim * (this.physics.width - 48) + spread, fx));
+      const options = this._ballOptions(24 + s.aim * (this.physics.width - 48) + spread, fx);
+      this._featBall(options);
+      this.physics.drop(options);
       this.render();
       this.after(BALL_GAP_STEPS, () => this._dropNext());
     }
@@ -839,7 +843,9 @@
           this.payout({ id: "coin-press", icon: "▣", name: "COIN PRESS", amount: add, unit: "¢", kind: "coin" });
         }
       }
-      if (!s.targetHit && s.score >= s.target) {
+      const crossed = !s.targetHit && s.score >= s.target;
+      this._featBucket(result, crossed);
+      if (crossed) {
         s.targetHit = true;
         this.view?.targetHit();
       }
@@ -996,6 +1002,7 @@
           });
       }
       if (s.stats) s.stats.bestDrop = Math.max(s.stats.bestDrop, s.roundScore);
+      this._featDrop();
       // A blind gives HANDS_PER_BLIND hands. A short drop with a hand left deals the next one.
       if (s.score < s.target && s.handsLeft > 1) {
         s.handsLeft--;
@@ -1006,13 +1013,16 @@
         this.view?.dealt?.([0, 1, 2, 3, 4]);
         return;
       }
-      if (s.score < s.target && s.rush?.active) {
+      const rushed = !!s.rush?.active;
+      if (s.score < s.target && rushed) {
+        this._featBlind(false, true);
         this._rushLost();
         return;
       }
       if (s.score >= s.target) {
         s.won = true;
-        if (s.rush?.active) this._rushWon();
+        if (rushed) this._rushWon();
+        this._featBlind(true, rushed);
         const st = s.stats,
           max = s.handsMax || BALANCE.HANDS_PER_BLIND;
         if (st) {
@@ -1031,13 +1041,16 @@
           this._payMarker();
           this._shatter();
           this.generateShop();
+          this._featShop();
           this.toast("BLIND CLEARED · SHOP OPEN");
         }
       } else {
         s.won = false;
         s.shopInventory = [];
+        this._featBlind(false, false);
         this.toast("BLIND FAILED · RUN ENDED");
       }
+      if (s.victory || !s.won) this._featRun();
       this.render();
       if (s.victory || !s.won) this.view?.runEnded();
     }
@@ -1060,6 +1073,7 @@
       s.markerPaid = 0;
       s.blindPayMult = blindPay;
       s.path = null;
+      this._featBlindStart();
       // Every blind starts from zero: the target is what this blind alone asks for.
       s.score = 0;
       s.handsMax = this._handsPerBlind();
@@ -1102,7 +1116,8 @@
     window.SlotchinkoScoring,
     window.SlotchinkoShopLogic,
     window.SlotchinkoPath,
-    window.SlotchinkoBossRules
+    window.SlotchinkoBossRules,
+    window.SlotchinkoFeats
   );
   window.SlotchinkoGame = SlotchinkoGame;
   window.SlotchinkoShop = {

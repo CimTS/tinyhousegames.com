@@ -183,7 +183,14 @@
     /* Run rules the board is built from. Call before every physics.setRound. */
     _boardRules() {
       this.physics.drainRound = this._ngHas("hungry-drains") ? 2 : 0;
-      this.physics.bumperOn = (this.state.runBuffs || []).some(b => b.effect?.bumper);
+      const s = this.state,
+        has = key => (s.runBuffs || []).some(b => b.effect?.[key]),
+        spots = window.PlinkoPhysics.BUMPER_SPOTS || [];
+      // Bumper Car (Bag) adds its own pair for the blind, beside the Bumper buff's if that is owned.
+      this.physics.bumperOn = has("bumper") || !!s.bumperCar;
+      this.physics.bumperSpots = s.bumperCar ? [...(has("bumper") ? spots : []), ...BALANCE.CAR_SPOTS] : null;
+      this.physics.narrow = has("sandbar") ? BALANCE.SANDBAR : 0;
+      this.physics.lowTide = has("lowTide");
       this.physics.die = null;
       this.physics.mystery = null;
     }
@@ -213,6 +220,31 @@
     /* Hands this blind gives: three, or one fewer with High Roller. */
     _handsPerBlind() {
       return Math.max(1, BALANCE.HANDS_PER_BLIND - (this._effects().fewerHands ? 1 : 0));
+    }
+    /* Slide Whistle and Second Jackpot change the pockets for one drop, by where the hand is aimed. finishRound puts
+       them back. DJ Undertow moves the pockets himself, so neither works in his fight. */
+    _dropPockets() {
+      const s = this.state,
+        ph = this.physics,
+        slide = this._boost(s.activeBoosts, "slide") > 0,
+        second = this._boost(s.activeBoosts, "second") > 0;
+      s.pocketsBefore = null;
+      if ((!slide && !second) || s.boss === "undertow" || !ph.bucketValues) return;
+      const v = ph.bucketValues,
+        aim = ph.pocketAt(24 + s.aim * (ph.width - 48), false),
+        nearest = list => list.reduce((a, b) => (Math.abs(b - aim) < Math.abs(a - aim) ? b : a));
+      s.pocketsBefore = [...v];
+      if (slide) {
+        const from = nearest(ph.jackpots()),
+          to = from + Math.sign(aim - from);
+        if (to !== from && to >= 1 && to <= 5 && v[to] !== v[from]) [v[from], v[to]] = [v[to], v[from]];
+      }
+      if (second) {
+        const top = Math.max(...v),
+          next = Math.max(...v.filter(x => x < top)),
+          spots = v.map((x, i) => (x === next ? i : -1)).filter(i => i >= 0);
+        if (spots.length) v[nearest(spots)] = top;
+      }
     }
     /* Per-drop board gambles: Loaded Die doubles one pocket, Mystery Pocket hides one, Golden Peg gilds a peg. */
     _dropGambles(fx) {
@@ -573,6 +605,7 @@
       s.compPaid = 0;
       this._bossDropStart();
       this.physics.frenzied = false;
+      this._dropPockets();
       const st = s.stats;
       if (st) {
         const rank = Object.keys(window.SlotchinkoData.HANDS).indexOf(s.hand);
@@ -685,6 +718,7 @@
       this.vibrate(5);
       const p = ball && ball.plugin;
       if (!p) return;
+      if (peg?.plugin?.tide && !p.tide) p.tide = BALANCE.LOW_TIDE;
       if (peg?.plugin?.gold && !p.gilded) {
         p.gilded = BALANCE.GOLD_PEG_MULT;
         this.toast("GOLDEN PEG · ×2");
@@ -904,6 +938,10 @@
       this.physics.die = null;
       this.physics.mystery = null;
       this.physics.ungild?.();
+      if (s.pocketsBefore) {
+        this.physics.bucketValues = s.pocketsBefore;
+        s.pocketsBefore = null;
+      }
       // Double or Nothing: the drop was scored double as it fell. Short of the target, it counts for half instead.
       const d = s.dropFx || {};
       if (d.double) {
@@ -975,12 +1013,15 @@
       if (s.phase !== "roundEnd" || !s.won || s.victory) return;
       // an event card is waiting for its choice
       if (s.event) return;
-      const { climb = 1, blindPay = 1 } = extra,
+      const remix = s.path?.remix,
+        { climb = 1, blindPay = 1 } = extra,
         bossDef = this._bossFor(s.round + 1);
       s.round++;
       s.node = node;
       s.boss = bossDef?.id || null;
-      s.layout = this._layoutFor(s.round);
+      // The Remix: the board picked on the path, for a blind that is not a boss's.
+      s.layout = (!bossDef && remix) || this._layoutFor(s.round);
+      s.bumperCar = false;
       s.blindPayMult = blindPay;
       s.path = null;
       // Every blind starts from zero: the target is what this blind alone asks for.

@@ -461,7 +461,13 @@
       const next = s.path.start ? 1 : s.round + 1;
       $("path-back").hidden = !!s.path.start;
       // A blind whose jackpot has moved says so before you commit to it.
-      const board = game._layoutFor(next) === "classic" ? "" : ` · Board: ${game.layoutName(next)}`;
+      const remix = game.remixOffer(),
+        layout = remix || (s.path.start ? "classic" : game._layoutFor(next)),
+        names = D.BOSS_TUNE.LAYOUT_NAMES;
+      const board = layout === "classic" || remix ? "" : ` · Board: ${names[layout]}`;
+      // The Remix: the next blind's board is the player's to choose, one step at a time.
+      $("path-remix").hidden = !remix;
+      if (remix) $("path-remix").innerHTML = `<b>THE REMIX</b><span>Board: ${names[remix]}</span><i>CHANGE ›</i>`;
       $("path-sub").textContent = `Blind ${next} of ${D.BALANCE.FINAL_BLIND}${board}`;
       window.SlotchinkoBossView.pathPreview(game);
       $("path-boss-label").hidden = $("path-boss").hidden;

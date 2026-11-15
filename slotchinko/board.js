@@ -70,7 +70,16 @@
           friction: 0.035,
           render: { fillStyle: COLORS[type] || COLORS.neutral, strokeStyle: "#dbe8ff", lineWidth: 0.55 },
           collisionFilter: { category: 0x0002, mask: 0x0001 },
-          plugin: { element: type, hp, maxHp: hp, charge: 0, stickyUntil: 0, pegId: `${r}:${c}` }
+          // Low Tide: the bottom row is gold (tide), and pays a ball that touches it.
+          plugin: {
+            element: type,
+            hp,
+            maxHp: hp,
+            charge: 0,
+            stickyUntil: 0,
+            pegId: `${r}:${c}`,
+            tide: !!this.lowTide && r === rows - 1
+          }
         });
         this.pegs.set(peg.id, peg);
         Composite.add(this.world, peg);
@@ -124,6 +133,7 @@
       this.dividers.push(d);
       Composite.add(this.world, d);
     }
+    if (this.narrow) this.setWideCenter(false);
     // Outer pockets turn into hazard drains from DRAIN_ROUND on.
     this.drainPockets = this.round >= (this.drainRound || window.SlotchinkoData.BALANCE.DRAIN_ROUND) ? [0, 6] : [];
   };

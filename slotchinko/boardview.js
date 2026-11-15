@@ -77,6 +77,10 @@
       }
       this._buckets(ph, now);
       for (const peg of ph.pegs.values()) {
+        if (peg.plugin.tide && !peg.plugin.gold) {
+          this._circle(peg, "#ffd166", "#fff6cf", 0.8);
+          continue;
+        }
         if (!peg.plugin.gold) {
           this._circle(peg, peg.render.fillStyle, "#dbe8ff", 0.55);
           continue;

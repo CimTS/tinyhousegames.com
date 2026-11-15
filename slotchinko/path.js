@@ -103,6 +103,21 @@
       this.nextRound("blind");
       this.view?.rushLost?.(boss, s.ng);
     },
+    /* The Remix: steps the next blind's board to the next layout. Chosen on the path, used by nextRound. */
+    remixOffer() {
+      const s = this.state,
+        next = s.round + 1;
+      if (!s.path || s.path.start || s.phase !== "roundEnd" || !s.won || s.victory) return null;
+      if (!this._effects().remix || this._bossFor(next)) return null;
+      return s.path.remix || this._layoutFor(next);
+    },
+    remix() {
+      const now = this.remixOffer(),
+        ids = Object.keys(D.BOSS_TUNE.LAYOUTS);
+      if (!now) return;
+      this.state.path.remix = ids[(ids.indexOf(now) + 1) % ids.length];
+      this.render();
+    },
     /* Picks a path node. Blind and Elite go straight to the next blind; Event and Lounge show their card first. */
     choosePath(index) {
       const s = this.state;

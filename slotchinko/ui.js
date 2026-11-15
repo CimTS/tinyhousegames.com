@@ -174,6 +174,10 @@
     $("path-boss").addEventListener("click", () =>
       game.rushOffer() ? overlays.showRushOffer(game) : overlays.bossNudge(game)
     );
+    $("path-remix").addEventListener("click", () => {
+      game.remix();
+      overlays.showPath(game);
+    });
     $("path-list").addEventListener("click", e => {
       const b = e.target.closest("[data-path]");
       if (!b) return;

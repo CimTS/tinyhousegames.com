@@ -68,6 +68,11 @@
         secondSuit: false,
         frenzy: false,
         flushBalls: 0,
+        wallBonus: 0,
+        bumpBoost: 0,
+        sandbar: 0,
+        lowTide: 0,
+        remix: 0,
         heartBalls: 0,
         clubGrind: 0,
         steady: false,
@@ -116,6 +121,7 @@
       if (has("club")) synergy += fx.clubScore + Math.min(BALANCE.GRIND_CAP, fx.clubGrind * (p.pegHits || 0));
       if (has("spade")) synergy += fx.spadeScore;
       if (p.parentId) synergy += fx.splitBonus;
+      if (p.walled) synergy += fx.wallBonus;
       if (s.lastEvaluation && s.lastEvaluation.flush) synergy += fx.flushBonus;
       const distinct = new Set(s.cards.map(c => c.suit)).size;
       synergy += distinct * fx.suitDiversity;
@@ -131,7 +137,10 @@
           synergy *
           (p.glass || 1) *
           (p.gilded || 1) *
-          (1 + BALANCE.BUMP_BONUS * (p.bumps || 0)) *
+          (p.tide || 1) *
+          // Pinball Wizard doubles each kick; the most a ball can gain from bumpers stays the same.
+          (1 +
+            Math.min(BALANCE.BUMP_BONUS * BALANCE.BUMP_CAP, BALANCE.BUMP_BONUS * (1 + fx.bumpBoost) * (p.bumps || 0))) *
           drainFactor
       );
     }

@@ -23,9 +23,89 @@
       }));
       s.path = { round: s.round, choices, boss: this._bossFor(next)?.id || null, picked: null };
     },
+    /* Ascension 1 and up: a run opens on the path, where Sonny can be rushed before blind 1 (the boss box is the way in). */
+    _startPath() {
+      const s = this.state;
+      s.path = { round: 0, start: true, choices: [{ type: "blind" }], boss: null, picked: null };
+      if (!this.rushOffer()) s.path = null;
+    },
+    /* Rush the Boss: on the path before the first of a boss's three blinds, skip straight to the boss. Ascension 1 and up, one try
+       per boss per run. Returns what is on offer here, or null: the boss, what Lou takes on a loss, the wages on a win. */
+    rushOffer() {
+      const s = this.state,
+        R = D.BALANCE.RUSH,
+        from = s.path?.start ? 0 : s.round,
+        fresh = s.phase === "slot" && s.round === 1 && s.handsLeft === s.handsMax && !s.score,
+        atPath = s.path?.start ? fresh : s.phase === "roundEnd" && s.won;
+      if (!s.ng || s.victory || !atPath || from % 4 !== 0) return null;
+      const boss = D.BOSSES.find(b => b.round === from + 4);
+      if (!boss || (s.rush?.tried || []).includes(boss.id)) return null;
+      return { boss, from, cut: this._rushCut(boss), wages: R.WAGES, climb: R.CLIMB[boss.id] || 1 };
+    },
+    /* Lou's cut for losing a rush grows with the boss and the Ascension level: severity 2 (Sonny, level 1) to 12. */
+    _rushCut(boss) {
+      const severity = D.BOSSES.indexOf(boss) + 1 + this.state.ng,
+        cuts = D.BALANCE.RUSH.CUTS;
+      return cuts.find(c => severity <= c.upTo) || cuts[cuts.length - 1];
+    },
+    rush() {
+      const s = this.state,
+        offer = this.rushOffer();
+      if (!offer) return;
+      s.rush = { tried: [], won: [], ...s.rush, active: { boss: offer.boss.id, from: offer.from }, result: null };
+      s.rush.tried = [...s.rush.tried, offer.boss.id];
+      s.path = null;
+      s.event = null;
+      s.round = offer.boss.round - 1;
+      s.phase = "roundEnd";
+      s.won = true;
+      this.nextRound("blind", { climb: offer.climb });
+    },
+    /* A rushed boss beaten: Lou pays the wages of the blinds skipped. The reward is the view's to record. */
+    _rushWon() {
+      const s = this.state,
+        boss = s.rush.active.boss,
+        wages = D.BALANCE.RUSH.WAGES;
+      s.rush.won = [...s.rush.won, boss];
+      s.rush.active = null;
+      s.coins += wages;
+      s.stats.coinsEarned += wages;
+      s.stats.rushWon = (s.stats.rushWon || 0) + 1;
+      s.rush.result = { won: true, boss, wages };
+      this.view?.rushWon?.(boss, s.ng);
+    },
+    /* A rushed boss lost: the run goes on. Lou takes his cut, then deals the first of the blinds that were skipped. */
+    _rushLost() {
+      const s = this.state,
+        { boss, from } = s.rush.active,
+        cut = this._rushCut(D.BOSSES.find(b => b.id === boss)),
+        coins = Math.ceil(s.coins * cut.coins),
+        own = s.chips.filter(c => !String(c.instanceId).startsWith("deck-"));
+      let lost = cut.chips ? own.slice(-cut.chips) : [];
+      if (cut.chips === "family") {
+        const top = [...window.SlotchinkoSets.familySets(s.chips)].sort((a, b) => b.count - a.count)[0];
+        lost = own.filter(c => c.family !== top?.family.id);
+      }
+      s.coins -= coins;
+      s.chips = s.chips.filter(c => !lost.includes(c));
+      s.rush.active = null;
+      s.stats.rushLost = (s.stats.rushLost || 0) + 1;
+      s.rush.result = { won: false, boss, coins, chips: lost.map(c => c.name), next: from + 1 };
+      s.round = from;
+      s.phase = "roundEnd";
+      s.won = true;
+      this.nextRound("blind");
+      this.view?.rushLost?.(boss, s.ng);
+    },
     /* Picks a path node. Blind and Elite go straight to the next blind; Event and Lounge show their card first. */
     choosePath(index) {
       const s = this.state;
+      if (s.path?.start) {
+        if (s.phase !== "slot" || !s.path.choices[index]) return;
+        s.path = null;
+        this.render();
+        return;
+      }
       if (s.phase !== "roundEnd" || !s.won || s.victory || !s.path || s.path.picked) return;
       const node = s.path.choices[index];
       if (!node) return;

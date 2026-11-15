@@ -291,6 +291,19 @@
       window.clearTimeout(this.featTimer);
       $("feat").hidden = true;
     }
+    /* A rush just ended. A win is recorded on the save at once; either way the result is shown when the drop settles. */
+    rushWon(boss, ng) {
+      const r = this.game.state.rush.result;
+      r.fresh = this.prefs.rushWon(boss, ng);
+      this._rushSoon();
+    }
+    rushLost() {
+      this._rushSoon();
+    }
+    _rushSoon() {
+      const show = () => !this.game.state.victory && this.overlays.showRush(this.game);
+      window.setTimeout(show, this.prefs.reducedMotion() ? 150 : 800);
+    }
     runEnded() {
       window.setTimeout(() => this.overlays.showEnd(this.game.state), this.prefs.reducedMotion() ? 150 : 800);
     }

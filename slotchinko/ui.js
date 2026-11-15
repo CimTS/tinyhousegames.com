@@ -145,11 +145,18 @@
     });
     game.autosave = true;
     const save = window.SlotchinkoSave;
+    // Ascension 1 and up opens on the path (Sonny can be rushed). The tutorial goes straight to blind 1.
+    const startPath = () => {
+      if (!game.state.path?.start) return;
+      if (prefs.coachOn()) game.choosePath(0);
+      else overlays.showPath(game);
+    };
     const newRun = (opts = {}) => {
       save.clear();
       game.newRun(nextSeed(), { ng: opts.ng ?? 0, deckId: opts.deckId ?? "house", locked: prefs.locked() });
       if (prefs.coachOn()) game.dealTutorialHand();
       overlays.hide();
+      startPath();
     };
     // NEW RUN: straight in until decks unlock, then the deck select.
     const hasChoice = () =>
@@ -163,7 +170,10 @@
     $("title-collection").addEventListener("click", () => overlays.showCollection());
     $("collection-close").addEventListener("click", () => overlays.showTitle());
     // The path between blinds, and event cards.
-    $("path-boss").addEventListener("click", () => overlays.bossNudge(game));
+    // The boss box: where a rush is on offer it opens the offer, otherwise it says the boss is not a choice.
+    $("path-boss").addEventListener("click", () =>
+      game.rushOffer() ? overlays.showRushOffer(game) : overlays.bossNudge(game)
+    );
     $("path-list").addEventListener("click", e => {
       const b = e.target.closest("[data-path]");
       if (!b) return;
@@ -187,7 +197,14 @@
       }
       if (game.state.event) overlays.showEvent(game);
       else overlays.hide();
+      startPath();
     });
+    $("rush-ok").addEventListener("click", () => {
+      if (overlays.rushOffered) game.rush();
+      else game.state.rush.result = null;
+      overlays.hide();
+    });
+    $("rush-no").addEventListener("click", () => overlays.showPath(game));
     $("deck-list").addEventListener("click", e => {
       const b = e.target.closest("[data-deck]");
       if (b && !b.disabled) {

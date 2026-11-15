@@ -9,7 +9,8 @@
     "collection-screen": "collection-close",
     "loadout-screen": "loadout-close",
     "deck-screen": "deck-back",
-    "path-screen": "path-back"
+    "path-screen": "path-back",
+    "rush-screen": "rush-no"
   };
   const PICKS = "[data-path],[data-event],[data-deck]",
     NAV = "button,a[href]",
@@ -44,6 +45,13 @@
     if (e.repeat) return;
     if (k === "Escape") {
       if (BACK[id]) $(BACK[id]).click();
+    } else if (
+      id === "path-screen" &&
+      (k.toLowerCase() === "r" || (e.target.id === "path-boss" && (k === "Enter" || k === " ")))
+    ) {
+      // R, or Enter on the boss box: the rush offer, when there is one (ui.js decides).
+      $("path-boss").click();
+      e.preventDefault();
     } else if (digit(k) >= 0) root.querySelectorAll(PICKS)[digit(k)]?.click();
   }
 

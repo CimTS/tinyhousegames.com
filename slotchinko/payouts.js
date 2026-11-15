@@ -60,7 +60,11 @@
         el = document.createElement("div");
         el.className = `payout payout-${entry.kind || "coin"}`;
         el.innerHTML = `<span class="payout-icon" aria-hidden="true"></span><span class="payout-name"></span><b class="payout-amount"></b>`;
-        el.querySelector(".payout-icon").textContent = entry.icon || "✦";
+        // A payout named after an item shows that item's drawn icon; the rest keep their symbol.
+        const icons = window.SlotchinkoIcons,
+          icon = el.querySelector(".payout-icon");
+        if (icons?.has(entry.id)) icon.innerHTML = icons.of({ id: entry.id });
+        else icon.textContent = entry.icon || "✦";
         el.querySelector(".payout-name").textContent = entry.name;
         this.root.appendChild(el);
         this.els.set(entry.key, el);

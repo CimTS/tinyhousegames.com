@@ -206,12 +206,16 @@
     const footer =
       `<span><b>✦ ${chipCount}</b> CHIPS</span><span><b>▣ ${bagCount}</b> BAG</span>` +
       `<span><b>¢ ${s.coins}</b> WALLET</span>`;
+    // A Marker's debt is shown where the coins are, until Lou has it back.
+    const took = s.markerPaid ? `Lou took ${s.markerPaid}¢ for your Marker. ` : "",
+      owed = s.marker ? `You owe ${s.marker}¢ more.` : took ? "It is paid." : "",
+      walletNote = took || owed ? `${took}${owed}` : "Prices are on the BUY buttons";
     root.innerHTML = `
       <div class="shop-toolbar">
         <div class="market-title">${title}</div>
         ${reroll}
       </div>
-      <div class="shop-wallet"><span>YOUR COINS</span><b>${s.coins}¢</b><small>Prices are on the BUY buttons</small></div>
+      <div class="shop-wallet"><span>YOUR COINS</span><b>${s.coins}¢</b><small>${walletNote}</small></div>
       ${loadout}
       <div class="shop-tabs" role="tablist" aria-label="Shop sections">
         ${tabs.map(tabButton).join("")}

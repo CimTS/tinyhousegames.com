@@ -38,20 +38,32 @@
   }
 
   /* Family sets: for each family with Chips owned, how many (copies count) and how many steps that reaches.
-     Double Vision: a Chip owned exactly twice counts once more. */
+     Three Chips bend the count, and all three are read from the Chips themselves:
+     Double Vision: a Chip owned exactly twice counts once more.
+     Players Club: one more Chip in the biggest family.
+     Pit Boss: the biggest family needs only PIT_VIP Chips for its second step. */
   function familySets(chips) {
-    const vision = chips.some(c => c.effect?.doubleVision),
-      pairs = vision ? [...copies(chips)].filter(([, n]) => n === 2).map(([id]) => chips.find(c => c.id === id)) : [];
+    const has = key => chips.some(c => c.effect?.[key]),
+      pairs = has("doubleVision")
+        ? [...copies(chips)].filter(([, n]) => n === 2).map(([id]) => chips.find(c => c.id === id))
+        : [],
+      count = f => chips.filter(c => c.family === f.id).length + pairs.filter(c => c.family === f.id).length,
+      // The biggest family by Chips owned; the first in the list on a tie.
+      top = FAMILIES.reduce((best, f) => (count(f) > count(best) ? f : best), FAMILIES[0]),
+      club = has("playersClub") ? 1 : 0,
+      pit = has("pitBoss");
     return FAMILIES.map(f => {
-      const count = chips.filter(c => c.family === f.id).length + pairs.filter(c => c.family === f.id).length;
-      return { family: f, count, step: BALANCE.SET_STEPS.filter(n => count >= n).length };
+      const n = count(f) + (f === top ? club : 0),
+        steps =
+          pit && f === top ? BALANCE.SET_STEPS.map((need, i) => (i === 1 ? BALANCE.PIT_VIP : need)) : BALANCE.SET_STEPS;
+      return { family: f, count: n, step: steps.filter(need => n >= need).length, steps };
     }).filter(x => x.count > 0);
   }
 
   /* Where a family stands, in words: "HEARTS 3 · REGULAR · VIP AT 4". Shown on shop cards and in the Loadout. */
   function standing(set) {
-    const { SET_STEPS, SET_TIERS } = BALANCE,
-      next = SET_STEPS[set.step];
+    const { SET_TIERS } = BALANCE,
+      next = (set.steps || BALANCE.SET_STEPS)[set.step];
     return [
       `${set.family.name.toUpperCase()} ${set.count}`,
       set.step ? SET_TIERS[set.step - 1] : "",
@@ -105,6 +117,11 @@
         twinSet: 0,
         extraStack: 0,
         hall: 0,
+        playersClub: false,
+        pitBoss: false,
+        flushCoins: 0,
+        shopChips: 0,
+        loyalty: 0,
         heartBalls: 0,
         clubGrind: 0,
         steady: false,

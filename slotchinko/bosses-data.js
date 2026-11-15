@@ -45,6 +45,8 @@
   const items=[...D.CHIP_CATALOG,...D.CARD_CATALOG,...D.BUFF_CATALOG,...D.CONSUMABLE_CATALOG];
   for(const b of D.BOSSES) b.rewards.forEach((name,i)=>{
     const id=D.rewardId(name);
-    if(items.some(x=>x.id===id)) D.UNLOCKS.push({ kind:"item", id, rush:{ boss:b.id, level:i+1 }, hint:`Win a rush on ${b.name} at Ascension ${i+1}.`, test:()=>false });
+    const deck=D.DECKS.find(k=>k.reward===name), hint=`Win a rush on ${b.name} at Ascension ${i+1}.`;
+    if(items.some(x=>x.id===id)) D.UNLOCKS.push({ kind:"item", id, rush:{ boss:b.id, level:i+1 }, hint, test:()=>false });
+    else if(deck) D.UNLOCKS.push({ kind:"deck", id:deck.id, rush:{ boss:b.id, level:i+1 }, hint, test:()=>false });
   });
 })();

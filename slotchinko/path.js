@@ -15,7 +15,8 @@
         extra = [],
         // The Peg Mechanic tunes the pegs once a run: paid, he does not come back.
         tuned = (s.runBuffs || []).some(b => b.id === "tuned-pegs"),
-        events = D.EVENTS.filter(e => e.id !== "mechanic" || !tuned);
+        // ...and an event that is still a locked prize (The Back Room) is not offered.
+        events = D.EVENTS.filter(e => (e.id !== "mechanic" || !tuned) && !(s.locked || []).includes(e.id));
       while (extra.length < 2) {
         const t = pick(pool, rnd);
         if (!extra.includes(t)) extra.push(t);
@@ -114,7 +115,7 @@
     },
     remix() {
       const now = this.remixOffer(),
-        ids = Object.keys(D.BOSS_TUNE.LAYOUTS);
+        ids = this._layouts();
       if (!now) return;
       this.state.path.remix = ids[(ids.indexOf(now) + 1) % ids.length];
       this.render();
@@ -146,7 +147,15 @@
       const s = this.state,
         o = this.eventDef()?.options[i];
       if (!o) return false;
+      if (o.needTrade && this._backRoom().out.length < 2) return false;
       return s.coins >= (o.need || 0) && (!o.needChip || s.chips.some(c => !String(c.instanceId).startsWith("deck-")));
+    },
+    /* The Back Room: your biggest family, and your own Chips from outside it, newest last. */
+    _backRoom() {
+      const s = this.state,
+        top = [...window.SlotchinkoSets.familySets(s.chips)].sort((a, b) => b.count - a.count)[0]?.family.id,
+        own = s.chips.filter(c => !String(c.instanceId).startsWith("deck-"));
+      return { top, out: top ? own.filter(c => c.family !== top) : [] };
     },
     resolveEvent(i) {
       const s = this.state,
@@ -217,6 +226,19 @@
           s.stats.coinsEarned += 3;
           note("+3¢");
         }
+      } else if (id === "back-room" && i === 0) {
+        const { top, out } = this._backRoom(),
+          gone = out.slice(-2);
+        s.chips = s.chips.filter(c => !gone.includes(c));
+        const pool = D.CHIP_CATALOG.filter(
+            c => c.family === top && !(s.locked || []).includes(c.id) && this._canOwn(c)
+          ),
+          got = pool.length ? pick(pool, ev) : null;
+        if (got) {
+          s.itemSerial = (s.itemSerial || 0) + 1;
+          s.chips.push({ ...got, instanceId: `gift-${got.id}-${s.itemSerial}` });
+        }
+        note(got ? `TRADED FOR ${got.name.toUpperCase()}` : "LOU HAD NOTHING FOR YOU");
       } else if (id === "blood-moon" && i === 0) {
         climb = 1.25;
         blindPay = 2;

@@ -179,7 +179,12 @@
     $("collection-body").addEventListener("click", e => {
       const card = e.target.closest("[data-bingo-card]"),
         square = e.target.closest("[data-bingo-square]");
-      if (card) overlays.pickBingo({ card: card.dataset.bingoCard });
+      const line = e.target.closest("[data-bingo-line]"),
+        wear = e.target.closest("[data-bingo-wear]");
+      if (wear) overlays.pickBingo({ wear: { kind: wear.dataset.bingoWear, value: wear.dataset.value } });
+      else if (line)
+        overlays.pickBingo({ line: line.dataset.bingoLine === "blackout" ? "blackout" : +line.dataset.bingoLine });
+      else if (card) overlays.pickBingo({ card: card.dataset.bingoCard });
       else if (square) overlays.pickBingo({ square: +square.dataset.bingoSquare });
     });
     // The path between blinds, and event cards.
@@ -217,6 +222,10 @@
       startPath();
     });
     $("rush-ok").addEventListener("click", () => {
+      // Lou's note about a cleared save: his button leads back to the title.
+      const then = overlays.cardThen;
+      overlays.cardThen = null;
+      if (then) return then();
       if (overlays.rushOffered) game.rush();
       else game.state.rush.result = null;
       overlays.hide();

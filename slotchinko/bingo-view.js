@@ -6,10 +6,23 @@
   const SHORT = { sonny: "SONNY", undertow: "UNDERTOW", mirror: "MIRROR", house: "THE HOUSE", lou: "LOU" };
   const HOW =
     "Each square is a feat. Pull one off and it is daubed for good. Five in a row is a bingo. " +
-    "Pink squares are rush wins: A1 is Ascension 1. Pick a square to see how to earn it.";
+    "Every line pays a prize: pick a star to see it. Pink squares are rush wins: A1 is Ascension 1. " +
+    "Pick a square to see how to earn it.";
   // Which line each star around the grid stands for (indexes into BINGO.LINES: rows 0-4, columns 5-9, diagonals 10-11).
-  const star = (card, i, name) =>
-    `<span class="bingo-star ${card.lines[i] ? "is-done" : ""}" title="${name}">${card.lines[i] ? "★" : "☆"}</span>`;
+  // A star is a button: picking it says what that line pays.
+  const star = (card, i, name, pick) => {
+    const done = card.lines[i],
+      classes = `bingo-star ${done ? "is-done" : ""} ${pick.line === i ? "is-on" : ""}`,
+      label = `${name}${done ? ", finished" : ""}`;
+    return `<button type="button" class="${classes}" data-bingo-line="${i}" aria-label="${label}">${done ? "★" : "☆"}</button>`;
+  };
+  /* What a prize is, in words. */
+  const prizeText = z =>
+    z.kind === "title"
+      ? `the title “${z.name}”. Wear it from Your Prizes.`
+      : z.kind === "felt"
+        ? `the ${z.name} for your board. Wear it from Your Prizes.`
+        : `${z.name} (${z.what}). ${z.note}`;
 
   /* The Bingo tab. pick: { card, square } as last chosen on this sheet. */
   function render(prefs, pick) {
@@ -46,28 +59,54 @@
       );
     };
     let grid =
-      [..."BINGO"].map(c => `<span class="bingo-letter">${c}</span>`).join("") + star(card, 11, B.LINES[11].name);
+      [..."BINGO"].map(c => `<span class="bingo-letter">${c}</span>`).join("") + star(card, 11, B.LINES[11].name, pick);
     for (let r = 0; r < 5; r++) {
       const row = def.squares.slice(r * 5, r * 5 + 5);
-      grid += row.map((q, c) => cell(q, r * 5 + c)).join("") + star(card, r, B.LINES[r].name);
+      grid += row.map((q, c) => cell(q, r * 5 + c)).join("") + star(card, r, B.LINES[r].name, pick);
     }
-    grid += [5, 6, 7, 8, 9, 10].map(i => star(card, i, B.LINES[i].name)).join("");
+    grid += [5, 6, 7, 8, 9, 10].map(i => star(card, i, B.LINES[i].name, pick)).join("");
     const q = def.squares[pick.square],
       got = q && card.hit[pick.square],
       tally = q?.tally && !got ? ` ${Math.min(q.need, prefs.data.tally?.[q.tally] || 0)}/${q.need} so far.` : "",
+      // a picked line (a star) or the blackout: what it pays, or that it is still a secret
+      black = pick.line === "blackout",
+      line = black ? { name: "BLACKOUT" } : B.LINES[pick.line],
+      paid = black ? card.blackout : card.lines[pick.line],
+      prize = black ? def.blackout : def.prizes[pick.line],
+      secret = black ? "Daub all 25 squares to find out what it pays." : "Finish this line to find out what it pays.",
       detail = q
         ? `<b>${q.name.toUpperCase()}${got ? " · DAUBED" : ""}</b>${q.desc}${tally}`
-        : `<b>HOW IT WORKS</b>${HOW}`,
+        : line
+          ? `<b>${line.name}${paid ? " · PAID" : ""}</b>${paid ? `Paid ${prizeText(prize)}` : secret}`
+          : `<b>HOW IT WORKS</b>${HOW}`,
       done = card.lines.filter(Boolean).length,
-      note = card.blackout ? "BLACKOUT" : `${card.count}/25 DAUBED · ${done} LINE${done === 1 ? "" : "S"}`;
-    // On a phone the three parts stack (cards, grid, feat); on a desktop the cards and the feat sit beside the grid.
+      note = `${card.count}/25 DAUBED · ${done} LINE${done === 1 ? "" : "S"}`,
+      blackClass = `bingo-black ${card.blackout ? "is-done" : ""} ${black ? "is-on" : ""}`,
+      blackout =
+        `<button type="button" class="${blackClass}" data-bingo-line="blackout">` +
+        `${card.blackout ? "★" : "☆"} BLACKOUT</button>`;
+    // Your Prizes: everything paid so far that can be worn. Titles and felts toggle on a press.
+    const all = prefs.prizes(),
+      of = kind => all.filter(p => p.prize.kind === kind).map(p => p.prize),
+      chip = (kind, value, label, on) =>
+        `<button type="button" class="bingo-wear ${on ? "is-on" : ""}" data-bingo-wear="${kind}" data-value="${value}" ` +
+        `aria-pressed="${on}">${label}</button>`,
+      titles = of("title").map(z => chip("title", z.name, z.name, prefs.title() === z.name)),
+      felts = of("felt").map(z => chip("felt", z.id, z.name, prefs.felt() === z.id)),
+      opened = of("unlock").map(z => `<span class="bingo-won">${z.name}</span>`),
+      group = (name, list) => (list.length ? `<div><small>${name}</small>${list.join("")}</div>` : ""),
+      groups = group("TITLES · PICK ONE TO WEAR", titles) + group("FELTS", felts) + group("OPENED", opened),
+      prizes = all.length ? `<section class="bingo-prizes"><b>YOUR PRIZES</b>${groups}</section>` : "";
+    // On a phone the parts stack (cards, grid, feat, prizes); on a desktop the cards and the feat sit beside the grid.
     $("collection-body").innerHTML = `<div class="bingo">
       <div class="bingo-tabs">${tabs}</div>
       <section class="bingo-card ${card.blackout ? "is-blackout" : ""}">
         <div class="bingo-title"><b>${def.title}</b><small>${note}</small></div>
         <div class="bingo-grid">${grid}</div>
+        ${blackout}
       </section>
       <p class="bingo-detail">${detail}</p>
+      ${prizes}
     </div>`;
     fit();
   }
@@ -145,7 +184,8 @@
     });
     el.innerHTML =
       `<i aria-hidden="true">${big ? "★" : "✦"}</i>` +
-      `<span><b>${head.toUpperCase()}</b><small>${n.card.title}</small></span>`;
+      `<span><b>${head.toUpperCase()}</b>` +
+      `<small>${n.prize ? `PRIZE: ${n.prize.name.toUpperCase()}` : n.card.title}</small></span>`;
     box.append(el);
     if (big) view?.vibrate?.([40, 60, 120]);
     window.setTimeout(() => el.remove(), big ? 5200 : 4200);

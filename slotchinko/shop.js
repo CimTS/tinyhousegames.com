@@ -3,6 +3,7 @@
   "use strict";
   const { CHIP_CATALOG, CARD_CATALOG, BUFF_CATALOG, CONSUMABLE_CATALOG, RARITY_WEIGHT, BALANCE, NG } =
     window.SlotchinkoData;
+  const { SUITS, SUIT_NAMES, SUIT_GLYPHS } = window.SlotchinkoData;
   let serial = 0;
 
   /* Picks by rarity weight; extra(item) scales an item's weight (the shop's lean toward owned families). */
@@ -56,7 +57,14 @@
         for (let i = 0; i < slots[kind] && pool.length; i++) {
           const pick = weightedPick(pool, rnd, kind === "chip" && lean ? leaning : () => 1),
             tight = this._ngHas("tight-shop") && pick.cost >= NG.TIGHT_MIN_COST ? 1 : 0;
-          inventory.push(cloneItem(pick, s, tight - discount));
+          const item = cloneItem(pick, s, tight - discount);
+          // Stripped Deck: each one on offer names the suit it would remove.
+          if (item.deck === "strip") {
+            item.suit = SUITS[Math.floor(rnd() * SUITS.length)];
+            item.name = `Stripped Deck ${SUIT_GLYPHS[item.suit]}`;
+            item.desc = `Remove every ${SUIT_NAMES[item.suit].slice(0, -1)} from your deck.`;
+          }
+          inventory.push(item);
           pool.splice(
             pool.findIndex(item => item.id === pick.id),
             1
@@ -102,6 +110,7 @@
       } else if (item.kind === "card") {
         const m = s.deckMods;
         if (item.deck === "addAce") m.aces = (m.aces || 0) + 1;
+        else if (item.deck === "strip") m.strip = item.suit;
         else if (item.maxStack > 1) m[item.deck] = (m[item.deck] || 0) + 1;
         else m[item.deck] = true;
         if (item.deck === "joker") this.toast("JOKER ADDED TO YOUR DECK");

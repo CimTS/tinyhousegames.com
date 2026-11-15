@@ -39,22 +39,29 @@
     2: " and your two newest Chips",
     family: " and every Chip outside your biggest family"
   };
+  // 2: bingo prizes. Everyone starts level, so earlier saves are cleared (John's call; Lou explains on the title).
+  const SAVE_VERSION = 2,
+    // what a cleared save keeps: how the player likes the game set up, and that they have done the tutorial
+    KEPT = ["motion", "tips", "vibration", "coached", "tipsSeen"];
   const FRESH = () => ({ best: 0, bestRound: 0, wins: 0, found: [], deckBest: {}, setsFound: [] });
   class Prefs {
     constructor() {
-      this.data = { ...FRESH(), ...read() };
-      // Older saves: a first win used to open every deck at once.
-      if (this.data.decksUnlocked) {
-        this.data.found = [...new Set([...this.data.found, ...window.SlotchinkoData.DECKS.map(k => k.id)])];
-        delete this.data.decksUnlocked;
+      const saved = read(),
+        old = Object.keys(saved).length > 0 && saved.v !== SAVE_VERSION;
+      // A save from before SAVE_VERSION starts over: progress goes, settings stay, and Lou says so once (showTitle).
+      const kept = Object.fromEntries(KEPT.filter(k => k in saved).map(k => [k, saved[k]]));
+      this.data = old ? { ...FRESH(), ...kept, wiped: true } : { ...FRESH(), ...saved };
+      this.data.v = SAVE_VERSION;
+      if (old) {
+        try {
+          localStorage.removeItem("slotchinko-run");
+        } catch {
+          /* private mode */
+        }
+        write(this.data);
       }
-      // Older saves: Ascension was one level for every deck. Each deck now stands on the levels it has won itself
-      // (deckBest, kept all along), so the old number is dropped and no deck is credited with a win it did not have.
-      delete this.data.ngUnlocked;
       const sys = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
       if (this.data.motion === undefined) this.data.motion = sys ? "reduced" : "full";
-      // Squares the save has already earned (rushes won, decks won with) are daubed quietly as it loads.
-      this.daub([], true);
       this.apply();
     }
     reducedMotion() {
@@ -76,6 +83,8 @@
     }
     apply() {
       document.documentElement.classList.toggle("reduce-motion", this.reducedMotion());
+      // The felt being worn (a bingo blackout prize) dresses the board: polish.css has one rule per felt.
+      if (document.body) document.body.dataset.felt = this.felt() || "";
     }
     /* A rush won: the reward for that boss at that Ascension level. True the first time on this save. */
     rushWon(boss, ng) {
@@ -129,10 +138,12 @@
     /* Ids still locked in the unlock pool, for a new run. */
     /* Items not yet open on this save: milestone unlocks not found, and rush rewards not yet won. */
     locked() {
-      const won = u => (this.data.rush?.[u.rush.boss] || []).includes(u.rush.level);
-      return window.SlotchinkoData.UNLOCKS.filter(u => (u.rush ? !won(u) : !this.data.found.includes(u.id))).map(
-        u => u.id
-      );
+      const won = u => (this.data.rush?.[u.rush.boss] || []).includes(u.rush.level),
+        // a bingo prize is open once its line (or its card's blackout) is finished
+        paid = u =>
+          u.bingo.line === "blackout" ? this.card(u.bingo.card).blackout : this.card(u.bingo.card).lines[u.bingo.line],
+        shut = u => (u.rush ? !won(u) : u.bingo ? !paid(u) : !this.data.found.includes(u.id));
+      return window.SlotchinkoData.UNLOCKS.filter(shut).map(u => u.id);
     }
     /* Bingo (bingo-data.js): the squares daubed on this save. The free square is always daubed. */
     daubed(id) {
@@ -147,7 +158,7 @@
     }
     /* Daubs squares. Returns what is new, in order: each fresh square, then any line or blackout it finished.
        Squares read from the save itself (Full Deck, Comped for Life) are checked on the way out. */
-    daub(ids, quiet = false) {
+    daub(ids) {
       const B = window.SlotchinkoData.BINGO,
         d = this.data,
         news = [];
@@ -157,26 +168,56 @@
         const before = this.card(at.card.id);
         d.bingo = [...(d.bingo || []), id];
         // Marked as new on its card until that card is next looked at.
-        if (!quiet) d.bingoNew = [...(d.bingoNew || []), id];
+        d.bingoNew = [...(d.bingoNew || []), id];
         const after = this.card(at.card.id);
         news.push({ kind: "square", card: at.card, square: at.square });
         after.lines.forEach((done, i) => {
-          if (done && !before.lines[i]) news.push({ kind: "line", card: at.card, line: B.LINES[i] });
+          if (done && !before.lines[i])
+            news.push({ kind: "line", card: at.card, line: B.LINES[i], prize: at.card.prizes[i] });
         });
-        if (after.blackout) news.push({ kind: "blackout", card: at.card });
+        if (after.blackout) news.push({ kind: "blackout", card: at.card, prize: at.card.blackout });
       };
       ids.forEach(mark);
       const bosses = B.CARDS.filter(c => c.boss),
         derived = {
-          fulldeck: () => window.SlotchinkoData.DECKS.every(k => d.deckBest?.[k.id] != null),
+          // every deck but a prize deck: Lou's own deck needs this very square
+          fulldeck: () => window.SlotchinkoData.DECKS.every(k => k.prize || d.deckBest?.[k.id] != null),
           comped: () => bosses.every(c => this.card(c.id).blackout)
         };
-      // A rush already on the save's record (won before the cards existed) has its square too.
-      const rushed = (c, q) => q.rush && (d.rush?.[c.boss] || []).includes(q.rush);
-      for (const c of B.CARDS)
-        for (const q of c.squares) if (rushed(c, q) || (q.derive && derived[q.derive]())) mark(q.id);
+      for (const c of B.CARDS) for (const q of c.squares) if (q.derive && derived[q.derive]()) mark(q.id);
       if (news.length) write(d);
       return news;
+    }
+    /* Every prize paid so far, in card order: { card, line, prize }. Worked out from the cards, never stored. */
+    prizes() {
+      const B = window.SlotchinkoData.BINGO;
+      return B.CARDS.flatMap(c => {
+        const state = this.card(c.id),
+          lines = c.prizes
+            .map((prize, i) => ({ card: c, line: B.LINES[i].name, prize }))
+            .filter((_, i) => state.lines[i]);
+        return state.blackout ? [...lines, { card: c, line: "BLACKOUT", prize: c.blackout }] : lines;
+      });
+    }
+    /* The title and the felt being worn, if still earned. */
+    title() {
+      const t = this.data.title;
+      return t && this.prizes().some(p => p.prize.kind === "title" && p.prize.name === t) ? t : null;
+    }
+    felt() {
+      const f = this.data.felt;
+      return f && this.prizes().some(p => p.prize.kind === "felt" && p.prize.id === f) ? f : null;
+    }
+    /* Wears a title or a felt; wearing the one already on takes it off. */
+    wear(kind, value) {
+      const key = kind === "felt" ? "felt" : "title";
+      this.data[key] = this.data[key] === value ? null : value;
+      write(this.data);
+      this.apply();
+    }
+    wipeSeen() {
+      delete this.data.wiped;
+      write(this.data);
     }
     seenBingo(card) {
       const d = this.data,
@@ -262,10 +303,14 @@
       return !!this.open;
     }
     showTitle() {
-      const d = this.prefs.data;
+      const d = this.prefs.data,
+        title = this.prefs.title();
       $("title-best").textContent = d.best
         ? `BEST ${num(d.best)} · ${d.wins} WIN${d.wins === 1 ? "" : "S"}${this.prefs.ngTop() ? ` · ASCENSION ${this.prefs.ngTop()}` : ""}`
         : "NO RUNS YET";
+      // The title being worn (a bingo prize) sits over the record.
+      $("title-worn").textContent = title ? `“${title.toUpperCase()}”` : "";
+      $("title-worn").hidden = !title;
       const saved = window.SlotchinkoSave?.read(),
         c = $("continue-button");
       if (c) {
@@ -280,6 +325,23 @@
       if (saved) $("play-button").removeAttribute("data-focus");
       if (c) c.toggleAttribute("data-focus", !!saved);
       this.show("title-screen");
+      // A save cleared by an update: Lou says why, once, and the title comes back when he is done.
+      if (this.prefs.data.wiped) {
+        this.prefs.wipeSeen();
+        this.rushCard({
+          face: "host",
+          title: "FRESH CARDS",
+          text: "“New cards on the table, so everyone's starting fresh. Sorry about that, kid. House rules.”",
+          lines: [
+            "Decks, Ascension levels, rush rewards and the Collection start over",
+            "Your settings are kept",
+            "New: every bingo line now pays a prize"
+          ],
+          ok: "DEAL ME IN",
+          kicker: "A WORD FROM LOU",
+          then: () => this.showTitle()
+        });
+      }
     }
     showHowTo() {
       this.returnTo = this.open === "title-screen" ? "title" : null;
@@ -438,7 +500,14 @@
         level = this.prefs.ngOpen(deck.id),
         mod = D.NG.MODS[level - 1];
       const list = rec.fresh.map(id => {
-        const deck = D.UNLOCKS.find(x => x.id === id).kind === "deck",
+        const u = D.UNLOCKS.find(x => x.id === id);
+        // a bingo prize that is not an item (a board, an event) is described by the prize itself
+        if (u.kind === "board" || u.kind === "event") {
+          const c = D.BINGO.CARDS.find(x => x.id === u.bingo.card),
+            z = u.bingo.line === "blackout" ? c.blackout : c.prizes[u.bingo.line];
+          return { icon: "★", name: z.name, kind: z.what, desc: z.note };
+        }
+        const deck = u.kind === "deck",
           it = deck ? D.DECKS.find(k => k.id === id) : items.find(x => x.id === id),
           kind = deck ? "Deck · pick it when you start a run" : "Now turns up in the shop";
         return { icon: Icons.of(it), name: it.name, kind, desc: it.desc };
@@ -550,11 +619,13 @@
     seenBingo() {
       if (this.colTab === "bingo" && this.bingoPick) this.prefs.seenBingo(this.bingoPick.card);
     }
-    pickBingo({ card, square }) {
+    pickBingo({ card, square, line, wear }) {
       const p = this.bingoPick;
       if (card) this.seenBingo();
-      if (card) this.bingoPick = { card, square: null };
-      else p.square = p.square === square ? null : square;
+      if (wear) this.prefs.wear(wear.kind, wear.value);
+      else if (line != null) Object.assign(p, { square: null, line: p.line === line ? null : line });
+      else if (card) this.bingoPick = { card, square: null };
+      else Object.assign(p, { line: null, square: p.square === square ? null : square });
       window.SlotchinkoBingoView.render(this.prefs, this.bingoPick);
     }
     /* Path choice after the shop. */
@@ -662,8 +733,11 @@
         ok: "RUSH"
       });
     }
-    rushCard({ offer = false, face, title, text, lines, ok }) {
+    rushCard({ offer = false, face, title, text, lines, ok, then = null, kicker = "RUSH THE BOSS" }) {
       this.rushOffered = offer;
+      $("rush-kicker").textContent = kicker;
+      // what the card's button does instead of going back to the game (ui.js)
+      this.cardThen = then;
       $("rush-face").innerHTML = (window.SlotchinkoBossArt || {})[face] || "";
       $("rush-title").textContent = title;
       $("rush-text").textContent = text;
@@ -740,7 +814,9 @@
       $("end-ng").hidden = false;
       const build = game.build(),
         played = build ? ` · ${build.name.toUpperCase()}${build.tier ? ` (${build.tier})` : ""}` : "";
-      $("end-ng").textContent = `${deck.name.toUpperCase()}${s.ng ? ` · ASCENSION ${s.ng}` : ""}${played}`;
+      const worn = this.prefs.title();
+      $("end-ng").textContent =
+        `${worn ? `“${worn.toUpperCase()}” · ` : ""}${deck.name.toUpperCase()}${s.ng ? ` · ASCENSION ${s.ng}` : ""}${played}`;
       this.unlockInfo = this._unlockInfo(rec, d);
       const chip = (u, i) => {
         const face = `<span>${u.icon}</span>${u.name}`;

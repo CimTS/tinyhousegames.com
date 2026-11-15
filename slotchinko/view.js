@@ -273,10 +273,20 @@
     }
     /* Bingo: a square earned in the run (feats.js) is daubed on the save; what is new there is announced. */
     feat(id) {
-      window.SlotchinkoBingoView.pop(this.prefs.daub([id]), this);
+      this._daubed(this.prefs.daub([id]));
     }
     tally(key) {
-      window.SlotchinkoBingoView.pop(this.prefs.tally(key), this);
+      this._daubed(this.prefs.tally(key));
+    }
+    /* What was just daubed is announced; a prize that opens something joins this run's shop and path at once. */
+    _daubed(news) {
+      if (news.some(n => n.prize?.kind === "unlock")) {
+        const shut = this.prefs.locked(),
+          prize = window.SlotchinkoData.UNLOCKS.filter(u => u.bingo).map(u => u.id),
+          s = this.game.state;
+        s.locked = (s.locked || []).filter(id => !prize.includes(id) || shut.includes(id));
+      }
+      window.SlotchinkoBingoView.pop(news, this);
     }
     /* A milestone met mid-run: saved at once, and announced the first time on this save only. */
     achieved(id) {

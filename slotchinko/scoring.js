@@ -14,10 +14,36 @@
     }
   }
 
-  /* Family sets: for each family with Chips owned, how many (copies count) and how many steps that reaches. */
+  /* Part of an effect, for the Mirror Dealer's rewards: percentages scale, whole numbers (+1 ball, +2 coins) round
+     down, and scoreMult keeps only that share of its gain. scaled({ scoreMult: 1.2, heartScore: 0.3 }, 0.5) is
+     { scoreMult: 1.1, heartScore: 0.15 }. */
+  function scaled(effect, share) {
+    const out = {};
+    for (const [key, value] of Object.entries(effect || {})) {
+      if (typeof value !== "number") continue;
+      out[key] =
+        key === "scoreMult"
+          ? 1 + (value - 1) * share
+          : Number.isInteger(value)
+            ? Math.floor(value * share)
+            : value * share;
+    }
+    return out;
+  }
+  /* How many copies of each Chip id, in the order first owned. */
+  function copies(chips) {
+    const n = new Map();
+    chips.forEach(c => n.set(c.id, (n.get(c.id) || 0) + 1));
+    return n;
+  }
+
+  /* Family sets: for each family with Chips owned, how many (copies count) and how many steps that reaches.
+     Double Vision: a Chip owned exactly twice counts once more. */
   function familySets(chips) {
+    const vision = chips.some(c => c.effect?.doubleVision),
+      pairs = vision ? [...copies(chips)].filter(([, n]) => n === 2).map(([id]) => chips.find(c => c.id === id)) : [];
     return FAMILIES.map(f => {
-      const count = chips.filter(c => c.family === f.id).length;
+      const count = chips.filter(c => c.family === f.id).length + pairs.filter(c => c.family === f.id).length;
       return { family: f, count, step: BALANCE.SET_STEPS.filter(n => count >= n).length };
     }).filter(x => x.count > 0);
   }
@@ -73,6 +99,12 @@
         sandbar: 0,
         lowTide: 0,
         remix: 0,
+        spitting: 0,
+        doubleVision: false,
+        mirrorExtra: 0,
+        twinSet: 0,
+        extraStack: 0,
+        hall: 0,
         heartBalls: 0,
         clubGrind: 0,
         steady: false,
@@ -96,8 +128,9 @@
         mystery: 0,
         bumper: 0
       };
-      for (const chip of [...this._chipsInPlay(), ...(this.state.runBuffs || []), ...this._trophyItems()])
-        add(totals, chip.effect);
+      const chips = this._chipsInPlay();
+      for (const chip of [...chips, ...(this.state.runBuffs || []), ...this._trophyItems()]) add(totals, chip.effect);
+      this._mirrors(totals, chips);
       // Each family step reached adds its effect, and counts as one set (bosses and trophies count sets).
       totals.sets = familySets(this.state.chips);
       totals.synergies = [];
@@ -107,6 +140,25 @@
           totals.synergies.push(`${set.family.name.toUpperCase()} ${BALANCE.SET_TIERS[i]}`);
         }
       return totals;
+    },
+
+    /* The Mirror Dealer's rewards, which work on copies of Chips. chips is what is in play (his own fight thins it). */
+    _mirrors(totals, chips) {
+      const n = copies(chips),
+        first = id => chips.find(c => c.id === id),
+        twice = [...n].filter(([, count]) => count >= 2).map(([id]) => id);
+      // Spitting Image: the second copy of each doubled Chip gives half as much again.
+      if (totals.spitting) for (const id of twice) add(totals, scaled(first(id).effect, totals.spitting));
+      // Two-Way Mirror: the Chip with the most copies (the first owned, on a tie) works once more. Not itself.
+      if (totals.mirrorExtra) {
+        const most = [...n].filter(([id]) => !first(id).effect?.mirrorExtra).sort((a, b) => b[1] - a[1])[0];
+        if (most) add(totals, first(most[0]).effect);
+      }
+      // Hall of Mirrors: every two Chips add a share to every Chip's effect.
+      const hall = totals.hall * Math.floor(chips.length / 2);
+      if (hall) for (const chip of chips) add(totals, scaled(chip.effect, hall));
+      // Twin Set: score for every doubled Chip.
+      if (totals.twinSet) totals.scoreMult *= 1 + totals.twinSet * twice.length;
     },
 
     /* Points for one finished ball. physics supplies the bucket multiplier. */

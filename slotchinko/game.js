@@ -1022,6 +1022,7 @@
       // The Remix: the board picked on the path, for a blind that is not a boss's.
       s.layout = (!bossDef && remix) || this._layoutFor(s.round);
       s.bumperCar = false;
+      s.lookingGlass = false;
       s.blindPayMult = blindPay;
       s.path = null;
       // Every blind starts from zero: the target is what this blind alone asks for.

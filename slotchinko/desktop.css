@@ -4,7 +4,7 @@
 @media(min-width:1000px) and (min-height:600px){
   :root{--ui:1;--side:clamp(330px,calc(30vw/var(--ui)),390px);--board-h:calc(100dvh/var(--ui) - 172px);--board-w:calc(var(--board-h)*340/270)}
   body{background:radial-gradient(ellipse at 50% 0,#141d33,#090b14 70%)}
-  #app{width:100%;max-width:none;height:calc(100dvh/var(--ui));display:grid;grid-template-columns:var(--side) minmax(0,var(--board-w));grid-template-rows:auto auto auto auto auto auto minmax(0,1fr);gap:9px 14px;justify-content:center;align-content:start}
+  #app{width:100%;max-width:none;height:calc(100dvh/var(--ui));display:grid;grid-template-columns:var(--side) minmax(0,var(--board-w));grid-template-rows:auto auto auto auto auto auto minmax(0,1fr);gap:6px 14px;justify-content:center;align-content:start}
   .site-bar{grid-column:1/-1;grid-row:1}
   .topbar{grid-column:1/-1;grid-row:2}
   .phase-banner{grid-column:1;grid-row:3}
@@ -17,7 +17,8 @@
   footer{display:none}
   #shop-ui{display:none}
   /* A full loadout has to fit beside the board too. */
-  .inventory-panel{padding:8px 10px}
+  .inventory-panel{padding:6px 10px}
+  .hand-note{padding:4px 10px}
   /* Beside the board there is one screen of height: smaller tiles, and the suit note steps aside while a Chip is open. */
   .owned-chips{gap:3px}
   .owned-chip{min-height:32px;min-width:26px;padding:3px 5px}
@@ -31,6 +32,10 @@
   .synergy-line{margin-top:5px;padding:4px 8px}
   .consumable-row{margin-top:5px;padding-top:5px}
   .consumable-heading{margin-bottom:3px}
+  /* An empty Bag folds onto one line, so a full Loadout and its trophies still fit beside the board at 1080p. */
+  .consumable-row:has(.empty-inventory){display:flex;align-items:baseline;gap:12px}
+  .consumable-row:has(.empty-inventory) .consumable-heading{margin:0;flex:none;gap:8px}
+  .consumable-row:has(.empty-inventory) .consumable-bag{min-height:0}
   #drop-button.drop-confirm{min-height:0}
 
   /* Shop open: the board shrinks in place and the market takes the room beside it. */

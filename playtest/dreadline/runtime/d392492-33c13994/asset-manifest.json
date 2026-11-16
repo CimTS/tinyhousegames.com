@@ -1,0 +1,232 @@
+{
+  "kenney": {
+    "credit": "Kenney / www.kenney.nl",
+    "source_url": "https://kenney.nl/assets",
+    "files": [
+      {
+        "path": "tower_defense/towerDefense_tile181.png",
+        "pack": "tower_defense",
+        "source_name": "towerDefense_tile181.png",
+        "license": "CC0-1.0",
+        "adaptation": "Source bytes unchanged; runtime position, scale, rotation and tint only.",
+        "sha256": "5774a42802e1043439d6c3af7093fdb6d3bca5b40cac8412060c5db07a1ab5df",
+        "bytes": 515
+      },
+      {
+        "path": "tower_defense/towerDefense_tile249.png",
+        "pack": "tower_defense",
+        "source_name": "towerDefense_tile249.png",
+        "license": "CC0-1.0",
+        "adaptation": "Source bytes unchanged; runtime position, scale, rotation and tint. Towers and Husk also receive grayscale color grading in Art.grade.",
+        "sha256": "58e2f5c0d9afbaa72ca84ad4439e18bc4f78480a7cc5670ddc260ec5aa971590",
+        "bytes": 479
+      },
+      {
+        "path": "tower_defense/towerDefense_tile250.png",
+        "pack": "tower_defense",
+        "source_name": "towerDefense_tile250.png",
+        "license": "CC0-1.0",
+        "adaptation": "Source bytes unchanged; runtime position, scale, rotation and tint. Towers and Husk also receive grayscale color grading in Art.grade.",
+        "sha256": "fa0a1071879af323575b7982066d602d7ffaddae81acd427b04461fdbef922c7",
+        "bytes": 546
+      },
+      {
+        "path": "topdown_shooter/tile_10.png",
+        "pack": "topdown_shooter",
+        "source_name": "tile_10.png",
+        "license": "CC0-1.0",
+        "adaptation": "Source bytes unchanged; runtime position, scale, rotation and tint only.",
+        "sha256": "d19c09dcdca7a0fc077f47ed35379d0f8996af76e315c6a01c7b3092006823a0",
+        "bytes": 465
+      },
+      {
+        "path": "topdown_shooter/tile_129.png",
+        "pack": "topdown_shooter",
+        "source_name": "tile_129.png",
+        "license": "CC0-1.0",
+        "adaptation": "Source bytes unchanged; runtime position, scale, rotation and tint only.",
+        "sha256": "3444521e8c65d5be172e7593399e60992a92f4381698d463a8d4a4f38cda3501",
+        "bytes": 350
+      },
+      {
+        "path": "topdown_shooter/tile_156.png",
+        "pack": "topdown_shooter",
+        "source_name": "tile_156.png",
+        "license": "CC0-1.0",
+        "adaptation": "Source bytes unchanged; runtime position, scale, rotation and tint only.",
+        "sha256": "1ee7da4675b2a117c5d10b82a0541332b7f18cf9c9a8eb85cf48bb8674b76831",
+        "bytes": 1046
+      },
+      {
+        "path": "topdown_shooter/tile_265.png",
+        "pack": "topdown_shooter",
+        "source_name": "tile_265.png",
+        "license": "CC0-1.0",
+        "adaptation": "Source bytes unchanged; runtime position, scale, rotation and tint only.",
+        "sha256": "9770328183c99d30319ab005e94b31271239960d1632a73aae79a44d7b37e366",
+        "bytes": 643
+      },
+      {
+        "path": "topdown_shooter/zoimbie1_stand.png",
+        "pack": "topdown_shooter",
+        "source_name": "zoimbie1_stand.png",
+        "license": "CC0-1.0",
+        "adaptation": "Source bytes unchanged; runtime position, scale, rotation and tint. Towers and Husk also receive grayscale color grading in Art.grade.",
+        "sha256": "30ce013ea0fda2198c7487eb3525c1d9a5a12d1fc12cbe323ef4ea7e0f5dd120",
+        "bytes": 1365
+      },
+      {
+        "path": "particle_pack/smoke_01.png",
+        "pack": "particle_pack",
+        "source_name": "smoke_01.png",
+        "license": "CC0-1.0",
+        "adaptation": "Source bytes unchanged; runtime position, scale, rotation and tint only.",
+        "sha256": "e8724c219e8d35859167fc0a7e207e13c72ccf0c29704909b9bb3d3dc71c6cf7",
+        "bytes": 97452
+      },
+      {
+        "path": "particle_pack/spark_01.png",
+        "pack": "particle_pack",
+        "source_name": "spark_01.png",
+        "license": "CC0-1.0",
+        "adaptation": "Source bytes unchanged; runtime position, scale, rotation and tint only.",
+        "sha256": "5902da3a324cad0a4b5a88ce1e3c9cc18fee50922c358ce93d8c9f1ad7708f0a",
+        "bytes": 95070
+      },
+      {
+        "path": "particle_pack/light_01.png",
+        "pack": "particle_pack",
+        "source_name": "light_01.png",
+        "license": "CC0-1.0",
+        "adaptation": "Source bytes unchanged; runtime position, scale, rotation and tint only.",
+        "sha256": "caedcc5df5bcac4470244d2520d6a64b45b20c1ccf4d918da516c55e3fa365a6",
+        "bytes": 93470
+      }
+    ]
+  },
+  "external": {
+    "assets": [
+      {
+        "id": "infected.png",
+        "creator": "Riley Gombart (ChessMasterRiley)",
+        "asset_name": "Animated Top Down Zombie",
+        "source_url": "https://opengameart.org/content/animated-top-down-zombie",
+        "download_url": "https://opengameart.org/sites/default/files/tds_zombie.zip",
+        "source_file": "export/skeleton-move_0..16.png; export/skeleton-attack_0..8.png",
+        "source_download_sha256": "2aebc3865c14999663148bd57be4dfd7820ac5ac385a33fb893757ee573b2b39",
+        "license": "CC0-1.0",
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "required_attribution": "None (CC0); creator and source credited voluntarily.",
+        "download_date": "2026-11-15",
+        "local_destination": "assets/external/infected.png",
+        "modifications": "64px cells, 8-column atlas; saturation 30%, brightness 118%; movement 17 frames, warning attack 9 frames.",
+        "sha256": "eac9926565b48ae85244b9a2d0f37a412288f21a683e3d73c0429139efe840bb",
+        "bytes": 92551
+      },
+      {
+        "id": "blood-hit.png",
+        "creator": "para",
+        "asset_name": "Animated particle effects #2",
+        "source_url": "https://opengameart.org/content/animated-particle-effects-2",
+        "download_url": "https://opengameart.org/sites/default/files/blood_hit_01.png",
+        "source_file": "blood_hit_01.png",
+        "source_download_sha256": "0947f82ef68ef7d338291961f66ff89710bdbea439d12ec4430dd707f4f8b434",
+        "license": "CC0-1.0",
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "required_attribution": "None (CC0); creator and source credited voluntarily.",
+        "download_date": "2026-11-15",
+        "local_destination": "assets/external/blood-hit.png",
+        "modifications": "512 to 256px, 4x4 cells; runtime dark red tint/rotation/alpha; entirely omitted with reduced blood.",
+        "sha256": "0e3a6dcda72edf7c80d6c4859d240253a1e101a6df05fd15066a2f5279773b07",
+        "bytes": 28336
+      },
+      {
+        "id": "fire.png",
+        "creator": "para",
+        "asset_name": "Animated particle effects #2",
+        "source_url": "https://opengameart.org/content/animated-particle-effects-2",
+        "download_url": "https://opengameart.org/sites/default/files/fire_01.png",
+        "source_file": "fire_01.png",
+        "source_download_sha256": "c5972bcf21abde267eaf48b3e1b90a0ca06d7c5b87e49024cf051f4bbc3a4ed0",
+        "license": "CC0-1.0",
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "required_attribution": "None (CC0); creator and source credited voluntarily.",
+        "download_date": "2026-11-15",
+        "local_destination": "assets/external/fire.png",
+        "modifications": "1024 to 512px, 8x8 cells; runtime orange tint, range-constrained billboards.",
+        "sha256": "815c103ac68ead3973245c6f8fe461664e613d8f325d2fbee0797202f8106f7a",
+        "bytes": 172006
+      },
+      {
+        "id": "creature-death.wav",
+        "creator": "Ogrebane",
+        "asset_name": "Monster Sound Pack, Volume 1",
+        "source_url": "https://opengameart.org/content/monster-sound-pack-volume-1",
+        "download_url": "https://opengameart.org/sites/default/files/monster-sounds-volume-2.zip",
+        "source_file": "Monster-Sounds-Volume-2/Monster-1.wav",
+        "source_download_sha256": "f23b5691ac502cf03b58a353cb31f53e3cb93aeb65e654efc8482fd1829d7ef6",
+        "license": "CC0-1.0",
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "required_attribution": "None (CC0); creator and source credited voluntarily.",
+        "download_date": "2026-11-15",
+        "local_destination": "assets/external/creature-death.wav",
+        "modifications": "Mono 22050Hz PCM, peak limiter and fades; rate limited death cue.",
+        "sha256": "7f070c37046f6fd215be1624758813ef973b87fd1ec05659bc8c4512ac2cf9a9",
+        "bytes": 33196
+      },
+      {
+        "id": "screamer.wav",
+        "creator": "Ogrebane",
+        "asset_name": "Monster Sound Pack, Volume 1",
+        "source_url": "https://opengameart.org/content/monster-sound-pack-volume-1",
+        "download_url": "https://opengameart.org/sites/default/files/monster-sounds-volume-2.zip",
+        "source_file": "Monster-Sounds-Volume-2/Monster-2.wav",
+        "source_download_sha256": "f23b5691ac502cf03b58a353cb31f53e3cb93aeb65e654efc8482fd1829d7ef6",
+        "license": "CC0-1.0",
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "required_attribution": "None (CC0); creator and source credited voluntarily.",
+        "download_date": "2026-11-15",
+        "local_destination": "assets/external/screamer.wav",
+        "modifications": "Same conversion, 1.15x pitch for disruption cue.",
+        "sha256": "f01cf9182d0986f6bb0f2e08d971e3c22be044a07c0dc123e875ce955a3bda89",
+        "bytes": 33674
+      },
+      {
+        "id": "mass.wav",
+        "creator": "Ogrebane",
+        "asset_name": "Monster Sound Pack, Volume 1",
+        "source_url": "https://opengameart.org/content/monster-sound-pack-volume-1",
+        "download_url": "https://opengameart.org/sites/default/files/monster-sounds-volume-2.zip",
+        "source_file": "Monster-Sounds-Volume-2/monster-12.wav",
+        "source_download_sha256": "f23b5691ac502cf03b58a353cb31f53e3cb93aeb65e654efc8482fd1829d7ef6",
+        "license": "CC0-1.0",
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "required_attribution": "None (CC0); creator and source credited voluntarily.",
+        "download_date": "2026-11-15",
+        "local_destination": "assets/external/mass.wav",
+        "modifications": "Same conversion, .65x pitch for enrage cue.",
+        "sha256": "af665538262b8ea281622575b1443c473881d9022e3024862d34c793291ea159",
+        "bytes": 34044
+      },
+      {
+        "id": "factory.ogg",
+        "creator": "yd",
+        "asset_name": "Factory ambiance",
+        "source_url": "https://opengameart.org/content/factory-ambiance",
+        "download_url": "https://opengameart.org/sites/default/files/Factory.ogg",
+        "source_file": "Factory.ogg",
+        "source_download_sha256": "c8c1b2b5bad66d2951cc366ad3337a67882a769b1c3057b2791fa2085ae4d09e",
+        "license": "CC0-1.0",
+        "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "required_attribution": "None (CC0); creator and source credited voluntarily.",
+        "download_date": "2026-11-15",
+        "local_destination": "assets/external/factory.ogg",
+        "modifications": "First 24 seconds, 2-second fades, mono 22050Hz Vorbis quality2; quiet looping ambience after user input.",
+        "sha256": "ed66a41565fd5b57b8a63c7013d5942e75712ee4b25a98e8396c26a992802ddc",
+        "bytes": 85121
+      }
+    ],
+    "source_license_declarations": "licenses/source-declarations.txt",
+    "primary_art_manifest": "../kenney/manifest.json"
+  }
+}

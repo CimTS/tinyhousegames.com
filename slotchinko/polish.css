@@ -485,6 +485,10 @@ body.marking .reel{border-color:var(--gold)}
 .daub-pop.is-line b{font-size:17px;color:var(--gold)}
 .daub-pop.is-line i{background:radial-gradient(circle at 35% 30%,#fff1c2,#ffd166 55%,#c9942c);color:#2a1d04}
 @keyframes daubIn{0%{opacity:0;transform:translateY(-10px) scale(.92)}8%{opacity:1;transform:none}88%{opacity:1}100%{opacity:0;transform:translateY(-6px)}}
+/* Lou's line on the first square and the first line: the banner becomes a small card and stays up longer. */
+.daub-pop.is-intro{flex-wrap:wrap;border-radius:16px;padding:9px 12px;animation-duration:9.5s}
+.daub-lou{flex:0 0 100%;display:flex;align-items:center;gap:8px;margin-top:2px;font-size:12px;line-height:1.35;color:#e9eef8}
+.daub-lou .boss-art{flex:0 0 30px;width:30px;height:30px}.daub-lou .boss-art svg{display:block;width:100%;height:100%;border-radius:7px}
 html.reduce-motion .daub-pop{animation:none}
 /* Squares daubed since their card was last looked at: a cyan ring that pulses, and a dot on the tabs that lead to them. */
 .bingo-sq.is-new{border-color:var(--cyan);box-shadow:0 0 0 1px var(--cyan),0 0 12px #45f3e288;animation:bingoNew 1.4s ease-in-out infinite}

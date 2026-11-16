@@ -65,6 +65,16 @@
       (next ? "your next round is" : `at blind ${round} you meet`) +
       " this boss, and the last line is the rule it plays by."
   };
+  /* Said once each, where the new thing first shows up (overlays.js for the rush, bingo-view.js for the cards). */
+  const FIRSTS = {
+    // On the Choose Your Path sheet, the first time a boss can be rushed.
+    rush:
+      "New on the board, kid: you can rush this boss. Tap his picture to fight him right now, for a reward you can't " +
+      "win any other way. Lose, and I take my cut and you carry on.",
+    // On the banner for the first bingo square, and for the first finished line.
+    bingo: "That's a bingo square, kid. Tap here to see your cards.",
+    "bingo-line": "Five in a row! Every line pays a prize. Tap here to see yours."
+  };
   /* One-line tips after the tutorial: the first time something new is on screen, Lou says what it is, once.
      Board news comes before suit news. Each entry: when(state, rules) and text(state, rules). */
   const pct = x => Math.round((x - 1) * 100);
@@ -133,5 +143,5 @@
     return m ? { id: m.id, text: m.text(s, rules), next: true } : null;
   }
 
-  window.SlotchinkoCoach = { tip, moment, MOMENTS: MOMENTS.map(m => m.id), OF, HOST, PATH };
+  window.SlotchinkoCoach = { tip, moment, MOMENTS: MOMENTS.map(m => m.id), OF, HOST, PATH, FIRSTS };
 })();

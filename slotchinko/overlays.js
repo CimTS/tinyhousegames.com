@@ -664,11 +664,19 @@
       ])
         rush ? $("path-boss").setAttribute(k, v) : $("path-boss").removeAttribute(k);
       // Tutorial, last step: Lou says what can be picked (those glow) and what the boss box is for.
+      // After the tutorial: the first time a boss can be rushed, Lou says what that means. It stays up for this
+      // visit to the sheet (the sheet is drawn again when the path changes) and is never shown again.
+      const fresh = rush && this.prefs.tipsOn() && !this.prefs.seenTips().includes("rush");
+      if (fresh) {
+        this.prefs.tipSeen("rush");
+        this.rushTip = { run: s, round: s.round };
+      }
+      const rushTip = rush && this.rushTip?.run === s && this.rushTip.round === s.round;
       const C = window.SlotchinkoCoach,
         coach = !!this.prefs.coachOn?.() && s.round === 1 && !s.path.start,
         boss = D.BOSSES.find(x => x.round > s.round),
         words = window.SlotchinkoCopy?.words || (x => x);
-      $("path-coach").hidden = !coach;
+      $("path-coach").hidden = !coach && !rushTip;
       $("path-list").closest(".path-card").classList.toggle("is-coach", coach);
       $("path-list").classList.toggle("coach-pick", coach);
       $("path-boss-note").hidden = !(coach && boss);
@@ -677,6 +685,10 @@
         $("path-coach-step").textContent = `${C.HOST} · ${C.PATH.n} OF ${C.PATH.of}`;
         $("path-coach-text").textContent = words(C.PATH.text);
         if (boss) $("path-boss-note").textContent = C.PATH.boss(boss.round, boss.round === next);
+      } else if (rushTip) {
+        if (!$("path-coach-face").firstChild) $("path-coach-face").innerHTML = window.SlotchinkoBossArt?.host || "";
+        $("path-coach-step").textContent = C.HOST;
+        $("path-coach-text").textContent = words(C.FIRSTS.rush);
       }
       const ev = id => id && game.eventDef(id);
       $("path-list").innerHTML = s.path.choices

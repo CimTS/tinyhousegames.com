@@ -175,7 +175,7 @@
       big = n.kind !== "square",
       head = n.kind === "square" ? n.square.name : n.kind === "line" ? `BINGO · ${n.line.name}` : "BLACKOUT";
     el.type = "button";
-    el.className = `daub-pop ${big ? "is-line" : ""}`;
+    el.className = `daub-pop ${big ? "is-line" : ""} ${n.intro ? "is-intro" : ""}`;
     el.addEventListener("click", () => {
       // The card is about to show everything that is new, so the banners still waiting are not needed.
       queue.length = 0;
@@ -186,13 +186,31 @@
       `<i aria-hidden="true">${big ? "★" : "✦"}</i>` +
       `<span><b>${head.toUpperCase()}</b>` +
       `<small>${n.prize ? `PRIZE: ${n.prize.name.toUpperCase()}` : n.card.title}</small></span>`;
+    // The first square ever, and the first line: Lou adds a line saying what this is and that it can be pressed.
+    if (n.intro) {
+      const words = window.SlotchinkoCopy?.words || (x => x),
+        face = window.SlotchinkoBossArt?.host || "";
+      el.innerHTML += `<span class="daub-lou"><span class="boss-art" aria-hidden="true">${face}</span>${words(n.intro)}</span>`;
+    }
     box.append(el);
     if (big) view?.vibrate?.([40, 60, 120]);
-    window.setTimeout(() => el.remove(), big ? 5200 : 4200);
+    window.setTimeout(() => el.remove(), n.intro ? 9500 : big ? 5200 : 4200);
     window.setTimeout(() => next(view), 550);
   }
   function pop(news, view) {
     if (!news?.length) return;
+    // Lou's two firsts (coach.js FIRSTS), each said once on a save, unless tips are off.
+    const prefs = view?.prefs,
+      firsts = window.SlotchinkoCoach?.FIRSTS || {};
+    for (const [id, kind] of [
+      ["bingo", "square"],
+      ["bingo-line", "line"]
+    ]) {
+      const n = news.find(x => x.kind === kind);
+      if (!n || !prefs?.tipsOn() || prefs.seenTips().includes(id)) continue;
+      n.intro = firsts[id];
+      prefs.tipSeen(id);
+    }
     queue.push(...news);
     if (!busy) next(view);
   }

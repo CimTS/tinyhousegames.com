@@ -50,6 +50,7 @@
   .howto-card{width:min(100%,640px)}
   .deck-card-wrap{width:min(100%,640px)}
   .deck-list{grid-template-columns:repeat(3,1fr)}
+  .deck-card:not(.is-deed):nth-child(odd):has(+ .is-deed){grid-column:auto}
   .collection-card{width:min(100%,960px);max-height:calc((100dvh - 32px)/var(--ui))}
   .col-grid{grid-template-columns:repeat(3,1fr)}
   .col-sets{grid-template-columns:repeat(4,1fr)}

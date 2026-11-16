@@ -25,7 +25,13 @@
     _bossBoard() {
       const s = this.state;
       const layout = !s.boss && T.LAYOUTS[s.layout];
-      this.physics.bucketValues = [...(s.boss === "undertow" ? T.TIDE_POCKETS : layout || T.NORMAL_POCKETS)];
+      const pockets = [...(s.boss === "undertow" ? T.TIDE_POCKETS : layout || T.NORMAL_POCKETS)],
+        top = Math.max(...pockets);
+      // Jackpot Deck: the top pockets pay more and the ×0.5 pockets pay nothing, on every board, bosses' included.
+      this.physics.bucketValues =
+        s.deckId === "jackpot"
+          ? pockets.map(v => (v === top ? v * window.SlotchinkoData.BALANCE.JACKPOT_DECK : v <= 0.5 ? 0 : v))
+          : pockets;
     },
     _bossDropStart() {
       this.state.dropFx = freshDrop();

@@ -65,7 +65,7 @@
     sonny:{ titles:["Minnow","Bait Thief",null,"Card Shark","Shark Hunter","Sharp Dresser","Bloodhound",null,"Deep Diver","Fin Collector","Great White","Sonny's Nemesis"],
       2:open("stripped-deck","Stripped Deck","Deck card","Now turns up in the shop."), 7:open("last-call","Last Call","Chip","Now turns up in the shop."), blackout:felt("sharkskin","Sharkskin") },
     undertow:{ titles:["Wave Rider","Beat Keeper",null,"Tide Turner","Headliner","Crowd Surfer","Deckhand",null,"Rip Current","Bass Dropper","Opening Act","King Tide"],
-      2:open("board-shores","Two Shores","Board","A board with a jackpot at each edge joins the rotation."), 7:open("life-ring","Life Ring","Bag item","Now turns up in the shop."), blackout:felt("neon-tide","Neon Tide") },
+      2:open("board-shores","Two Shores","Board","A board with a jackpot beside each edge joins the rotation."), 7:open("life-ring","Life Ring","Bag item","Now turns up in the shop."), blackout:felt("neon-tide","Neon Tide") },
     mirror:{ titles:["Fair Reflection","Double Agent",null,"Looking Sharp","Glass Breaker","Second Glance","Copy Editor",null,"Mirror Master","One of a Kind","Seven Lucky Years","The Other Dealer"],
       2:open("double-take","Double Take","Bag item","Now turns up in the shop."), 7:open("minimalist","Minimalist","Chip","Now turns up in the shop."), blackout:felt("chrome","Chrome") },
     house:{ titles:["Table Regular","Big Fish",null,"Pit Favourite","Bank Breaker","House Guest","Comped",null,"Shield Breaker","Key Holder","The Better House","Owner"],

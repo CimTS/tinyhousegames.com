@@ -20,6 +20,9 @@ button{cursor:pointer}button:disabled{cursor:not-allowed}
 .target-bar.is-hit i{background:var(--green)}
 @media(max-width:440px){.brand>span:not(.brand-mark){display:none}.brand-mark{margin:0}.stats{gap:9px}}
 @media(max-width:370px){.stats{gap:7px}.stats b{font-size:16px}.help-button{width:44px}.brand{display:none}}
+/* Three buttons in the bar (Collection, help, sound): the logo mark gives way on a phone, and the narrowest phones get slimmer buttons. */
+@media(max-width:400px){.brand{display:none}}
+@media(max-width:340px){.stats{gap:5px}.stats b{font-size:15px}.help-button{width:33px}}
 
 /* Readable text: nothing under 10px */
 .subtle,.phase-banner p,.micro,.hand-row small,#hand-detail,.board-footer,.reel small,.hand-note p,.hand-note b,.hand-note-right,#aim-guide,footer,.empty-inventory,.synergy-line,.consumable-heading small,.consumable-item,.consumable-item small,.shop-hint,.shop-empty-state>p,.market-kicker,.market-title>small,.shop-stockline,.shop-footer,.item-kind,.rarity-label,.buy-chip,.reroll-button>b,.reroll-button>small,.owned-chip,.shop-item p{font-size:11px;line-height:1.35}
@@ -219,6 +222,8 @@ html.reduce-motion .target-flash.show{opacity:1}
 .deck-card.is-locked{cursor:default;border-style:dashed;background:#0f1522}
 .deck-card.is-locked b{color:#7d8aa7}.deck-card.is-locked .deck-icon{color:#6b7896;background:#192235}
 .deck-card.is-locked small{color:#8d9bb8}
+/* Two columns on a phone: an odd last ordinary deck takes the whole row, so no gap is left before the trophy decks. */
+.deck-card:not(.is-deed):nth-child(odd):has(+ .is-deed){grid-column:1/-1}
 /* The Owner's Deck (opened by The Deed): the trophy card. Gold, full width on a phone, with the reward's name on it. */
 .deck-card.is-deed{grid-column:1/-1;min-height:74px;border-color:#b98a2c;background:linear-gradient(150deg,#3a2c0c,#17130a 62%,#111827);box-shadow:inset 0 0 0 1px #ffd16622,0 0 18px #ffd16622}
 .deck-card.is-deed b{color:var(--gold)}.deck-card.is-deed small{color:#e3d3a4}
@@ -484,8 +489,9 @@ html.reduce-motion .daub-pop{animation:none}
 /* Squares daubed since their card was last looked at: a cyan ring that pulses, and a dot on the tabs that lead to them. */
 .bingo-sq.is-new{border-color:var(--cyan);box-shadow:0 0 0 1px var(--cyan),0 0 12px #45f3e288;animation:bingoNew 1.4s ease-in-out infinite}
 .bingo-sq.is-new::after{content:"NEW";position:absolute;right:2px;bottom:1px;font:700 6.5px/1 'DM Mono',monospace;letter-spacing:.3px;color:var(--cyan)}
-.bingo-tab.has-new,.col-tab.has-new{position:relative}
-.bingo-tab.has-new::after,.col-tab.has-new::after{content:"";position:absolute;top:4px;right:5px;width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
+.bingo-tab.has-new,.col-tab.has-new,.collection-button.has-new{position:relative}
+.collection-button{color:var(--gold)}
+.bingo-tab.has-new::after,.col-tab.has-new::after,.collection-button.has-new::after{content:"";position:absolute;top:4px;right:5px;width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
 @keyframes bingoNew{50%{box-shadow:0 0 0 1px var(--cyan),0 0 4px #45f3e244}}
 html.reduce-motion .bingo-sq.is-new{animation:none}
 /* Bingo prizes: the blackout button under the grid, the prizes paid so far, and the worn title on the title screen. */

@@ -13,6 +13,8 @@
     [/Tap one of/g, "Click one of"],
     [/Tap the board to pick/g, "Move the mouse to pick"],
     [/Tap a Chip/g, "Click a Chip"],
+    [/Tap his picture/g, "Click his picture"],
+    [/Tap here/g, "Click here"],
     [/TAP CARDS TO HOLD/g, "CLICK OR PRESS 1-5 TO HOLD"],
     [/DRAG TO AIM · PRESS DROP/g, "MOUSE TO AIM · SPACE TO DROP"]
   ];

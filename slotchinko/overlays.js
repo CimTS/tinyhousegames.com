@@ -539,7 +539,7 @@
       if (this.open !== "collection-screen") this.colReturn = this.open;
       else if (tab !== "bingo") this.seenBingo();
       this.colTab = tab;
-      $("col-tab-bingo").classList.toggle("has-new", !!this.prefs.data.bingoNew?.length);
+      this.markNew();
       $("col-tab-items").setAttribute("aria-pressed", String(tab === "items"));
       $("col-tab-bingo").setAttribute("aria-pressed", String(tab === "bingo"));
       if (tab === "bingo") {
@@ -618,6 +618,13 @@
     /* The card on show has been looked at: its squares stop being marked as new. */
     seenBingo() {
       if (this.colTab === "bingo" && this.bingoPick) this.prefs.seenBingo(this.bingoPick.card);
+      this.markNew();
+    }
+    /* A dot on the ways into the bingo cards (the top bar's Collection button, the Bingo tab) while a square is new. */
+    markNew() {
+      const any = !!this.prefs.data.bingoNew?.length;
+      $("col-tab-bingo").classList.toggle("has-new", any);
+      $("collection-button").classList.toggle("has-new", any);
     }
     pickBingo({ card, square, line, wear }) {
       const p = this.bingoPick;

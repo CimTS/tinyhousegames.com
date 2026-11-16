@@ -287,6 +287,7 @@
         s.locked = (s.locked || []).filter(id => !prize.includes(id) || shut.includes(id));
       }
       window.SlotchinkoBingoView.pop(news, this);
+      this.overlays?.markNew();
     }
     /* A milestone met mid-run: saved at once, and announced the first time on this save only. */
     achieved(id) {

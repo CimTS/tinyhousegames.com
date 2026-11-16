@@ -103,6 +103,8 @@
         d = this._ft().drop,
         last = (this.physics.bucketValues?.length || 7) - 1,
         boss = this._bossDef()?.id;
+      // also a run statistic: the most balls in a jackpot in one drop opens the Jackpot Deck
+      if (s.stats) s.stats.jackpotDrop = Math.max(s.stats.jackpotDrop || 0, d.jackpots);
       if (d.pockets.length > last) this._feat("lou", "sweep");
       if (s.total >= B.SIX_FIGURES) this._feat("lou", "six");
       if (boss === "undertow") {

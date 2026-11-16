@@ -153,7 +153,7 @@
   const BALANCE={
     FINAL_BLIND:BLIND_TARGETS.length, BLIND_TARGETS,
     HANDS_PER_BLIND:3, SPARE_HAND_PAY:1, SELL_RATE:0.5, ELITE_CLIMB:1.5, START_COINS:7, BLIND_PAY:3, BASE_BALL_SCORE:25, HEART_SPLIT_HIT:3, SPLIT_SHARE:0.5, DRAIN_ROUND:3,
-    INTEREST_PER:10, INTEREST_CAP:5, DEALER_DRAWS:3,
+    INTEREST_PER:10, INTEREST_CAP:5, DEALER_DRAWS:3, JACKPOT_DECK:1.25,
     REROLL_BASE:2, SHOP_SLOTS:{chip:3,card:2,consumable:2,buff:2}, CROUPIER_CAP:3, FUNNEL_MULT:1.25, GOLD_POWER:0.25, GLITCH_POWER:1.5, GLITCH_BALLS:2, GLITCH_MS:800, SET_STEPS:[2,4,6], SET_TIERS:["REGULAR","VIP","WHALE"], SHOP_LEAN:0.5, SHOP_LEAN_CAP:4, GRIND_CAP:0.40, COMP_CAP:2, NUTS_ACES:7, MAX_CHIPS:12, MAX_BAG:3, MAX_HAND_BALLS:24,
     RUSH:{ WAGES:12, CLIMB:{ house:1.25 }, CUTS:[{ upTo:4, coins:0.25, chips:0 },{ upTo:7, coins:0.5, chips:1 },{ upTo:10, coins:1, chips:2 },{ upTo:12, coins:1, chips:"family" }] },
     FIFTH_SUIT:1.25, MARKER_OWED:12, LOYALTY:3, PIT_VIP:3, SANDBAR:0.4, LOW_TIDE:1.25, CAR_SPOTS:[[4,2]], PRESS_STEP:500, PRESS_CAP:3, CLUB_COIN_HITS:5, DIAMOND_BONUS:35, GLASS_MULT:1.5,
@@ -182,6 +182,7 @@
     { id:"hoarder", name:"Hoarder Deck", icon:"▤", desc:"Bag holds 2 more. One fewer Chip per shop." },
     { id:"wild-suit", name:"Two-Tone Deck", icon:"♥♠", desc:"Suits count by colour: red with red, black with black." },
     { id:"pachinko", name:"Pachinko Deck", icon:"◎", desc:"+1 ball every hand, 20% less power." },
+    { id:"jackpot", name:"Jackpot Deck", icon:"✸", desc:"Jackpot pockets pay 25% more. ×0.5 pockets pay nothing." },
     // The Deed (The House's last rush reward, see bosses-data.js) opens this one; "reward" names the reward that does.
     { id:"owner", name:"Owner's Deck", icon:"⚿", reward:"The Deed", desc:"The house is yours. Start with two Chips from one family, a Regular set from the first blind." },
     // Lou's bingo blackout opens this one (bingo-data.js). "prize" decks are left out of Full Deck.
@@ -244,7 +245,8 @@
     { kind:"deck", id:"hoarder", hint:"Fill your Bag.", test:m=>m.maxBag>=3 },
     { kind:"deck", id:"glass", hint:"Score 12,000 in a single drop.", test:m=>m.bestDrop>=12000 },
     { kind:"deck", id:"wild-suit", hint:"Drop 3 Flushes in one run.", test:m=>(m.hands.Flush||0)>=3 },
-    { kind:"deck", id:"pachinko", hint:"Win a run.", test:m=>m.victory }
+    { kind:"deck", id:"pachinko", hint:"Win a run.", test:m=>m.victory },
+    { kind:"deck", id:"jackpot", hint:"Land 3 balls in a jackpot in one drop.", test:m=>m.jackpotDrop>=3 }
   ];
   // Collection families: a Chip joins the first family that shares one of its tags.
   // Chip families. Owning Chips of one family (copies count) pays in three steps: BALANCE.SET_STEPS Chips reach

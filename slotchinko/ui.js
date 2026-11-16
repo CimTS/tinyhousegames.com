@@ -289,6 +289,7 @@
       view.toast("SAVE DATA CLEARED");
     });
     $("title-howto").addEventListener("click", () => overlays.showHowTo());
+    $("collection-button").addEventListener("click", () => overlays.showCollection());
     $("help-button").addEventListener("click", () => overlays.showHowTo());
     $("settings-button").addEventListener("click", () =>
       overlays.open === "settings-screen" ? overlays.closeSettings() : overlays.showSettings()

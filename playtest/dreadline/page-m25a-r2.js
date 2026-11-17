@@ -1,0 +1,66 @@
+'use strict';
+const stage=document.querySelector('#stage');
+const game=document.querySelector('#game');
+const loading=document.querySelector('#loading');
+const launch=document.querySelector('#launch');
+const fullscreen=document.querySelector('#fullscreen');
+let launched=false;
+launch.addEventListener('click',async()=>{
+  document.body.classList.add('game-active');
+  stage.scrollIntoView({block:'start'});
+  if(launched){game.contentWindow.focus();return;}
+  launched=true;
+  loading.innerHTML='<strong>CONNECTING TO OUTPOST</strong><p>Loading the game. The first visit downloads about 39 MB.</p>';
+  try{
+    for(const name of ['index-r2.html','index.js','index.wasm','index.pck']){
+      const response=await fetch('runtime/m25a-40bf4abee599/'+name,{method:'HEAD'});
+      if(!response.ok)throw new Error('Runtime resource unavailable: '+name+' ('+response.status+').');
+    }
+    game.hidden=false;
+    game.src='runtime/m25a-40bf4abee599/index-r2.html';
+  }catch(error){
+    loading.innerHTML='<strong>CONNECTION FAILED</strong><p></p>';
+    loading.querySelector('p').textContent=error.message+' Reload this page to retry.';
+  }
+});
+function checkRuntime(){
+  if(!launched)return;
+  try{
+    const doc=game.contentDocument;
+    if(!doc||!doc.querySelector('#canvas'))return;
+    const notice=doc.querySelector('#status-notice');
+    if(notice&&notice.textContent.trim()){
+      loading.hidden=false;
+      loading.innerHTML='<strong>CONNECTION FAILED</strong><p></p>';
+      loading.querySelector('p').textContent=notice.textContent+' Reload this page to retry.';
+      clearInterval(monitor);
+    }else if(doc.readyState==='complete'&&!game.contentWindow.Engine){
+      loading.innerHTML='<strong>CONNECTION FAILED</strong><p>The game loader is unavailable. Reload this page to retry.</p>';
+      clearInterval(monitor);
+    }else if(!doc.querySelector('#status')){
+      loading.hidden=true;
+      game.contentWindow.focus();
+      clearInterval(monitor);
+    }
+  }catch{
+    loading.innerHTML='<strong>CONNECTION FAILED</strong><p>The game document could not be read. Reload this page to retry.</p>';
+    clearInterval(monitor);
+  }
+}
+const monitor=setInterval(checkRuntime,200);
+game.addEventListener('load',checkRuntime);
+if(document.fullscreenEnabled&&stage.requestFullscreen){
+  fullscreen.hidden=false;
+  fullscreen.addEventListener('click',async()=>{
+    try{await stage.requestFullscreen();}catch{fullscreen.textContent='FULLSCREEN UNAVAILABLE';fullscreen.disabled=true;}
+  });
+}
+
+// Preserve the active game viewport through orientation/browser-height changes.
+// Do not pull readers back from the surrounding page notes.
+window.addEventListener('resize',()=>{
+  const nearGame=Math.abs(stage.getBoundingClientRect().top)<innerHeight/4;
+  if(launched&&nearGame&&document.activeElement===game&&!document.fullscreenElement){
+    requestAnimationFrame(()=>stage.scrollIntoView({block:'start'}));
+  }
+});

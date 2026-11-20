@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
-		<title>DREADLINE</title>
+		<title>ROTWATCH</title>
 		<style>
 html, body, #canvas {
 	margin: 0;
@@ -15,12 +15,10 @@ body {
 	color: white;
 	background-color: black;
 	overflow: hidden;
-	overscroll-behavior: none;
 	touch-action: none;
 }
 
 #canvas {
-	touch-action: none;
 	display: block;
 }
 
@@ -87,7 +85,6 @@ body {
 	line-height: 1.3;
 	margin: 0 2rem;
 	overflow: hidden;
-	overscroll-behavior: none;
 	padding: 1rem;
 	text-align: center;
 	z-index: 1;
@@ -95,7 +92,7 @@ body {
 		</style>
 		<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
 <link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
-<meta name="theme-color" content="#091016">
+<meta name="theme-color" content="#091016"><script>/* Cap rendering at 2 device pixels per CSS pixel: sharp enough, and far fewer pixels to fill on 3x phones. */(function(){var r=window.devicePixelRatio||1;if(r>2)try{Object.defineProperty(window,'devicePixelRatio',{configurable:true,get:function(){return 2}})}catch(e){}})();</script>
 	</head>
 	<body>
 		<canvas id="canvas">
@@ -112,24 +109,9 @@ body {
 			<div id="status-notice"></div>
 		</div>
 
-		<script>
-// Site integration (r2). The game picks its portrait layout from the canvas width
-// in device pixels, so a phone with a 3x screen (1080 wide) got the desktop layout.
-// Upright, report a pixel ratio of 1 so the game sees CSS pixels, as it was tested.
-// Sideways, leave the real ratio alone: that view is unchanged from the first release.
-(function () {
-	var real = window.devicePixelRatio || 1;
-	try {
-		Object.defineProperty(window, 'devicePixelRatio', {
-			configurable: true,
-			get: function () { return window.innerWidth < window.innerHeight ? 1 : real; },
-		});
-	} catch (e) {}
-})();
-		</script>
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":739016,"index.wasm":37700666},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":749888,"index.wasm":37700666},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 

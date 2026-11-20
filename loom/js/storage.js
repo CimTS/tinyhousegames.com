@@ -16,7 +16,7 @@ export function humChoicePending(settings) {
 }
 
 // Whether to ask "Would you like sound?". `saved` is the stored settings, or null.
-// A new player is asked until they answer. Someone who already has Loom data
+// A new player is asked until they answer. Someone who already has Threadbloom data
 // from before the question existed keeps their setting and is never asked.
 export function soundChoicePending(saved, hasData) {
   if (saved?.soundAsked === false) return true;        // asked before, not answered yet
@@ -66,7 +66,7 @@ const sameCloth = (a, b) => a.seed === b.seed &&
 export const storage = {
   // The settings exactly as stored, or null if none were ever saved.
   getSavedSettings() { return read("settings", null); },
-  // True if Loom has stored anything at all on this device.
+  // True if Threadbloom has stored anything at all on this device.
   hasAny() {
     try { return Object.keys(localStorage).some(k => k.startsWith(PREFIX)); }
     catch { return false; }

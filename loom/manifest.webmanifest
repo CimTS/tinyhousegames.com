@@ -1,6 +1,6 @@
 {
-  "name": "Loom — a quiet weaving puzzle",
-  "short_name": "Loom",
+  "name": "Threadbloom — a quiet weaving puzzle",
+  "short_name": "Threadbloom",
   "description": "A calm thread-weaving pattern puzzle. Works offline.",
   "start_url": "./index.html",
   "scope": "./",

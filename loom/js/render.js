@@ -146,7 +146,7 @@ export class Renderer {
     $("piece-title").textContent = title;
     $("piece-note").textContent = note;
     $("piece-note").classList.toggle("hidden", !note);
-    document.title = `${mode} · Loom`;
+    document.title = `${mode} · Threadbloom`;
   }
   setSelected(index) { this.selected = index; this.render(); }
   focusCursor() { this.cells[this.cursor]?.focus(); }

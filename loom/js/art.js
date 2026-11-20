@@ -1,4 +1,4 @@
-// All Loom art is drawn here as inline SVG. A thread tile is a small woven
+// All Threadbloom art is drawn here as inline SVG. A thread tile is a small woven
 // swatch: warp yarns (vertical) and weft yarns (horizontal) passing over and
 // under each other. Tier changes the weave, so tier is readable without color:
 //   tier 1  plain weave  – 4 chunky yarns, simple over-under

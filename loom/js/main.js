@@ -294,14 +294,14 @@ function share() {
   if (d.mode === "campaign" || d.mode === "tutorial") { announce("Sharing works for daily and Zen pieces."); return; }
   const hash = d.mode === "studio" ? encodeStudio(d.cells) : encodeShare(d.seed, d.moves);
   const url = `${location.href.split("#")[0]}${hash}`;
-  if (navigator.share) navigator.share({ title: "My Loom piece", url }).catch(() => {});
+  if (navigator.share) navigator.share({ title: "My Threadbloom piece", url }).catch(() => {});
   else navigator.clipboard?.writeText(url).then(() => announce("Link copied.")).catch(() => {});
 }
 
 // --- wiring -----------------------------------------------------------
 const guard = fn => () => {
   try { fn(); } catch (err) {
-    console.error("Loom:", err);
+    console.error("Threadbloom:", err);
     $("welcome-error").textContent = "Something went wrong opening that piece. Please try again.";
   }
 };
@@ -343,7 +343,7 @@ $("reset-progress").addEventListener("click", () => {
   if (confirm("Erase settings, saved pieces, campaign progress, dyes and the gallery on this device?")) { storage.reset(); location.reload(); }
 });
 ui.bindSheetDismissal();
-$("version-label").textContent = `Loom version ${VERSION}`;
+$("version-label").textContent = `Threadbloom version ${VERSION}`;
 
 const syncSoundButton = () => {
   const on = settings.value.sound;

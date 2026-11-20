@@ -1,4 +1,4 @@
-// Loom's soundscape: warm notes that swell in and fade slowly, in a soft room,
+// Threadbloom's soundscape: warm notes that swell in and fade slowly, in a soft room,
 // and a sound that follows the weaving. Everything is synthesized; nothing is loaded.
 //
 // A note has no strike. It rises over about a fifth of a second, like a hummed

@@ -12,12 +12,12 @@ launch.addEventListener('click',async()=>{
   launched=true;
   loading.innerHTML='<strong>CONNECTING TO OUTPOST</strong><p>Loading the game. The first visit downloads about 39 MB.</p>';
   try{
-    for(const name of ['index-r2.html','index.js','index.wasm','index.pck']){
-      const response=await fetch('runtime/m25a-40bf4abee599/'+name,{method:'HEAD'});
+    for(const name of ['index.html','index.js','index.wasm','index.pck']){
+      const response=await fetch('runtime/r-5f8bce357af2/'+name,{method:'HEAD'});
       if(!response.ok)throw new Error('Runtime resource unavailable: '+name+' ('+response.status+').');
     }
     game.hidden=false;
-    game.src='runtime/m25a-40bf4abee599/index-r2.html';
+    game.src='runtime/r-5f8bce357af2/index.html';
   }catch(error){
     loading.innerHTML='<strong>CONNECTION FAILED</strong><p></p>';
     loading.querySelector('p').textContent=error.message+' Reload this page to retry.';

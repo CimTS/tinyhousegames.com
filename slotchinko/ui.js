@@ -211,6 +211,8 @@
       if (!game.state.event) overlays.hide();
     });
     $("continue-button").addEventListener("click", () => {
+      // Opened from the top bar mid-run: the run is still in play, so just go back to it.
+      if (overlays.live) return overlays.hide();
       const d = save.read();
       if (d) {
         save.restore(game, d);
@@ -289,6 +291,7 @@
       view.toast("SAVE DATA CLEARED");
     });
     $("title-howto").addEventListener("click", () => overlays.showHowTo());
+    $("menu-button").addEventListener("click", () => overlays.showMenu());
     $("collection-button").addEventListener("click", () => overlays.showCollection());
     $("help-button").addEventListener("click", () => overlays.showHowTo());
     $("settings-button").addEventListener("click", () =>

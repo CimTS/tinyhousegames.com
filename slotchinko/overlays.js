@@ -293,6 +293,7 @@
       $(this.open).hidden = true;
       this.open = null;
       $("app").inert = false;
+      this.live = false;
       this.onChange();
       // A finished run always ends on its summary: closing How to Play or any sheet opened over it brings it back
       // (as it was; the run is recorded once), so the game is never left with nothing to press.
@@ -301,6 +302,12 @@
     }
     get pausing() {
       return !!this.open;
+    }
+    /* The ✦ in the top bar: the main menu over a run in play. CONTINUE goes back to that run as it stands. */
+    showMenu() {
+      if (this.open || this.prefs.coachOn()) return;
+      this.live = true;
+      this.showTitle();
     }
     showTitle() {
       const d = this.prefs.data,
@@ -311,7 +318,7 @@
       // The title being worn (a bingo prize) sits over the record.
       $("title-worn").textContent = title ? `“${title.toUpperCase()}”` : "";
       $("title-worn").hidden = !title;
-      const saved = window.SlotchinkoSave?.read(),
+      const saved = this.live ? { state: window.slotchinko.state } : window.SlotchinkoSave?.read(),
         c = $("continue-button");
       if (c) {
         c.hidden = !saved;

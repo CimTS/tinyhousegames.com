@@ -19,10 +19,14 @@ button{cursor:pointer}button:disabled{cursor:not-allowed}
 .target-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--gold));transition:width .25s}
 .target-bar.is-hit i{background:var(--green)}
 @media(max-width:440px){.brand>span:not(.brand-mark){display:none}.brand-mark{margin:0}.stats{gap:9px}}
-@media(max-width:370px){.stats{gap:7px}.stats b{font-size:16px}.help-button{width:44px}.brand{display:none}}
-/* Three buttons in the bar (Collection, help, sound): the logo mark gives way on a phone, and the narrowest phones get slimmer buttons. */
-@media(max-width:400px){.brand{display:none}}
-@media(max-width:340px){.stats{gap:5px}.stats b{font-size:15px}.help-button{width:33px}}
+@media(max-width:370px){.stats{gap:7px}.stats b{font-size:16px}.help-button{width:44px}}
+/* The logo is the main-menu button, so it stays at every width; the narrowest phones get slimmer buttons to make room. */
+button.brand{appearance:none;background:none;border:0;color:inherit;padding:0;margin:0;cursor:pointer;min-height:44px;display:flex;align-items:center;border-radius:10px;-webkit-tap-highlight-color:transparent}
+button.brand:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+@media(max-width:440px){button.brand{min-width:30px;justify-content:center}.brand-mark{font-size:24px}}
+@media(max-width:400px){.topbar{gap:6px}.stats{gap:7px}.help-button{width:36px}button.brand{min-width:24px}}
+@media(max-width:370px){.stats{gap:6px}}
+@media(max-width:340px){.topbar{gap:4px}.stats{gap:4px}.stats b{font-size:15px}.stats small{font-size:9px}.help-button{width:30px}button.brand{min-width:20px}.brand-mark{font-size:20px}}
 
 /* Readable text: nothing under 10px */
 .subtle,.phase-banner p,.micro,.hand-row small,#hand-detail,.board-footer,.reel small,.hand-note p,.hand-note b,.hand-note-right,#aim-guide,footer,.empty-inventory,.synergy-line,.consumable-heading small,.consumable-item,.consumable-item small,.shop-hint,.shop-empty-state>p,.market-kicker,.market-title>small,.shop-stockline,.shop-footer,.item-kind,.rarity-label,.buy-chip,.reroll-button>b,.reroll-button>small,.owned-chip,.shop-item p{font-size:11px;line-height:1.35}

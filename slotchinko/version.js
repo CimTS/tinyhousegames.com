@@ -1,2 +1,2 @@
 /* Written by tools/slotchinko-sw-version.mjs: the build code shown on the title and settings screens. */
-window.SLOTCHINKO_BUILD="a6f631d";
+window.SLOTCHINKO_BUILD="bcb7bc1";
